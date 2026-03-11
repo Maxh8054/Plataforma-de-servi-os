@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 
 // Types
-type StateType = "mg" | "go" | "pa" | "ba" | null;
+type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | null;
 type ModalType = "services" | "security" | null;
 
 // PWA Install Event Type
@@ -86,6 +86,24 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL }
+  ],
+  'sc': [
+    { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
+    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Santa Catarina', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Relatórios Técnicos', description: 'Acesse todos os relatórios técnicos', icon: 'description', url: '/html/SearchReportMinas.html' },
+    { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
+  ],
+  'ma': [
+    { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
+    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Maranhão', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Relatórios Técnicos', description: 'Acesse todos os relatórios técnicos', icon: 'description', url: '/html/SearchReportMinas.html' },
+    { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ]
 };
 
@@ -106,14 +124,24 @@ const securityData: Record<string, {title: string; description: string; icon: st
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
   ],
-  'ba': []
+  'ba': [],
+  'sc': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
+  ],
+  'ma': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
+  ]
 };
 
 const stateNames: Record<string, string> = {
   'mg': 'Minas Gerais',
   'go': 'Goiás',
   'pa': 'Pará',
-  'ba': 'Bahia'
+  'ba': 'Bahia',
+  'sc': 'Santa Catarina',
+  'ma': 'Maranhão'
 };
 
 // Login Component
@@ -827,8 +855,13 @@ export default function Home() {
     localStorage.removeItem('zamine_user');
     setCurrentUser(null);
     setIsAuthenticated(false);
-    setIsLoading(true);
+    setIsLoading(false);
     setLoadingProgress(0);
+    setSelectedState(null);
+    setActiveModal(null);
+    setModalState(null);
+    setShowDeveloperModal(false);
+    setShowSecurityContent(false);
   };
 
   // Loading animation
@@ -1082,6 +1115,38 @@ export default function Home() {
                     </div>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Bahia
+                    </div>
+                  </div>
+                </div>
+
+                {/* SC Marker */}
+                <div 
+                  className="absolute cursor-pointer group"
+                  style={{ top: '78%', left: '42%' }}
+                  onClick={() => handleMarkerClick('sc')}
+                >
+                  <div className="relative">
+                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
+                      <span className="text-white font-bold text-[8px] sm:text-[10px]">SC</span>
+                    </div>
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                      Santa Catarina
+                    </div>
+                  </div>
+                </div>
+
+                {/* MA Marker */}
+                <div 
+                  className="absolute cursor-pointer group"
+                  style={{ top: '35%', left: '58%' }}
+                  onClick={() => handleMarkerClick('ma')}
+                >
+                  <div className="relative">
+                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
+                      <span className="text-white font-bold text-[8px] sm:text-[10px]">MA</span>
+                    </div>
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                      Maranhão
                     </div>
                   </div>
                 </div>
