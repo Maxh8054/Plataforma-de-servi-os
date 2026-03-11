@@ -4,7 +4,7 @@
   "description": "Plataforma de Serviços Zamine Brasil - Hitachi",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "theme_color": "#ff6600",
   "orientation": "any",
   "icons": [
