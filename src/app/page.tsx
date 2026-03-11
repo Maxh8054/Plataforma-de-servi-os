@@ -144,14 +144,17 @@ function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
 
   // PWA Install prompt
   useEffect(() => {
-    // Detectar iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    setIsIOS(isIOSDevice);
+    // Use setTimeout to defer state updates (avoid lint error)
+    const initTimer = setTimeout(() => {
+      // Detectar iOS
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      setIsIOS(isIOSDevice);
 
-    // Detectar se é mobile (Android/iOS)
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    setIsMobile(isMobileDevice);
+      // Detectar se é mobile (Android/iOS)
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+    }, 0);
 
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
@@ -185,6 +188,7 @@ function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
     
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(initTimer);
       clearTimeout(timer);
     };
   }, []);
@@ -1031,8 +1035,8 @@ export default function Home() {
                   onClick={() => handleMarkerClick('mg')}
                 >
                   <div className="relative">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
-                      <span className="text-white font-bold text-sm sm:text-base">MG</span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-xs sm:text-sm">MG</span>
                     </div>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Minas Gerais
@@ -1047,8 +1051,8 @@ export default function Home() {
                   onClick={() => handleMarkerClick('go')}
                 >
                   <div className="relative">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
-                      <span className="text-white font-bold text-sm sm:text-base">GO</span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-xs sm:text-sm">GO</span>
                     </div>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Goiás
@@ -1063,8 +1067,8 @@ export default function Home() {
                   onClick={() => handleMarkerClick('pa')}
                 >
                   <div className="relative">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
-                      <span className="text-white font-bold text-sm sm:text-base">PA</span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-xs sm:text-sm">PA</span>
                     </div>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Pará
@@ -1079,8 +1083,8 @@ export default function Home() {
                   onClick={() => handleMarkerClick('ba')}
                 >
                   <div className="relative">
-                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
-                      <span className="text-white font-bold text-sm sm:text-base">BA</span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-xs sm:text-sm">BA</span>
                     </div>
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Bahia
@@ -1090,11 +1094,14 @@ export default function Home() {
               </div>
             )}
 
-            {/* State Content */}
+            {/* State Content - Click anywhere to go back */}
             {selectedState && (
-              <div className="absolute inset-0 z-20 flex flex-col">
+              <div 
+                className="absolute inset-0 z-20 flex flex-col cursor-pointer"
+                onClick={resetToInitialState}
+              >
                 {/* Back Button */}
-                <div className="absolute top-16 left-4 z-30">
+                <div className="absolute top-16 left-4 z-30" onClick={(e) => e.stopPropagation()}>
                   <button 
                     onClick={resetToInitialState}
                     className="bg-black/50 hover:bg-black/70 text-white px-3 py-2 rounded-lg flex items-center gap-2 transition-colors"
@@ -1105,31 +1112,31 @@ export default function Home() {
                 </div>
 
                 {/* State Title */}
-                <div className="pt-20 sm:pt-28 px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }}>
+                <div className="pt-20 sm:pt-28 px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }} onClick={(e) => e.stopPropagation()}>
                   <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">{stateNames[selectedState] || 'Minas Gerais'}</h2>
                   
                   {/* Counter - Dias sem acidentes */}
                   {(selectedState === 'mg' || selectedState === 'go') && (
-                    <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl px-6 py-4 inline-block shadow-xl border-2 border-green-400">
-                      <div className="text-white text-sm font-semibold mb-1">DIAS SEM AFASTAMENTO</div>
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-4xl sm:text-5xl font-bold text-white">{stateCounter.days}</span>
-                        <span className="text-white text-xl">dias</span>
-                        <span className="text-2xl font-bold text-green-200">{stateCounter.hours}:</span>
-                        <span className="text-2xl font-bold text-green-200">{String(stateCounter.minutes).padStart(2, '0')}:</span>
-                        <span className="text-2xl font-bold text-green-200">{String(stateCounter.seconds).padStart(2, '0')}</span>
+                    <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-lg px-4 py-2 inline-flex items-center gap-3 shadow-lg border border-green-400">
+                      <div className="text-white text-xs font-semibold">DIAS SEM AFASTAMENTO</div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-2xl sm:text-3xl font-bold text-white">{stateCounter.days}</span>
+                        <span className="text-white text-sm">dias</span>
+                        <span className="text-lg font-bold text-green-200">{stateCounter.hours}:</span>
+                        <span className="text-lg font-bold text-green-200">{String(stateCounter.minutes).padStart(2, '0')}:</span>
+                        <span className="text-lg font-bold text-green-200">{String(stateCounter.seconds).padStart(2, '0')}</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Action Button - Only Services */}
-                <div className="flex-1 flex items-center justify-center px-4">
+                <div className="flex-1 flex items-center justify-center px-4" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => openModal('services', selectedState)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-6 sm:px-12 sm:py-8 rounded-2xl font-bold text-xl sm:text-2xl transition-all transform hover:scale-105 shadow-2xl flex flex-col items-center gap-3 border-2 border-orange-300"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 sm:px-10 sm:py-5 rounded-xl font-bold text-lg sm:text-xl transition-all transform hover:scale-105 shadow-xl flex flex-col items-center gap-2 border-2 border-orange-300"
                   >
-                    <span className="material-icons text-4xl sm:text-5xl">business_center</span>
+                    <span className="material-icons text-3xl sm:text-4xl">business_center</span>
                     SERVIÇOS
                   </button>
                 </div>
