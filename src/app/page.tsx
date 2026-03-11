@@ -79,7 +79,6 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Pará', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
-    { title: 'Relatórios Técnicos', description: 'Acesse todos os relatórios técnicos', icon: 'description', url: '/html/SearchReportMinas.html' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ba': [
@@ -93,7 +92,6 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Santa Catarina', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
-    { title: 'Relatórios Técnicos', description: 'Acesse todos os relatórios técnicos', icon: 'description', url: '/html/SearchReportMinas.html' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ma': [
@@ -102,7 +100,6 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Maranhão', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
-    { title: 'Relatórios Técnicos', description: 'Acesse todos os relatórios técnicos', icon: 'description', url: '/html/SearchReportMinas.html' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ]
 };
