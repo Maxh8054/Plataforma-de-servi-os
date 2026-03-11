@@ -1063,7 +1063,7 @@ export default function Home() {
 
             {selectedState && (
               <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-15 transition-opacity duration-1000 pointer-events-none" style={{ opacity: 1, pointerEvents: 'none' }}>
-                <source src={`/videos/${selectedState === 'mg-mosaic' ? 'Mosaic' : selectedState === 'mg' ? 'Minas' : selectedState === 'go' ? 'Goiás' : selectedState === 'pa' ? 'Pará' : 'Bahia'}.mp4`} type="video/mp4" />
+                <source src={`/videos/${selectedState === 'mg-mosaic' ? 'Mosaic' : selectedState === 'mg' ? 'Minas' : selectedState === 'go' ? 'Goiás' : selectedState === 'pa' ? 'Pará' : selectedState === 'ba' ? 'Bahia' : selectedState === 'sc' ? 'SantaCatarina' : 'Minas'}.mp4`} type="video/mp4" />
               </video>
             )}
 
