@@ -1106,7 +1106,7 @@ export default function Home() {
                 {/* BA Marker */}
                 <div 
                   className="absolute cursor-pointer group"
-                  style={{ top: '25%', left: '55%' }}
+                  style={{ top: '25%', left: '61%' }}
                   onClick={() => handleMarkerClick('ba')}
                 >
                   <div className="relative">
@@ -1122,7 +1122,7 @@ export default function Home() {
                 {/* SC Marker */}
                 <div 
                   className="absolute cursor-pointer group"
-                  style={{ top: '78%', left: '51%' }}
+                  style={{ top: '78%', left: '57%' }}
                   onClick={() => handleMarkerClick('sc')}
                 >
                   <div className="relative">
@@ -1138,7 +1138,7 @@ export default function Home() {
                 {/* MA Marker */}
                 <div 
                   className="absolute cursor-pointer group"
-                  style={{ top: '26%', left: '58%' }}
+                  style={{ top: '20%', left: '55%' }}
                   onClick={() => handleMarkerClick('ma')}
                 >
                   <div className="relative">
