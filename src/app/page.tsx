@@ -1041,11 +1041,17 @@ export default function Home() {
             )}
 
             {/* Header */}
-            <div className="absolute top-0 left-0 w-full p-3 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-20 flex justify-between items-center">
+            <div className="absolute top-0 left-0 w-full p-3 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-30 flex justify-between items-center">
               <img src="/images/zamine-logo.png" alt="Zamine" className="h-8 sm:h-10 w-auto object-contain" />
               <div className="flex items-center gap-2 sm:gap-4">
                 <span className="text-xs text-gray-400 hidden sm:block">{currentUser?.split('@')[0]}</span>
-                <button onClick={handleLogout} className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLogout();
+                  }} 
+                  className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1"
+                >
                   <span className="material-icons text-sm">logout</span>
                   <span className="hidden sm:inline">Sair</span>
                 </button>
