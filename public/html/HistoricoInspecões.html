@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Histórico de Inspeções de Segurança</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(220, 220, 220, 0.8);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+        .filter-label {
+            color: #4f46e5;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+        .filter-input {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid rgba(209, 213, 219, 0.8) !important;
+            color: #111827 !important;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+        }
+        .filter-input:focus {
+            border-color: #818cf8 !important;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1) !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+            background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        th {
+            background-color: #f9fafb;
+            color: #4f46e5 !important;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 16px 24px;
+        }
+        tr:hover {
+            background-color: rgba(79, 70, 229, 0.03);
+        }
+        .icon-primary {
+            color: #4f46e5;
+        }
+        .text-gradient {
+            background: linear-gradient(90deg, #4f46e5 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão Voltar para Home -->
+    <a href="/" style="position: fixed; top: 20px; left: 20px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar para Home</a>>
+
+<div class="min-h-screen p-6">
+    <!-- Slideshow Container -->
+    <div class="w-full h-96 mb-8 overflow-hidden relative rounded-xl shadow-lg">
+        <div id="slideshow" class="w-full h-full flex items-center justify-center bg-gray-100">
+            <div class="text-center p-8">
+                <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
+                <p class="text-gray-600">Carregando fotos de segurança da pasta...</p>
+            </div>
+        </div>
+        <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            <button id="prevBtn" class="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 transition">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="nextBtn" class="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 transition">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gradient mb-4">
+                <i class="fas fa-shield-alt icon-primary mr-3"></i> Histórico de Inspeções
+            </h1>
+            <p class="text-lg text-gray-600">
+                <i class="fas fa-clipboard-check icon-primary mr-2"></i> Registro de relatórios de segurança
+            </p>
+        </div>
+
+        <div class="glass-card p-6 mb-8 animate-fade-in">
+            <div class="flex flex-wrap items-center gap-6">
+                <!-- Filtro Local -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="filter-label">Local</label>
+                    <select id="localFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+
+                <!-- Filtro Categoria -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="filter-label">Categoria</label>
+                    <select id="categoryFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+
+                <!-- Filtro Ano -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="filter-label">Ano</label>
+                    <select id="yearFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro Mês -->
+                <div class="flex-1 min-w-[200px]">
+                    <label class="filter-label">Mês</label>
+                    <select id="monthFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <!-- Pesquisar -->
+                <div class="flex-1 min-w-[300px]">
+                    <label class="filter-label">Pesquisar</label>
+                    <div class="relative">
+                        <input type="text" id="nameFilter" placeholder="Digite para pesquisar..." 
+                            class="filter-input w-full px-4 py-2 pl-10 rounded-lg focus:ring-0">
+                        <i class="fas fa-search absolute left-3 top-3 text-orange-500"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden animate-fade-in">
+            <div class="overflow-x-auto">
+                <table id="pdfTable" class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-4 text-left"><i class="fas fa-map-marker-alt mr-2"></i>Local</th>
+                            <th class="px-6 py-4 text-left"><i class="fas fa-folder mr-2"></i>Categoria</th>
+                            <th class="px-6 py-4 text-left"><i class="fas fa-calendar mr-2"></i>Ano</th>
+                            <th class="px-6 py-4 text-left"><i class="fas fa-calendar-alt mr-2"></i>Mês</th>
+                            <th class="px-6 py-4 text-left"><i class="fas fa-file-alt mr-2"></i>Descrição</th>
+                            <th class="px-6 py-4 text-right"><i class="fas fa-download mr-2"></i>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Slideshow functionality
+    const slideshow = document.getElementById('slideshow');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let currentIndex = 0;
+    let images = [];
+    let intervalId;
+
+    function initSlideshow() {
+        if (jsonImages.length > 0) {
+            showSlide(0);
+            startSlideshow();
+        } else {
+            slideshow.innerHTML = `
+                <div class="text-center p-8">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                    <p class="text-gray-600">Nenhuma imagem encontrada.</p>
+                </div>
+            `;
+          }
+      }
+
+      function showSlide(index) {
+          if (jsonImages.length === 0) return;
+          
+          currentIndex = (index + jsonImages.length) % jsonImages.length;
+          const image = jsonImages[currentIndex];
+          
+          slideshow.innerHTML = `
+              <img src="${image.link}" 
+                  class="w-full h-full object-contain bg-white" 
+                  alt="Foto de segurança">
+          `;
+      }
+
+      function startSlideshow() {
+          clearInterval(intervalId);
+          intervalId = setInterval(() => {
+              showSlide(currentIndex + 1);
+          }, 5000); // Change image every 5 seconds
+      }
+
+      // JSON images data
+      const jsonImages = []; // This will be populated by your Python script
+
+      prevBtn.addEventListener('click', () => {
+          showSlide(currentIndex - 1);
+          startSlideshow();
+      });
+
+      nextBtn.addEventListener('click', () => {
+          showSlide(currentIndex + 1);
+          startSlideshow();
+      });
+
+      // Initialize slideshow on page load
+      window.addEventListener('DOMContentLoaded', initSlideshow);
+
+      // JSON embutido (será substituído pelo seu script Python)
+      const jsonData = {
+    "Betim": {
+        "Área": {
+            "2026": {
+                "Janeiro": {
+                    "count": 1,
+                    "files": [
+                        {
+                            "name": "relatorio_inspecoes_2025-12-09 (9).pptx",
+                            "link": "file:///L:/Aplicativo de segurança/Betim/Área/2026/Janeiro/relatorio_inspecoes_2025-12-09 (9).pptx"
+                        }
+                    ]
+                }
+            },
+            "2025": {
+                "Dezembro": {
+                    "count": 0,
+                    "files": []
+                }
+            }
+        },
+        "Campo": {
+            "2025": {
+                "Dezembro": {
+                    "count": 0,
+                    "files": []
+                }
+            }
+        },
+        "Veículos": {
+            "2025": {
+                "Dezembro": {
+                    "count": 0,
+                    "files": []
+                }
+            }
+        }
+    },
+    "Goiás": {
+        "Área": {
+            "2025": {
+                "Dezembro": {
+                    "count": 0,
+                    "files": []
+                }
+            }
+        }
+    }
+};
+
+      const localFilter = document.getElementById("localFilter");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const yearFilter = document.getElementById("yearFilter");
+      const monthFilter = document.getElementById("monthFilter");
+      const nameFilter = document.getElementById("nameFilter");
+      const tableBody = document.getElementById("pdfTable").querySelector("tbody");
+
+      function populateFilters() {
+          const allLocals = new Set();
+          const allCategories = new Set();
+          const allYears = new Set();
+          const allMonths = new Set();
+
+          // Popula os Sets com os dados do JSON
+          Object.keys(jsonData).forEach(local => {
+              if (local === "Fotos") return; // Ignora a pasta de fotos
+              allLocals.add(local);
+              Object.keys(jsonData[local]).forEach(category => {
+                  allCategories.add(category);
+                  Object.keys(jsonData[local][category]).forEach(year => {
+                      allYears.add(year);
+                      Object.keys(jsonData[local][category][year]).forEach(month => {
+                          allMonths.add(month);
+                      });
+                  });
+              });
+          });
+
+          // Popula o filtro de Locais
+          Array.from(allLocals).sort().forEach(local => {
+              const option = document.createElement("option");
+              option.value = local;
+              option.textContent = local;
+              localFilter.appendChild(option);
+          });
+
+          // Popula o filtro de Categorias
+          Array.from(allCategories).sort().forEach(category => {
+              const option = document.createElement("option");
+              option.value = category;
+              option.textContent = category;
+              categoryFilter.appendChild(option);
+          });
+
+          // Popula o filtro de Anos
+          Array.from(allYears).sort((a, b) => b - a).forEach(year => {
+              const option = document.createElement("option");
+              option.value = year;
+              option.textContent = year;
+              yearFilter.appendChild(option);
+          });
+
+          // Popula o filtro de Meses
+          const monthOrder = [
+              "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+              "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+          ];
+          Array.from(allMonths).sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b)).forEach(month => {
+              const option = document.createElement("option");
+              option.value = month;
+              option.textContent = month;
+              monthFilter.appendChild(option);
+          });
+      }
+
+      function displayTable() {
+          const selectedLocal = localFilter.value;
+          const selectedCategory = categoryFilter.value;
+          const selectedYear = yearFilter.value;
+          const selectedMonth = monthFilter.value;
+          const searchName = nameFilter.value.toLowerCase();
+
+          tableBody.innerHTML = "";
+
+          Object.keys(jsonData).forEach(local => {
+              if (local === "Fotos") return; // Ignora a pasta de fotos
+              if (selectedLocal && selectedLocal !== local) return;
+
+              Object.keys(jsonData[local]).forEach(category => {
+                  if (selectedCategory && selectedCategory !== category) return;
+
+                  Object.keys(jsonData[local][category]).forEach(year => {
+                      if (selectedYear && selectedYear !== year) return;
+
+                      Object.keys(jsonData[local][category][year]).forEach(month => {
+                          if (selectedMonth && selectedMonth !== month) return;
+
+                          const monthData = jsonData[local][category][year][month];
+                          if (!monthData || monthData.count === 0) return;
+
+                          monthData.files.forEach(file => {
+                              if (searchName && !file.name.toLowerCase().includes(searchName)) return;
+
+                              const row = document.createElement("tr");
+                              
+                              // Local
+                              const localCell = document.createElement("td");
+                              localCell.className = "px-6 py-4 text-left";
+                              localCell.textContent = local;
+
+                              // Categoria
+                              const categoryCell = document.createElement("td");
+                              categoryCell.className = "px-6 py-4 text-left";
+                              categoryCell.textContent = category;
+
+                              // Ano
+                              const yearCell = document.createElement("td");
+                              yearCell.className = "px-6 py-4 text-left";
+                              yearCell.textContent = year;
+                              
+                              // Mês
+                              const monthCell = document.createElement("td");
+                              monthCell.className = "px-6 py-4 text-left";
+                              monthCell.textContent = month;
+                              
+                              // Descrição (Nome do arquivo)
+                              const nameCell = document.createElement("td");
+                              nameCell.className = "px-6 py-4 text-left";
+                              nameCell.textContent = file.name;
+                              
+                              // Ação (visualizar)
+                              const actionCell = document.createElement("td");
+                              actionCell.className = "px-6 py-4 text-right";
+                              const link = document.createElement("a");
+                              link.href = file.link;
+                              link.target = "_blank";
+                              link.className = "btn-primary px-4 py-2 rounded-lg inline-flex items-center hover:shadow-lg transition-all";
+                              link.innerHTML = '<i class="fas fa-eye mr-2"></i> Visualizar';
+                              actionCell.appendChild(link);
+
+                              // Adiciona as células na ordem correta
+                              row.appendChild(localCell);
+                              row.appendChild(categoryCell);
+                              row.appendChild(yearCell);
+                              row.appendChild(monthCell);
+                              row.appendChild(nameCell);
+                              row.appendChild(actionCell);
+                              tableBody.appendChild(row);
+                          });
+                      });
+                  });
+              });
+          });
+      }
+
+      // Adiciona os event listeners para todos os filtros
+      localFilter.addEventListener("change", displayTable);
+      categoryFilter.addEventListener("change", displayTable);
+      yearFilter.addEventListener("change", displayTable);
+      monthFilter.addEventListener("change", displayTable);
+      nameFilter.addEventListener("input", displayTable);
+
+      // Inicializa filtros e tabela
+      populateFilters();
+      displayTable();
+</script>
+
+</body>
+</html>

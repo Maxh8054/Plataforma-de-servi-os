@@ -1,0 +1,572 @@
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+      <meta charset="UTF-8">
+      <title>Book de Serviços Lundin</title>
+      <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <style>
+          body {
+              font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+              background-color: #ffffff;
+              color: #333333;
+          }
+          .glass-card {
+              background: rgba(255, 255, 255, 0.95);
+              backdrop-filter: blur(10px);
+              border: 1px solid rgba(220, 220, 220, 0.8);
+              box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+              border-radius: 12px;
+          }
+          .filter-label {
+              color: #4f46e5;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 8px;
+              font-size: 0.85rem;
+          }
+          .filter-input {
+              background: rgba(255, 255, 255, 0.95) !important;
+              border: 1px solid rgba(209, 213, 219, 0.8) !important;
+              color: #111827 !important;
+              transition: all 0.3s ease;
+              border-radius: 8px;
+              padding: 10px 16px;
+              font-size: 0.95rem;
+          }
+          .filter-input:focus {
+              border-color: #818cf8 !important;
+              box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1) !important;
+          }
+          .btn-primary {
+              background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+              transition: all 0.3s ease;
+              color: white;
+              font-weight: 600;
+              border-radius: 8px;
+              padding: 10px 20px;
+              font-size: 0.95rem;
+          }
+          .btn-primary:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
+              background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+          }
+          .animate-fade-in {
+              animation: fadeIn 0.5s ease-in-out;
+          }
+          @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+          }
+          th {
+              background-color: #f9fafb;
+              color: #4f46e5 !important;
+              font-weight: 600;
+              font-size: 0.9rem;
+              padding: 16px 24px;
+          }
+          tr:hover {
+              background-color: rgba(79, 70, 229, 0.03);
+          }
+          .icon-primary {
+              color: #4f46e5;
+          }
+          .text-gradient {
+              background: linear-gradient(90deg, #4f46e5 0%, #9333ea 100%);
+              -webkit-background-clip: text;
+              background-clip: text;
+              color: transparent;
+          }
+      </style>
+  </head>
+  <body>
+    <!-- Botão Voltar para Home -->
+    <a href="/" style="position: fixed; top: 20px; left: 20px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar para Home</a>>
+
+  <div class="min-h-screen p-6">
+      <!-- Slideshow Container -->
+      <div class="w-full h-96 mb-8 overflow-hidden relative rounded-xl shadow-lg">
+          <div id="slideshow" class="w-full h-full flex items-center justify-center bg-black">
+              <div class="text-center p-8">
+                  <i class="fas fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
+                  <p class="text-gray-600">Carregando fotos de segurança da pasta...</p>
+              </div>
+          </div>
+          <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+              <button id="prevBtn" class="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 transition">
+                  <i class="fas fa-chevron-left"></i>
+              </button>
+              <button id="nextBtn" class="bg-indigo-500 text-white p-2 rounded-full hover:bg-indigo-600 transition">
+                  <i class="fas fa-chevron-right"></i>
+              </button>
+          </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-10">
+              <h1 class="text-4xl font-bold text-gradient mb-4">
+                  <i class="fas fa-book icon-primary mr-3"></i> Book de Serviços
+              </h1>
+              <p class="text-lg text-gray-600">
+                  <i class="fas fa-clipboard-list icon-primary mr-2"></i> Registro de serviços e ações realizadas
+              </p>
+          </div>
+
+          <div class="glass-card p-6 mb-8 animate-fade-in">
+              <div class="flex flex-wrap items-center gap-6">
+                  <div class="flex-1 min-w-[200px]">
+                      <label class="filter-label">Ano</label>
+                      <select id="yearFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                          <option value="">Todos</option>
+                      </select>
+                  </div>
+                  
+                  <div class="flex-1 min-w-[200px]">
+                      <label class="filter-label">Mês</label>
+                      <select id="monthFilter" class="filter-input w-full px-4 py-2 rounded-lg focus:ring-0">
+                          <option value="">Todos</option>
+                      </select>
+                  </div>
+                  
+                  <div class="flex-1 min-w-[300px]">
+                      <label class="filter-label">Pesquisar</label>
+                      <div class="relative">
+                          <input type="text" id="nameFilter" placeholder="Digite para pesquisar..." 
+                              class="filter-input w-full px-4 py-2 pl-10 rounded-lg focus:ring-0">
+                          <i class="fas fa-search absolute left-3 top-3 text-orange-500"></i>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="glass-card overflow-hidden animate-fade-in">
+              <div class="overflow-x-auto">
+                  <table id="pdfTable" class="min-w-full divide-y divide-gray-200">
+                      <thead>
+                          <tr>
+                              <th class="px-6 py-4 text-left"><i class="fas fa-file-alt mr-2"></i>Descrição</th>
+                              <th class="px-6 py-4 text-left"><i class="fas fa-calendar-alt mr-2"></i>Mês</th>
+                              <th class="px-6 py-4 text-left"><i class="fas fa-calendar mr-2"></i>Ano</th>
+                              <th class="px-6 py-4 text-right"><i class="fas fa-download mr-2"></i>Ação</th>
+                          </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200"></tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+  </div>
+
+
+  <script>
+      // Slideshow functionality
+      const slideshow = document.getElementById('slideshow');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      let currentIndex = 0;
+      let images = [];
+      let intervalId;
+
+      // Initialize slideshow with jsonImages
+      function initSlideshow() {
+          if (jsonImages.length > 0) {
+              showSlide(0);
+              startSlideshow();
+          } else {
+              slideshow.innerHTML = `
+                  <div class="text-center p-8">
+                      <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                      <p class="text-gray-600">Nenhuma imagem encontrada.</p>
+                  </div>
+              `;
+          }
+      }
+
+      function showSlide(index) {
+          if (jsonImages.length === 0) return;
+          
+          currentIndex = (index + jsonImages.length) % jsonImages.length;
+          const image = jsonImages[currentIndex];
+          
+          slideshow.innerHTML = `
+              <img src="${image.link}" 
+                  class="w-full h-full object-contain bg-black" 
+                  alt="Foto de segurança">
+          `;
+      }
+
+      function startSlideshow() {
+          clearInterval(intervalId);
+          intervalId = setInterval(() => {
+              showSlide(currentIndex + 1);
+          }, 5000); // Change image every 5 seconds
+      }
+
+      // JSON images data
+      const jsonImages = [
+    {
+        "name": "Captura de tela 2025-09-15 122734.png",
+        "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/LUNDIN/Relatorio project/Sistema/Fotos/Book/Lundin/Captura de tela 2025-09-15 122734.png"
+    },
+    {
+        "name": "Captura de tela 2025-09-15 122750.png",
+        "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/LUNDIN/Relatorio project/Sistema/Fotos/Book/Lundin/Captura de tela 2025-09-15 122750.png"
+    },
+    {
+        "name": "Captura de tela 2025-09-15 122806.png",
+        "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/LUNDIN/Relatorio project/Sistema/Fotos/Book/Lundin/Captura de tela 2025-09-15 122806.png"
+    }
+];
+
+      prevBtn.addEventListener('click', () => {
+          showSlide(currentIndex - 1);
+          startSlideshow();
+      });
+
+      nextBtn.addEventListener('click', () => {
+          showSlide(currentIndex + 1);
+          startSlideshow();
+      });
+
+      // Initialize slideshow on page load
+      window.addEventListener('DOMContentLoaded', initSlideshow);
+
+      // JSON embutido
+      const jsonData = {
+    "2024": {
+        "Janeiro": {
+            "count": 0,
+            "files": []
+        },
+        "Fevereiro": {
+            "count": 0,
+            "files": []
+        },
+        "Março": {
+            "count": 0,
+            "files": []
+        },
+        "Abril": {
+            "count": 0,
+            "files": []
+        },
+        "Maio": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVIÇOS - Lundin maio-24.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Maio/Lundin/BOOK SERVIÇOS - Lundin maio-24.pdf"
+                }
+            ]
+        },
+        "Junho": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVIÇO JUN-2024.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Junho/Lundin/BOOK SERVIÇO JUN-2024.pdf"
+                }
+            ]
+        },
+        "Julho": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVIÇO JUL-2024 att.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Julho/Lundin/BOOK SERVIÇO JUL-2024 att.pdf"
+                }
+            ]
+        },
+        "Agosto": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVIÇOS- AGOSTO-2024.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Agosto/Lundin/BOOK SERVIÇOS- AGOSTO-2024.pdf"
+                }
+            ]
+        },
+        "Setembro": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVIÇOS- SETEMBRO- 2024.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Setembro/Lundin/BOOK SERVIÇOS- SETEMBRO- 2024.pdf"
+                }
+            ]
+        },
+        "Outubro": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK Lundin - OUTUBRO.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Outubro/Lundin/BOOK Lundin - OUTUBRO.pdf"
+                }
+            ]
+        },
+        "Novembro": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK LUNDIN NOV.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Novembro/Lundin/BOOK LUNDIN NOV.pdf"
+                }
+            ]
+        },
+        "Dezembro": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK LUNDIN DEZ-2024.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2024/Dezembro/Lundin/BOOK LUNDIN DEZ-2024.pdf"
+                }
+            ]
+        }
+    },
+    "2025": {
+        "Janeiro": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK Service Lundin - January 2025.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Janeiro/Lundin/BOOK Service Lundin - January 2025.pdf"
+                }
+            ]
+        },
+        "Fevereiro": {
+            "count": 0,
+            "files": []
+        },
+        "Março": {
+            "count": 0,
+            "files": []
+        },
+        "Abril": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVICE - APRIL  - LUNDIN.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Abril/Lundin/BOOK SERVICE - APRIL  - LUNDIN.pdf"
+                }
+            ]
+        },
+        "Maio": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVICE - MAY. 2025 - LUNDIN.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Maio/Lundin/BOOK SERVICE - MAY. 2025 - LUNDIN.pdf"
+                }
+            ]
+        },
+        "Junho": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK SERVICE JUN - LUNDIN MINING.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Junho/Lundin/BOOK SERVICE JUN - LUNDIN MINING.pdf"
+                }
+            ]
+        },
+        "Julho": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK JUL - LUNDIN MINING.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Julho/Lundin/BOOK JUL - LUNDIN MINING.pdf"
+                }
+            ]
+        },
+        "Agosto": {
+            "count": 1,
+            "files": [
+                {
+                    "name": "BOOK August 2025  - LUNDIN MINING 1.pdf",
+                    "link": "file:///S:/DEPARTAMENTO DE SERVIÇOS/Clientes/Book Mensal Serviços/2025/Agosto/Lundin/BOOK August 2025  - LUNDIN MINING 1.pdf"
+                }
+            ]
+        },
+        "Setembro": {
+            "count": 0,
+            "files": []
+        },
+        "Outubro": {
+            "count": 0,
+            "files": []
+        },
+        "Novembro": {
+            "count": 0,
+            "files": []
+        },
+        "Dezembro": {
+            "count": 0,
+            "files": []
+        }
+    },
+    "Power Bi": {
+        "Janeiro": {
+            "count": 0,
+            "files": []
+        },
+        "Fevereiro": {
+            "count": 0,
+            "files": []
+        },
+        "Março": {
+            "count": 0,
+            "files": []
+        },
+        "Abril": {
+            "count": 0,
+            "files": []
+        },
+        "Maio": {
+            "count": 0,
+            "files": []
+        },
+        "Junho": {
+            "count": 0,
+            "files": []
+        },
+        "Julho": {
+            "count": 0,
+            "files": []
+        },
+        "Agosto": {
+            "count": 0,
+            "files": []
+        },
+        "Setembro": {
+            "count": 0,
+            "files": []
+        },
+        "Outubro": {
+            "count": 0,
+            "files": []
+        },
+        "Novembro": {
+            "count": 0,
+            "files": []
+        },
+        "Dezembro": {
+            "count": 0,
+            "files": []
+        }
+    }
+};
+
+      const yearFilter = document.getElementById("yearFilter");
+      const monthFilter = document.getElementById("monthFilter");
+      const nameFilter = document.getElementById("nameFilter");
+      const tableBody = document.getElementById("pdfTable").querySelector("tbody");
+
+      function populateFilters() {
+          const years = Object.keys(jsonData);
+          years.forEach(year => {
+              const option = document.createElement("option");
+              option.value = year;
+              option.textContent = year;
+              yearFilter.appendChild(option);
+          });
+
+          const monthOrder = [
+              "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+              "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+          ];
+
+          const allMonths = new Set();
+          years.forEach(year => {
+              Object.keys(jsonData[year]).forEach(month => allMonths.add(month));
+          });
+
+          Array.from(allMonths).sort((a, b) => {
+              return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+          }).forEach(month => {
+              const option = document.createElement("option");
+              option.value = month;
+              option.textContent = month;
+              monthFilter.appendChild(option);
+          });
+      }
+
+      function displayTable() {
+          const selectedYear = yearFilter.value;
+          const selectedMonth = monthFilter.value;
+          const searchName = nameFilter.value.toLowerCase();
+
+          tableBody.innerHTML = "";
+
+          const monthOrder = [
+              "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+              "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+          ];
+
+          Object.keys(jsonData).forEach(year => {
+              if (selectedYear && selectedYear !== year) return;
+
+              Object.keys(jsonData[year]).sort((a, b) => {
+                  return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+              }).forEach(month => {
+                  if (selectedMonth && selectedMonth !== month) return;
+
+                  const monthData = jsonData[year][month];
+                  if (!monthData || monthData.count === 0) return;
+
+                  monthData.files.forEach(file => {
+                      if (searchName && !file.name.toLowerCase().includes(searchName)) return;
+
+                      const row = document.createElement("tr");
+                      
+                      // Nome do arquivo (descrição)
+                      const nameCell = document.createElement("td");
+                      nameCell.className = "px-6 py-4 text-left";
+                      nameCell.textContent = file.name.replace('.pdf', '');
+                      
+                      // Mês
+                      const monthCell = document.createElement("td");
+                      monthCell.className = "px-6 py-4 text-left";
+                      monthCell.textContent = month;
+                      
+                      // Ano
+                      const yearCell = document.createElement("td");
+                      yearCell.className = "px-6 py-4 text-left";
+                      yearCell.textContent = year;
+                      
+                      // Ação (visualizar)
+                      const actionCell = document.createElement("td");
+                      actionCell.className = "px-6 py-4 text-right";
+                      const link = document.createElement("a");
+                      link.href = file.link;
+                      link.target = "_blank";
+                      link.className = "btn-primary px-4 py-2 rounded-lg inline-flex items-center hover:shadow-lg transition-all";
+                      link.innerHTML = '<i class="fas fa-eye mr-2"></i> Visualizar';
+                      actionCell.appendChild(link);
+
+                      // Adiciona as células na ordem correta
+                      row.appendChild(nameCell);
+                      row.appendChild(monthCell);
+                      row.appendChild(yearCell);
+                      row.appendChild(actionCell);
+                      tableBody.appendChild(row);
+                  });
+              });
+          });
+      }
+
+      yearFilter.addEventListener("change", displayTable);
+      monthFilter.addEventListener("change", displayTable);
+      nameFilter.addEventListener("input", displayTable);
+
+      // Inicializa filtros e tabela
+      populateFilters();
+      displayTable();
+      // Adiciona animação aos itens da tabela
+      setTimeout(() => {
+          row.classList.add('animate-fade-in');
+      }, 100);
+    </script>
+  </body>
+  </html>
