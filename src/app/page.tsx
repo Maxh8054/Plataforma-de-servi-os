@@ -48,15 +48,29 @@ const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/:f:/s/SERV
 // Services Data
 const servicesData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
   'mg': [
-    { title: 'Segurança', description: 'Opções de segurança - Minas Gerais', icon: 'shield', url: '#' },
+    { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
+    { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' }
+  ],
+  'mg-rd': [
+    { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Minas Gerais', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades em R&D', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/2XMhgQQ8OX?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' },
     { title: 'KPI Performance', description: 'Indicadores de performance', icon: 'bar_chart', url: 'https://app.powerbi.com/links/pb7oNGBtl2?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
-    { title: 'Books Mensais', description: 'Books Mensais - Minas Gerais', icon: 'book', url: '/html/bookMinas.html' },
+    { title: 'Books Mensais', description: 'Books Mensais - R&D', icon: 'book', url: '/html/bookMinas.html' },
+    { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
+  ],
+  'mg-araxa': [
+    { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
+    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Araxá', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' },
+    { title: 'Books Mensais', description: 'Books Mensais - Araxá', icon: 'book', url: '/html/bookMinas.html' },
     { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
   ],
   'go': [
@@ -84,7 +98,10 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'ba': [
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL }
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades na Bahia', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'sc': [
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
@@ -107,9 +124,17 @@ const servicesData: Record<string, {title: string; description: string; icon: st
 // Security Data
 const securityData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
   'mg': [
+    { title: 'R&D', description: 'Segurança - R&D', icon: 'business', url: '#rd-security' },
+    { title: 'Araxá', description: 'Segurança - Araxá', icon: 'location_city', url: '#araxa-security' }
+  ],
+  'mg-rd': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' },
     { title: 'KPI Segurança', description: 'Indicadores de segurança', icon: 'bar_chart', url: 'https://app.powerbi.com/links/7fUFPRWu3X?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' }
+  ],
+  'mg-araxa': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' }
   ],
   'go': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPIS.html' },
@@ -121,7 +146,10 @@ const securityData: Record<string, {title: string; description: string; icon: st
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
   ],
-  'ba': [],
+  'ba': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
+  ],
   'sc': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
@@ -138,7 +166,9 @@ const stateNames: Record<string, string> = {
   'pa': 'Pará',
   'ba': 'Bahia',
   'sc': 'Santa Catarina',
-  'ma': 'Maranhão'
+  'ma': 'Maranhão',
+  'mg-rd': 'R&D',
+  'mg-araxa': 'Araxá'
 };
 
 // Login Component
@@ -1209,16 +1239,24 @@ export default function Home() {
                 <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-3">
-                      {showSecurityContent && (
+                      {(showSecurityContent || modalState?.startsWith('mg-')) && (
                         <button 
-                          onClick={backToServices}
+                          onClick={() => {
+                            if (showSecurityContent) {
+                              backToServices();
+                            }
+                            if (modalState?.startsWith('mg-')) {
+                              setModalState('mg');
+                              setShowSecurityContent(false);
+                            }
+                          }}
                           className="text-gray-400 hover:text-white flex items-center gap-1"
                         >
                           <span className="material-icons">arrow_back</span>
                         </button>
                       )}
                       <h3 className="text-xl sm:text-2xl font-bold text-orange-500">
-                        {showSecurityContent ? 'Segurança' : 'Serviços'} - {stateNames[modalState]}
+                        {showSecurityContent ? 'Segurança' : 'Serviços'} - {stateNames[modalState] || 'Minas Gerais'}
                       </h3>
                     </div>
                     <button onClick={closeModal} className="text-gray-400 hover:text-white">
@@ -1228,10 +1266,43 @@ export default function Home() {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {currentData?.map((item, index) => (
-                      item.url === '#' ? (
+                      item.url.startsWith('#') && !item.url.startsWith('#rd') && !item.url.startsWith('#araxa') && !item.url.startsWith('#rd-security') && !item.url.startsWith('#araxa-security') ? (
                         <button
                           key={index}
                           onClick={openSecurityContent}
+                          className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
+                        >
+                          <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
+                            <p className="text-gray-400 text-xs">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
+                        </button>
+                      ) : item.url === '#rd' || item.url === '#araxa' ? (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            const subCategory = item.url === '#rd' ? 'mg-rd' : 'mg-araxa';
+                            setModalState(subCategory);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
+                        >
+                          <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
+                            <p className="text-gray-400 text-xs">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
+                        </button>
+                      ) : item.url === '#rd-security' || item.url === '#araxa-security' ? (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            const subCategory = item.url === '#rd-security' ? 'mg-rd' : 'mg-araxa';
+                            setModalState(subCategory);
+                            setShowSecurityContent(true);
+                          }}
                           className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
                         >
                           <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
