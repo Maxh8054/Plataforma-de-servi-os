@@ -775,6 +775,7 @@ export default function Home() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [modalState, setModalState] = useState<StateType>(null);
   const [showDeveloperModal, setShowDeveloperModal] = useState(false);
+  const [showSecurityContent, setShowSecurityContent] = useState(false);
   const [counter, setCounter] = useState({ mg: { days: 0, hours: 0, minutes: 0, seconds: 0 }, go: { days: 0, hours: 0, minutes: 0, seconds: 0 } });
   const [stateCounter, setStateCounter] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
@@ -894,11 +895,25 @@ export default function Home() {
   const openModal = (type: ModalType, state: StateType) => {
     setActiveModal(type);
     setModalState(state);
+    setShowSecurityContent(false); // Reset security view when opening modal
   };
 
-  const closeModal = () => setActiveModal(null);
+  const closeModal = () => {
+    setActiveModal(null);
+    setShowSecurityContent(false);
+  };
 
-  const currentData = activeModal === 'services' ? servicesData[modalState || ''] : securityData[modalState || ''];
+  const openSecurityContent = () => {
+    setShowSecurityContent(true);
+  };
+
+  const backToServices = () => {
+    setShowSecurityContent(false);
+  };
+
+  const currentData = showSecurityContent 
+    ? securityData[modalState || ''] 
+    : (activeModal === 'services' ? servicesData[modalState || ''] : securityData[modalState || '']);
 
   // Show loading while mounting on client
   if (!mounted) {
@@ -1016,10 +1031,10 @@ export default function Home() {
                   onClick={() => handleMarkerClick('mg')}
                 >
                   <div className="relative">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-xs sm:text-sm">MG</span>
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-sm sm:text-base">MG</span>
                     </div>
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Minas Gerais
                     </div>
                   </div>
@@ -1032,10 +1047,10 @@ export default function Home() {
                   onClick={() => handleMarkerClick('go')}
                 >
                   <div className="relative">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-blue-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-xs sm:text-sm">GO</span>
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-sm sm:text-base">GO</span>
                     </div>
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Goiás
                     </div>
                   </div>
@@ -1048,10 +1063,10 @@ export default function Home() {
                   onClick={() => handleMarkerClick('pa')}
                 >
                   <div className="relative">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-xs sm:text-sm">PA</span>
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-sm sm:text-base">PA</span>
                     </div>
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Pará
                     </div>
                   </div>
@@ -1064,10 +1079,10 @@ export default function Home() {
                   onClick={() => handleMarkerClick('ba')}
                 >
                   <div className="relative">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <span className="text-white font-bold text-xs sm:text-sm">BA</span>
+                    <div className="w-10 h-10 sm:w-14 sm:h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border-2 border-white">
+                      <span className="text-white font-bold text-sm sm:text-base">BA</span>
                     </div>
-                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/80 px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                       Bahia
                     </div>
                   </div>
@@ -1089,35 +1104,33 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* State Title and Counter */}
-                <div className="pt-24 sm:pt-32 px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }}>
-                  <h2 className="text-2xl sm:text-4xl font-bold text-orange-500 mb-2">{stateNames[selectedState] || 'Minas Gerais'}</h2>
+                {/* State Title */}
+                <div className="pt-20 sm:pt-28 px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }}>
+                  <h2 className="text-3xl sm:text-5xl font-bold text-white mb-4 drop-shadow-lg">{stateNames[selectedState] || 'Minas Gerais'}</h2>
+                  
+                  {/* Counter - Dias sem acidentes */}
                   {(selectedState === 'mg' || selectedState === 'go') && (
-                    <div className="text-gray-300 text-sm sm:text-base">
-                      <span className="font-semibold">Dias sem afastamento: </span>
-                      <span className="text-green-400 font-bold">{stateCounter.days}</span> dias, 
-                      <span className="text-green-400 font-bold"> {stateCounter.hours}</span>h 
-                      <span className="text-green-400 font-bold">{stateCounter.minutes}</span>m 
-                      <span className="text-green-400 font-bold">{stateCounter.seconds}</span>s
+                    <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl px-6 py-4 inline-block shadow-xl border-2 border-green-400">
+                      <div className="text-white text-sm font-semibold mb-1">DIAS SEM AFASTAMENTO</div>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-4xl sm:text-5xl font-bold text-white">{stateCounter.days}</span>
+                        <span className="text-white text-xl">dias</span>
+                        <span className="text-2xl font-bold text-green-200">{stateCounter.hours}:</span>
+                        <span className="text-2xl font-bold text-green-200">{String(stateCounter.minutes).padStart(2, '0')}:</span>
+                        <span className="text-2xl font-bold text-green-200">{String(stateCounter.seconds).padStart(2, '0')}</span>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex-1 flex items-center justify-center gap-4 sm:gap-8 px-4">
+                {/* Action Button - Only Services */}
+                <div className="flex-1 flex items-center justify-center px-4">
                   <button
                     onClick={() => openModal('services', selectedState)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-4 sm:px-8 sm:py-6 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg flex flex-col items-center gap-2"
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-6 sm:px-12 sm:py-8 rounded-2xl font-bold text-xl sm:text-2xl transition-all transform hover:scale-105 shadow-2xl flex flex-col items-center gap-3 border-2 border-orange-300"
                   >
-                    <span className="material-icons text-2xl sm:text-3xl">business_center</span>
-                    Serviços
-                  </button>
-                  <button
-                    onClick={() => openModal('security', selectedState)}
-                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-4 sm:px-8 sm:py-6 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg flex flex-col items-center gap-2"
-                  >
-                    <span className="material-icons text-2xl sm:text-3xl">security</span>
-                    Segurança
+                    <span className="material-icons text-4xl sm:text-5xl">business_center</span>
+                    SERVIÇOS
                   </button>
                 </div>
               </div>
@@ -1128,9 +1141,19 @@ export default function Home() {
               <div className="absolute inset-0 z-30 bg-black/80 flex items-center justify-center p-4" onClick={closeModal}>
                 <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl sm:text-2xl font-bold text-orange-500">
-                      {activeModal === 'services' ? 'Serviços' : 'Segurança'} - {stateNames[modalState]}
-                    </h3>
+                    <div className="flex items-center gap-3">
+                      {showSecurityContent && (
+                        <button 
+                          onClick={backToServices}
+                          className="text-gray-400 hover:text-white flex items-center gap-1"
+                        >
+                          <span className="material-icons">arrow_back</span>
+                        </button>
+                      )}
+                      <h3 className="text-xl sm:text-2xl font-bold text-orange-500">
+                        {showSecurityContent ? 'Segurança' : 'Serviços'} - {stateNames[modalState]}
+                      </h3>
+                    </div>
                     <button onClick={closeModal} className="text-gray-400 hover:text-white">
                       <span className="material-icons text-2xl">close</span>
                     </button>
@@ -1138,20 +1161,35 @@ export default function Home() {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {currentData?.map((item, index) => (
-                      <a
-                        key={index}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group"
-                      >
-                        <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
-                        <div className="flex-1">
-                          <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
-                          <p className="text-gray-400 text-xs">{item.description}</p>
-                        </div>
-                        <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">open_in_new</span>
-                      </a>
+                      item.url === '#' ? (
+                        <button
+                          key={index}
+                          onClick={openSecurityContent}
+                          className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
+                        >
+                          <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
+                            <p className="text-gray-400 text-xs">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
+                        </button>
+                      ) : (
+                        <a
+                          key={index}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group"
+                        >
+                          <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
+                            <p className="text-gray-400 text-xs">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">open_in_new</span>
+                        </a>
+                      )
                     ))}
                   </div>
                 </div>
