@@ -1,5 +1,5 @@
 // Service Worker para PWA - Zamine Plataforma
-const CACHE_NAME = 'zamine-v3';
+const CACHE_NAME = 'zamine-v4';
 
 // Arquivos para cachear
 const urlsToCache = [
