@@ -52,21 +52,21 @@ const OPORTUNIDADES_VENDA_URL = 'https://zaminebrasil.sharepoint.com/:u:/s/SERVI
 const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/:f:/s/SERVIOS-LUNDIN/IgC0u_WmXr-EQKr7KBf8HkJdASeXO_D2gOXspSIhUXjb_4s?e=hex2ds';
 
 // Organograma Data
-const organogramaData: Record<string, { name: string; role: string; photo: string; level: number; reportsTo?: string }[]> = {
+const organogramaData: Record<string, { name: string; role: string; description: string; photo: string; level: number; reportsTo?: string }[]> = {
   'go': [
-    { name: 'Julio Sanches', role: 'Service Manager', photo: '/colaboradores/go/julio-sanches.jpg', level: 1 },
-    { name: 'Wallysson Santos', role: 'Service Coordinator', photo: '/colaboradores/go/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
-    { name: 'Emerson Alexandre', role: 'Field Technical Specialist', photo: '/colaboradores/go/emerson-alexandre.jpg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Hamilton Junior', role: 'Specialist Technician', photo: '/colaboradores/go/hamilton-junior.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
-    { name: 'Tiago Carvalho', role: 'Sales Department', photo: '/colaboradores/go/tiago-carvalho.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
-    { name: 'Ranielly Souza', role: 'Administrative Assistant', photo: '/colaboradores/go/ranielly-souza.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
-    { name: 'Girlene Nogueira', role: 'Safety Technician', photo: '/colaboradores/go/girlene-nogueira.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
-    { name: 'Max Rufino', role: 'Service Assistant', photo: '/colaboradores/go/max-rufino.jpg', level: 5, reportsTo: 'Ranielly Souza' },
-    { name: 'Marcos Rosa', role: 'Warehouse Assistant', photo: '/colaboradores/go/marcos-rosa.jpg', level: 5, reportsTo: 'Girlene Nogueira' },
-    { name: 'Weslley Ferreira', role: 'Mechanical Technician', photo: '/colaboradores/go/weslley-ferreira.jpg', level: 6, reportsTo: 'Max Rufino' },
-    { name: 'Marcos Paulo', role: 'Mechanical Technician', photo: '/colaboradores/go/marcos-paulo.jpg', level: 6, reportsTo: 'Max Rufino' },
-    { name: 'Marcelo Gonçalves', role: 'Mechanical Technician', photo: '/colaboradores/go/marcelo-goncalves.jpg', level: 6, reportsTo: 'Marcos Rosa' },
-    { name: 'Higor Ataides', role: 'Mechanical Technician', photo: '/colaboradores/go/higor-ataides.jpg', level: 6, reportsTo: 'Marcos Rosa' },
+    { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços, liderança estratégica e relacionamento com clientes.', photo: '/colaboradores/go/julio-sanches.jpg', level: 1 },
+    { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena toda a equipe técnica e operacional, gerencia recursos e escalas de trabalho.', photo: '/colaboradores/go/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
+    { name: 'Emerson Alexandre', role: 'Field Technical Specialist', description: 'Supervisor técnico responsável pelo suporte especializado e qualidade dos serviços em campo.', photo: '/colaboradores/go/emerson-alexandre.jpg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Hamilton Junior', role: 'Specialist Technician', description: 'Técnico especialista em diagnósticos complexos e soluções técnicas avançadas.', photo: '/colaboradores/go/hamilton-junior.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Tiago Carvalho', role: 'Sales Department', description: 'Responsável pelo departamento comercial, prospecção de negócios e atendimento ao cliente.', photo: '/colaboradores/go/tiago-carvalho.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Ranielly Souza', role: 'Administrative Assistant', description: 'Auxilia nas atividades administrativas, documentação e suporte à coordenação.', photo: '/colaboradores/go/ranielly-souza.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Girlene Nogueira', role: 'Safety Technician', description: 'Responsável pela segurança do trabalho, auditorias de EPIs e campanhas de segurança.', photo: '/colaboradores/go/girlene-nogueira.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Max Rufino', role: 'Service Assistant', description: 'Auxilia nos serviços de campo e suporte operacional à equipe técnica.', photo: '/colaboradores/go/max-rufino.jpg', level: 5, reportsTo: 'Ranielly Souza' },
+    { name: 'Marcos Rosa', role: 'Warehouse Assistant', description: 'Gerencia o almoxarifado, estoque de peças e controle de materiais.', photo: '/colaboradores/go/marcos-rosa.jpg', level: 5, reportsTo: 'Girlene Nogueira' },
+    { name: 'Weslley Ferreira', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por manutenção e reparos de equipamentos.', photo: '/colaboradores/go/weslley-ferreira.jpg', level: 6, reportsTo: 'Max Rufino' },
+    { name: 'Marcos Paulo', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por manutenção preventiva e corretiva.', photo: '/colaboradores/go/marcos-paulo.jpg', level: 6, reportsTo: 'Max Rufino' },
+    { name: 'Marcelo Gonçalves', role: 'Mechanical Technician', description: 'Técnico mecânico especializado em sistemas hidráulicos e pneumáticos.', photo: '/colaboradores/go/marcelo-goncalves.jpg', level: 6, reportsTo: 'Marcos Rosa' },
+    { name: 'Higor Ataides', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por inspeções e diagnósticos de equipamentos.', photo: '/colaboradores/go/higor-ataides.jpg', level: 6, reportsTo: 'Marcos Rosa' },
   ],
   'mg-rd': [],
   'mg-araxa': [],
@@ -1482,191 +1482,166 @@ export default function Home() {
         </div>
       )}
 
+
       {/* Organograma Modal */}
       {showOrganograma && modalState && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-md p-4" onClick={() => setShowOrganograma(false)}>
-          <div className="bg-gray-900 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-orange-500/30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center gap-3">
-                <span className="material-icons text-orange-500 text-3xl">account_tree</span>
-                <h3 className="text-2xl font-bold text-white">Organograma - {stateNames[modalState] || modalState.toUpperCase()}</h3>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowOrganograma(false)}>
+          <div className="bg-gray-900 rounded-xl p-4 max-w-xl w-full max-h-[85vh] overflow-y-auto border border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <span className="material-icons text-gray-500 text-lg">account_tree</span>
+                <h3 className="text-base font-medium text-white">Organograma - {stateNames[modalState] || modalState.toUpperCase()}</h3>
               </div>
-              <button onClick={() => setShowOrganograma(false)} className="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition-colors">
-                <span className="material-icons text-2xl">close</span>
+              <button onClick={() => setShowOrganograma(false)} className="text-gray-500 hover:text-white p-1 rounded transition-colors">
+                <span className="material-icons text-lg">close</span>
               </button>
             </div>
 
             {organogramaData[modalState] && organogramaData[modalState].length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-3">
                 {/* Level 1 - Top */}
                 {organogramaData[modalState].filter(p => p.level === 1).map((person, idx) => (
                   <div key={idx} className="flex justify-center">
-                    <div className="flex flex-col items-center">
-                      <div className="relative group">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 p-1 shadow-lg shadow-orange-500/30">
-                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                            <img 
-                              src={person.photo} 
-                              alt={person.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
-                            />
-                          </div>
+                    <div className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-12 h-12 rounded-full bg-gray-800 border border-orange-500/50 overflow-hidden">
+                          <img 
+                            src={person.photo} 
+                            alt={person.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
+                          />
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span className="material-icons text-white text-sm">star</span>
-                        </div>
+                        <p className="text-white text-xs font-medium mt-1">{person.name}</p>
+                        <p className="text-orange-400 text-[10px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-3 text-center">{person.name}</h4>
-                      <p className="text-orange-400 text-sm text-center">{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[11px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   </div>
                 ))}
 
-                {/* Connection Line */}
                 {organogramaData[modalState].some(p => p.level === 2) && (
-                  <div className="flex justify-center">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-orange-500 to-orange-500/50"></div>
-                  </div>
+                  <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
                 )}
 
                 {/* Level 2 */}
-                <div className="flex justify-center gap-8 flex-wrap">
+                <div className="flex justify-center gap-4 flex-wrap">
                   {organogramaData[modalState].filter(p => p.level === 2).map((person, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="relative group">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 p-1 shadow-lg shadow-blue-500/30">
-                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                            <img 
-                              src={person.photo} 
-                              alt={person.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
-                            />
-                          </div>
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                         </div>
+                        <p className="text-white text-[10px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-400 text-[9px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-2 text-center text-sm">{person.name}</h4>
-                      <p className="text-blue-400 text-xs text-center">{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Connection Line */}
                 {organogramaData[modalState].some(p => p.level === 3) && (
-                  <div className="flex justify-center">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-blue-500/50 to-green-500/50"></div>
-                  </div>
+                  <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
                 )}
 
                 {/* Level 3 */}
-                <div className="flex justify-center gap-6 flex-wrap">
+                <div className="flex justify-center gap-3 flex-wrap">
                   {organogramaData[modalState].filter(p => p.level === 3).map((person, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="relative group">
-                        <div className="w-18 h-18 rounded-full bg-gradient-to-br from-green-500 to-green-600 p-1 shadow-lg shadow-green-500/30" style={{width: '72px', height: '72px'}}>
-                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                            <img 
-                              src={person.photo} 
-                              alt={person.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
-                            />
-                          </div>
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-9 h-9 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                         </div>
+                        <p className="text-white text-[10px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-400 text-[9px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-2 text-center text-sm">{person.name}</h4>
-                      <p className="text-green-400 text-xs text-center">{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Connection Line */}
                 {organogramaData[modalState].some(p => p.level === 4) && (
-                  <div className="flex justify-center">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-green-500/50 to-purple-500/50"></div>
-                  </div>
+                  <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
                 )}
 
                 {/* Level 4 */}
-                <div className="flex justify-center gap-4 flex-wrap">
+                <div className="flex justify-center gap-2.5 flex-wrap">
                   {organogramaData[modalState].filter(p => p.level === 4).map((person, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 p-1 shadow-lg shadow-purple-500/30">
-                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                          <img 
-                            src={person.photo} 
-                            alt={person.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
-                          />
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                         </div>
+                        <p className="text-gray-300 text-[9px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-500 text-[8px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-2 text-center text-xs">{person.name}</h4>
-                      <p className="text-purple-400 text-xs text-center" style={{fontSize: '10px'}}>{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Connection Line */}
                 {organogramaData[modalState].some(p => p.level === 5) && (
-                  <div className="flex justify-center">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-purple-500/50 to-cyan-500/50"></div>
-                  </div>
+                  <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
                 )}
 
                 {/* Level 5 */}
-                <div className="flex justify-center gap-4 flex-wrap">
+                <div className="flex justify-center gap-2 flex-wrap">
                   {organogramaData[modalState].filter(p => p.level === 5).map((person, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 p-1 shadow-lg shadow-cyan-500/30">
-                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                          <img 
-                            src={person.photo} 
-                            alt={person.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
-                          />
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-7 h-7 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                         </div>
+                        <p className="text-gray-300 text-[9px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-500 text-[8px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-2 text-center text-xs">{person.name}</h4>
-                      <p className="text-cyan-400 text-xs text-center" style={{fontSize: '10px'}}>{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Connection Line */}
                 {organogramaData[modalState].some(p => p.level === 6) && (
-                  <div className="flex justify-center">
-                    <div className="w-0.5 h-8 bg-gradient-to-b from-cyan-500/50 to-gray-500/50"></div>
-                  </div>
+                  <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
                 )}
 
                 {/* Level 6 - Base */}
-                <div className="flex justify-center gap-3 flex-wrap">
+                <div className="flex justify-center gap-2 flex-wrap">
                   {organogramaData[modalState].filter(p => p.level === 6).map((person, idx) => (
-                    <div key={idx} className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 p-1 shadow-lg shadow-gray-500/30">
-                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                          <img 
-                            src={person.photo} 
-                            alt={person.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
-                          />
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-6 h-6 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                         </div>
+                        <p className="text-gray-400 text-[8px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-500 text-[7px]">{person.role}</p>
                       </div>
-                      <h4 className="text-white font-semibold mt-1 text-center text-xs">{person.name}</h4>
-                      <p className="text-gray-400 text-xs text-center" style={{fontSize: '9px'}}>{person.role}</p>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <span className="material-icons text-gray-600 text-6xl mb-4">group_off</span>
-                <p className="text-gray-400 text-lg">Organograma não disponível para esta unidade.</p>
-                <p className="text-gray-500 text-sm mt-2">Entre em contato com o administrador para mais informações.</p>
+              <div className="flex flex-col items-center justify-center py-8">
+                <span className="material-icons text-gray-600 text-4xl mb-2">group_off</span>
+                <p className="text-gray-400 text-sm">Organograma não disponível.</p>
               </div>
             )}
           </div>
@@ -1675,4 +1650,3 @@ export default function Home() {
     </>
   );
 }
-
