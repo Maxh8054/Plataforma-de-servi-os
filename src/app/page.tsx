@@ -34,10 +34,16 @@ const AUTHORIZED_USERS = [
   'marlon-m@zaminebrasil.com',
   'ranielly-s@zaminebrasil.com',
   'girlene-n@zaminebrasil.com',
+  'ramon-l@zaminebrasil.com',
   'max-r@zaminebrasil.com', // Max Henrique (desenvolvedor)
 ];
 
 const DEFAULT_PASSWORD = '2026';
+
+// Senhas personalizadas por usuário (quando diferente da padrão)
+const USER_PASSWORDS: Record<string, string> = {
+  'ramon-l@zaminebrasil.com': 'Zamine@2026',
+};
 const ADMIN_EMAIL = 'max-r@zaminebrasil.com';
 
 // Links externos
@@ -282,7 +288,10 @@ function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
       return;
     }
 
-    if (password !== DEFAULT_PASSWORD) {
+    const userEmail = email.toLowerCase();
+    const userPassword = USER_PASSWORDS[userEmail] || DEFAULT_PASSWORD;
+
+    if (password !== userPassword) {
       setError('Senha incorreta.');
       return;
     }
