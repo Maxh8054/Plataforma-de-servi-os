@@ -51,14 +51,42 @@ const COMERCIAL_URL = 'https://zaminebrasil.sharepoint.com/_layouts/15/sharepoin
 const OPORTUNIDADES_VENDA_URL = 'https://zaminebrasil.sharepoint.com/:u:/s/SERVIOS-LUNDIN/IQCftieI2euhSLNNxiO9NZJzASI3bPdRe1vVb1QV2RrHbCA?e=zOrOGd';
 const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/:f:/s/SERVIOS-LUNDIN/IgC0u_WmXr-EQKr7KBf8HkJdASeXO_D2gOXspSIhUXjb_4s?e=hex2ds';
 
+// Organograma Data
+const organogramaData: Record<string, { name: string; role: string; photo: string; level: number; reportsTo?: string }[]> = {
+  'go': [
+    { name: 'Julio Sanches', role: 'Service Manager', photo: '/colaboradores/go/julio-sanches.jpg', level: 1 },
+    { name: 'Wallysson Santos', role: 'Service Coordinator', photo: '/colaboradores/go/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
+    { name: 'Emerson Alexandre', role: 'Field Technical Specialist', photo: '/colaboradores/go/emerson-alexandre.jpg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Hamilton Junior', role: 'Specialist Technician', photo: '/colaboradores/go/hamilton-junior.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Tiago Carvalho', role: 'Sales Department', photo: '/colaboradores/go/tiago-carvalho.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Ranielly Souza', role: 'Administrative Assistant', photo: '/colaboradores/go/ranielly-souza.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Girlene Nogueira', role: 'Safety Technician', photo: '/colaboradores/go/girlene-nogueira.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'Max Rufino', role: 'Service Assistant', photo: '/colaboradores/go/max-rufino.jpg', level: 5, reportsTo: 'Ranielly Souza' },
+    { name: 'Marcos Rosa', role: 'Warehouse Assistant', photo: '/colaboradores/go/marcos-rosa.jpg', level: 5, reportsTo: 'Girlene Nogueira' },
+    { name: 'Weslley Ferreira', role: 'Mechanical Technician', photo: '/colaboradores/go/weslley-ferreira.jpg', level: 6, reportsTo: 'Max Rufino' },
+    { name: 'Marcos Paulo', role: 'Mechanical Technician', photo: '/colaboradores/go/marcos-paulo.jpg', level: 6, reportsTo: 'Max Rufino' },
+    { name: 'Marcelo Gonçalves', role: 'Mechanical Technician', photo: '/colaboradores/go/marcelo-goncalves.jpg', level: 6, reportsTo: 'Marcos Rosa' },
+    { name: 'Higor Ataides', role: 'Mechanical Technician', photo: '/colaboradores/go/higor-ataides.jpg', level: 6, reportsTo: 'Marcos Rosa' },
+  ],
+  'mg-rd': [],
+  'mg-araxa': [],
+  'mg-usiminas': [],
+  'pa': [],
+  'ba': [],
+  'sc': [],
+  'ma': [],
+};
+
 // Services Data
 const servicesData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
   'mg': [
     { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
-    { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' }
+    { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' },
+    { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' }
   ],
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe R&D', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em R&D', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -71,6 +99,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'mg-araxa': [
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Araxá', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Araxá', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -79,8 +108,20 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Books Mensais', description: 'Books Mensais - Araxá', icon: 'book', url: '/html/bookMinas.html' },
     { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
   ],
+  'mg-usiminas': [
+    { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Usiminas', icon: 'account_tree', url: '#organograma' },
+    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Usiminas', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' },
+    { title: 'Books Mensais', description: 'Books Mensais - Usiminas', icon: 'book', url: '/html/bookMinas.html' },
+    { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
+  ],
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Goiás', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Goiás', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -95,6 +136,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'pa': [
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Pará', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Pará', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -103,6 +145,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'ba': [
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Bahia', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades na Bahia', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -111,6 +154,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'sc': [
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Santa Catarina', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Santa Catarina', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -119,6 +163,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'ma': [
     { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
+    { title: 'Organograma', description: 'Organograma da equipe Maranhão', icon: 'account_tree', url: '#organograma' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Maranhão', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -131,7 +176,8 @@ const servicesData: Record<string, {title: string; description: string; icon: st
 const securityData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
   'mg': [
     { title: 'R&D', description: 'Segurança - R&D', icon: 'business', url: '#rd-security' },
-    { title: 'Araxá', description: 'Segurança - Araxá', icon: 'location_city', url: '#araxa-security' }
+    { title: 'Araxá', description: 'Segurança - Araxá', icon: 'location_city', url: '#araxa-security' },
+    { title: 'Usiminas', description: 'Segurança - Usiminas', icon: 'factory', url: '#usiminas-security' }
   ],
   'mg-rd': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
@@ -139,6 +185,10 @@ const securityData: Record<string, {title: string; description: string; icon: st
     { title: 'KPI Segurança', description: 'Indicadores de segurança', icon: 'bar_chart', url: 'https://app.powerbi.com/links/7fUFPRWu3X?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' }
   ],
   'mg-araxa': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' }
+  ],
+  'mg-usiminas': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' }
   ],
@@ -174,7 +224,8 @@ const stateNames: Record<string, string> = {
   'sc': 'Santa Catarina',
   'ma': 'Maranhão',
   'mg-rd': 'R&D',
-  'mg-araxa': 'Araxá'
+  'mg-araxa': 'Araxá',
+  'mg-usiminas': 'Usiminas'
 };
 
 // Login Component
@@ -844,6 +895,7 @@ export default function Home() {
   const [modalState, setModalState] = useState<StateType>(null);
   const [showDeveloperModal, setShowDeveloperModal] = useState(false);
   const [showSecurityContent, setShowSecurityContent] = useState(false);
+  const [showOrganograma, setShowOrganograma] = useState(false);
   const [counter, setCounter] = useState({ mg: { days: 0, hours: 0, minutes: 0, seconds: 0 }, go: { days: 0, hours: 0, minutes: 0, seconds: 0 } });
   const [stateCounter, setStateCounter] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
@@ -1079,7 +1131,18 @@ export default function Home() {
             {/* Header */}
             <div className="absolute top-0 left-0 w-full p-3 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-30 flex justify-between items-center">
               <img src="/images/zamine-logo.png" alt="Zamine" className="h-8 sm:h-10 w-auto object-contain" />
-              <div className="flex items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowOrganograma(true);
+                    setModalState('go' as any); // Default to show Goias organograma as example
+                  }} 
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1"
+                >
+                  <span className="material-icons text-sm">account_tree</span>
+                  <span className="hidden sm:inline">Organograma</span>
+                </button>
                 <span className="text-xs text-gray-400 hidden sm:block">{currentUser?.split('@')[0]}</span>
                 <button 
                   onClick={(e) => {
@@ -1275,7 +1338,7 @@ export default function Home() {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     {currentData?.map((item, index) => (
-                      item.url.startsWith('#') && !item.url.startsWith('#rd') && !item.url.startsWith('#araxa') && !item.url.startsWith('#rd-security') && !item.url.startsWith('#araxa-security') ? (
+                      item.url.startsWith('#') && !item.url.startsWith('#rd') && !item.url.startsWith('#araxa') && !item.url.startsWith('#usiminas') && !item.url.startsWith('#rd-security') && !item.url.startsWith('#araxa-security') && !item.url.startsWith('#usiminas-security') && !item.url.startsWith('#organograma') ? (
                         <button
                           key={index}
                           onClick={openSecurityContent}
@@ -1288,11 +1351,26 @@ export default function Home() {
                           </div>
                           <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
                         </button>
-                      ) : item.url === '#rd' || item.url === '#araxa' ? (
+                      ) : item.url === '#organograma' ? (
                         <button
                           key={index}
                           onClick={() => {
-                            const subCategory = item.url === '#rd' ? 'mg-rd' : 'mg-araxa';
+                            setShowOrganograma(true);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
+                        >
+                          <span className="material-icons text-orange-500 text-2xl">{item.icon}</span>
+                          <div className="flex-1">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors">{item.title}</p>
+                            <p className="text-gray-400 text-xs">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
+                        </button>
+                      ) : item.url === '#rd' || item.url === '#araxa' || item.url === '#usiminas' ? (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            const subCategory = item.url === '#rd' ? 'mg-rd' : item.url === '#araxa' ? 'mg-araxa' : 'mg-usiminas';
                             setModalState(subCategory);
                           }}
                           className="bg-gray-700 hover:bg-gray-600 rounded-xl p-4 flex items-center gap-3 transition-colors group text-left w-full"
@@ -1304,11 +1382,11 @@ export default function Home() {
                           </div>
                           <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors">arrow_forward</span>
                         </button>
-                      ) : item.url === '#rd-security' || item.url === '#araxa-security' ? (
+                      ) : item.url === '#rd-security' || item.url === '#araxa-security' || item.url === '#usiminas-security' ? (
                         <button
                           key={index}
                           onClick={() => {
-                            const subCategory = item.url === '#rd-security' ? 'mg-rd' : 'mg-araxa';
+                            const subCategory = item.url === '#rd-security' ? 'mg-rd' : item.url === '#araxa-security' ? 'mg-araxa' : 'mg-usiminas';
                             setModalState(subCategory);
                             setShowSecurityContent(true);
                           }}
@@ -1400,6 +1478,197 @@ export default function Home() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Organograma Modal */}
+      {showOrganograma && modalState && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 backdrop-blur-md p-4" onClick={() => setShowOrganograma(false)}>
+          <div className="bg-gray-900 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-orange-500/30 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-3">
+                <span className="material-icons text-orange-500 text-3xl">account_tree</span>
+                <h3 className="text-2xl font-bold text-white">Organograma - {stateNames[modalState] || modalState.toUpperCase()}</h3>
+              </div>
+              <button onClick={() => setShowOrganograma(false)} className="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                <span className="material-icons text-2xl">close</span>
+              </button>
+            </div>
+
+            {organogramaData[modalState] && organogramaData[modalState].length > 0 ? (
+              <div className="space-y-6">
+                {/* Level 1 - Top */}
+                {organogramaData[modalState].filter(p => p.level === 1).map((person, idx) => (
+                  <div key={idx} className="flex justify-center">
+                    <div className="flex flex-col items-center">
+                      <div className="relative group">
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 p-1 shadow-lg shadow-orange-500/30">
+                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                            <img 
+                              src={person.photo} 
+                              alt={person.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
+                            />
+                          </div>
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                          <span className="material-icons text-white text-sm">star</span>
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-3 text-center">{person.name}</h4>
+                      <p className="text-orange-400 text-sm text-center">{person.role}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Connection Line */}
+                {organogramaData[modalState].some(p => p.level === 2) && (
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-orange-500 to-orange-500/50"></div>
+                  </div>
+                )}
+
+                {/* Level 2 */}
+                <div className="flex justify-center gap-8 flex-wrap">
+                  {organogramaData[modalState].filter(p => p.level === 2).map((person, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="relative group">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 p-1 shadow-lg shadow-blue-500/30">
+                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                            <img 
+                              src={person.photo} 
+                              alt={person.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-2 text-center text-sm">{person.name}</h4>
+                      <p className="text-blue-400 text-xs text-center">{person.role}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connection Line */}
+                {organogramaData[modalState].some(p => p.level === 3) && (
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-blue-500/50 to-green-500/50"></div>
+                  </div>
+                )}
+
+                {/* Level 3 */}
+                <div className="flex justify-center gap-6 flex-wrap">
+                  {organogramaData[modalState].filter(p => p.level === 3).map((person, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="relative group">
+                        <div className="w-18 h-18 rounded-full bg-gradient-to-br from-green-500 to-green-600 p-1 shadow-lg shadow-green-500/30" style={{width: '72px', height: '72px'}}>
+                          <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                            <img 
+                              src={person.photo} 
+                              alt={person.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-2 text-center text-sm">{person.name}</h4>
+                      <p className="text-green-400 text-xs text-center">{person.role}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connection Line */}
+                {organogramaData[modalState].some(p => p.level === 4) && (
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-green-500/50 to-purple-500/50"></div>
+                  </div>
+                )}
+
+                {/* Level 4 */}
+                <div className="flex justify-center gap-4 flex-wrap">
+                  {organogramaData[modalState].filter(p => p.level === 4).map((person, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 p-1 shadow-lg shadow-purple-500/30">
+                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                          <img 
+                            src={person.photo} 
+                            alt={person.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
+                          />
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-2 text-center text-xs">{person.name}</h4>
+                      <p className="text-purple-400 text-xs text-center" style={{fontSize: '10px'}}>{person.role}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connection Line */}
+                {organogramaData[modalState].some(p => p.level === 5) && (
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-purple-500/50 to-cyan-500/50"></div>
+                  </div>
+                )}
+
+                {/* Level 5 */}
+                <div className="flex justify-center gap-4 flex-wrap">
+                  {organogramaData[modalState].filter(p => p.level === 5).map((person, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 p-1 shadow-lg shadow-cyan-500/30">
+                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                          <img 
+                            src={person.photo} 
+                            alt={person.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
+                          />
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-2 text-center text-xs">{person.name}</h4>
+                      <p className="text-cyan-400 text-xs text-center" style={{fontSize: '10px'}}>{person.role}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connection Line */}
+                {organogramaData[modalState].some(p => p.level === 6) && (
+                  <div className="flex justify-center">
+                    <div className="w-0.5 h-8 bg-gradient-to-b from-cyan-500/50 to-gray-500/50"></div>
+                  </div>
+                )}
+
+                {/* Level 6 - Base */}
+                <div className="flex justify-center gap-3 flex-wrap">
+                  {organogramaData[modalState].filter(p => p.level === 6).map((person, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 p-1 shadow-lg shadow-gray-500/30">
+                        <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
+                          <img 
+                            src={person.photo} 
+                            alt={person.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.png'; }}
+                          />
+                        </div>
+                      </div>
+                      <h4 className="text-white font-semibold mt-1 text-center text-xs">{person.name}</h4>
+                      <p className="text-gray-400 text-xs text-center" style={{fontSize: '9px'}}>{person.role}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12">
+                <span className="material-icons text-gray-600 text-6xl mb-4">group_off</span>
+                <p className="text-gray-400 text-lg">Organograma não disponível para esta unidade.</p>
+                <p className="text-gray-500 text-sm mt-2">Entre em contato com o administrador para mais informações.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
