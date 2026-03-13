@@ -52,7 +52,7 @@ const OPORTUNIDADES_VENDA_URL = 'https://zaminebrasil.sharepoint.com/:u:/s/SERVI
 const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/:f:/s/SERVIOS-LUNDIN/IgC0u_WmXr-EQKr7KBf8HkJdASeXO_D2gOXspSIhUXjb_4s?e=hex2ds';
 
 // Organograma Data
-const organogramaData: Record<string, { name: string; role: string; description: string; photo: string; level: number; reportsTo?: string }[]> = {
+const organogramaData: Record<string, { name: string; role: string; description: string; photo: string; level: number; reportsTo?: string; state?: string }[]> = {
   'go': [
     { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços, liderança estratégica e relacionamento com clientes.', photo: '/colaboradores/go/julio-sanches.jpg', level: 1 },
     { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena toda a equipe técnica e operacional, gerencia recursos e escalas de trabalho.', photo: '/colaboradores/go/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
@@ -83,17 +83,33 @@ const organogramaData: Record<string, { name: string; role: string; description:
   'ba': [],
   'sc': [],
   'ma': [],
+  // Organograma Geral - Todos os estados conectados
   'geral': [
-    { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços em todos os estados do Brasil.', photo: '/colaboradores/geral/julio-sanches.jpg', level: 1 },
-    { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena todas as equipes técnicas e operacionais em nível nacional.', photo: '/colaboradores/geral/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
-    { name: 'Goiás', role: 'Equipe Goiás', description: 'Equipe completa de Goiás com 13 colaboradores.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'R&D Minas', role: 'Equipe R&D', description: 'Equipe de R&D em Minas Gerais com 7 colaboradores.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Araxá', role: 'Equipe Araxá', description: 'Equipe de Araxá em Minas Gerais.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Usiminas', role: 'Equipe Usiminas', description: 'Equipe Usiminas em Minas Gerais.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Pará', role: 'Equipe Pará', description: 'Equipe do Pará.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Bahia', role: 'Equipe Bahia', description: 'Equipe da Bahia.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Santa Catarina', role: 'Equipe SC', description: 'Equipe de Santa Catarina.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
-    { name: 'Maranhão', role: 'Equipe MA', description: 'Equipe do Maranhão.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    // Nível 1 - Topo
+    { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços em todos os estados do Brasil.', photo: '/colaboradores/geral/julio-sanches.jpg', level: 1, state: 'BR' },
+    // Nível 2 - Coordenação Nacional
+    { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena todas as equipes técnicas e operacionais em nível nacional.', photo: '/colaboradores/geral/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches', state: 'BR' },
+    // Nível 3 - GOIÁS
+    { name: 'Emerson Alexandre', role: 'Field Tech Specialist - GO', description: 'Supervisor técnico responsável pela equipe de Goiás.', photo: '/colaboradores/go/emerson-alexandre.jpg', level: 3, reportsTo: 'Wallysson Santos', state: 'GO' },
+    // Nível 3 - R&D MINAS
+    { name: 'Jadson Romano', role: 'Technical Consultant - R&D', description: 'Consultor técnico de R&D Minas.', photo: '/colaboradores/mg-rd/jadson-romano.jpg', level: 3, reportsTo: 'Wallysson Santos', state: 'MG-RD' },
+    { name: 'Rafaela Martins', role: 'Technical Analyst - R&D', description: 'Analista técnica de R&D Minas.', photo: '/colaboradores/mg-rd/rafaela-martins.jpg', level: 3, reportsTo: 'Wallysson Santos', state: 'MG-RD' },
+    // Nível 4 - GOIÁS
+    { name: 'Hamilton Junior', role: 'Specialist Technician - GO', description: 'Técnico especialista em Goiás.', photo: '/colaboradores/go/hamilton-junior.jpg', level: 4, reportsTo: 'Emerson Alexandre', state: 'GO' },
+    { name: 'Tiago Carvalho', role: 'Sales Department - GO', description: 'Departamento comercial em Goiás.', photo: '/colaboradores/go/tiago-carvalho.jpg', level: 4, reportsTo: 'Emerson Alexandre', state: 'GO' },
+    { name: 'Ranielly Souza', role: 'Admin Assistant - GO', description: 'Assistente administrativo em Goiás.', photo: '/colaboradores/go/ranielly-souza.jpg', level: 4, reportsTo: 'Emerson Alexandre', state: 'GO' },
+    { name: 'Girlene Nogueira', role: 'Safety Technician - GO', description: 'Técnica de segurança em Goiás.', photo: '/colaboradores/go/girlene-nogueira.jpg', level: 4, reportsTo: 'Emerson Alexandre', state: 'GO' },
+    // Nível 4 - R&D MINAS
+    { name: 'Charles Andrade', role: 'Mech. Technician - R&D', description: 'Técnico mecânico em R&D Minas.', photo: '/colaboradores/mg-rd/charles-andrade.jpg', level: 4, reportsTo: 'Jadson Romano', state: 'MG-RD' },
+    { name: 'José Carlos Santana', role: 'Mech. Technician - R&D', description: 'Técnico mecânico em R&D Minas.', photo: '/colaboradores/mg-rd/jose-carlos-santana.jpg', level: 4, reportsTo: 'Jadson Romano', state: 'MG-RD' },
+    // Nível 5 - GOIÁS
+    { name: 'Max Rufino', role: 'Service Assistant - GO', description: 'Assistente de serviços em Goiás.', photo: '/colaboradores/go/max-rufino.jpg', level: 5, reportsTo: 'Ranielly Souza', state: 'GO' },
+    { name: 'Marcos Rosa', role: 'Warehouse Assistant - GO', description: 'Auxiliar de almoxarifado em Goiás.', photo: '/colaboradores/go/marcos-rosa.jpg', level: 5, reportsTo: 'Girlene Nogueira', state: 'GO' },
+    // Nível 6 - GOIÁS
+    { name: 'Weslley Ferreira', role: 'Mech. Tech - GO', description: 'Técnico mecânico em Goiás.', photo: '/colaboradores/go/weslley-ferreira.jpg', level: 6, reportsTo: 'Max Rufino', state: 'GO' },
+    { name: 'Marcos Paulo', role: 'Mech. Tech - GO', description: 'Técnico mecânico em Goiás.', photo: '/colaboradores/go/marcos-paulo.jpg', level: 6, reportsTo: 'Max Rufino', state: 'GO' },
+    { name: 'Marcelo Gonçalves', role: 'Mech. Tech - GO', description: 'Técnico mecânico em Goiás.', photo: '/colaboradores/go/marcelo-goncalves.jpg', level: 6, reportsTo: 'Marcos Rosa', state: 'GO' },
+    { name: 'Higor Ataides', role: 'Mech. Tech - GO', description: 'Técnico mecânico em Goiás.', photo: '/colaboradores/go/higor-ataides.jpg', level: 6, reportsTo: 'Marcos Rosa', state: 'GO' },
   ],
 };
 
@@ -1518,14 +1534,14 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Organograma Geral - Visualização por Estados */}
+            {/* Organograma Geral - Todos os estados conectados */}
             {modalState === 'geral' ? (
-              <div className="space-y-4">
-                {/* Topo - Julio */}
+              <div className="space-y-3 overflow-x-auto">
+                {/* Level 1 - Julio */}
                 <div className="flex justify-center">
                   <div className="group relative">
                     <div className="flex flex-col items-center cursor-pointer">
-                      <div className="w-14 h-14 rounded-full bg-gray-800 border-2 border-orange-500 overflow-hidden">
+                      <div className="w-12 h-12 rounded-full bg-gray-800 border-2 border-orange-500 overflow-hidden">
                         <img src="/colaboradores/geral/julio-sanches.jpg" alt="Julio Sanches" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                       </div>
                       <p className="text-white text-xs font-medium mt-1">Julio Sanches</p>
@@ -1538,13 +1554,13 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex justify-center"><div className="w-px h-4 bg-gray-700"></div></div>
+                <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
 
-                {/* Wallysson */}
+                {/* Level 2 - Wallysson */}
                 <div className="flex justify-center">
                   <div className="group relative">
                     <div className="flex flex-col items-center cursor-pointer">
-                      <div className="w-12 h-12 rounded-full bg-gray-800 border border-gray-500 overflow-hidden">
+                      <div className="w-11 h-11 rounded-full bg-gray-800 border border-gray-500 overflow-hidden">
                         <img src="/colaboradores/geral/wallysson-santos.jpg" alt="Wallysson Santos" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
                       </div>
                       <p className="text-white text-[11px] font-medium mt-1">Wallysson Santos</p>
@@ -1557,38 +1573,117 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="flex justify-center"><div className="w-px h-4 bg-gray-700"></div></div>
+                <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
 
-                {/* Estados */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'go', name: 'Goiás', count: 13 },
-                    { id: 'mg-rd', name: 'R&D Minas', count: 7 },
-                    { id: 'mg-araxa', name: 'Araxá', count: 0 },
-                    { id: 'mg-usiminas', name: 'Usiminas', count: 0 },
-                    { id: 'pa', name: 'Pará', count: 0 },
-                    { id: 'ba', name: 'Bahia', count: 0 },
-                    { id: 'sc', name: 'Santa Catarina', count: 0 },
-                    { id: 'ma', name: 'Maranhão', count: 0 },
-                  ].map((estado) => (
-                    <button
-                      key={estado.id}
-                      onClick={() => setModalState(estado.id as any)}
-                      className="group relative bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-orange-500/50 rounded-lg p-3 transition-all"
-                    >
-                      <div className="flex flex-col items-center">
-                        <span className="material-icons text-gray-400 group-hover:text-orange-400 transition-colors">location_on</span>
-                        <p className="text-white text-[11px] font-medium mt-1">{estado.name}</p>
-                        {estado.count > 0 && (
-                          <p className="text-gray-500 text-[9px]">{estado.count} colaboradores</p>
-                        )}
+                {/* Level 3 - Supervisores por Estado */}
+                <div className="flex justify-center gap-3 flex-wrap">
+                  {organogramaData['geral'].filter(p => p.level === 3).map((person, idx) => {
+                    const stateColors: Record<string, string> = {
+                      'GO': 'border-green-500',
+                      'MG-RD': 'border-blue-500',
+                      'MG-ARAXA': 'border-purple-500',
+                      'MG-USIMINAS': 'border-cyan-500',
+                      'PA': 'border-yellow-500',
+                      'BA': 'border-rose-500',
+                      'SC': 'border-teal-500',
+                      'MA': 'border-amber-500',
+                    };
+                    const color = stateColors[person.state || ''] || 'border-gray-500';
+                    return (
+                      <div key={idx} className="group relative">
+                        <div className="flex flex-col items-center cursor-pointer">
+                          <div className={`w-9 h-9 rounded-full bg-gray-800 border ${color} overflow-hidden`}>
+                            <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                          </div>
+                          <p className="text-white text-[10px] font-medium mt-0.5">{person.name}</p>
+                          <p className="text-gray-400 text-[9px] text-center">{person.role}</p>
+                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                          <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                        </div>
                       </div>
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg text-center">
-                        <p className="text-gray-300 text-[10px]">Clique para ver detalhes</p>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
+
+                {/* Level 4 - Especialistas por Estado */}
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {organogramaData['geral'].filter(p => p.level === 4).map((person, idx) => {
+                    const stateColors: Record<string, string> = {
+                      'GO': 'border-green-500/50',
+                      'MG-RD': 'border-blue-500/50',
+                    };
+                    const color = stateColors[person.state || ''] || 'border-gray-600';
+                    return (
+                      <div key={idx} className="group relative">
+                        <div className="flex flex-col items-center cursor-pointer">
+                          <div className={`w-8 h-8 rounded-full bg-gray-800 border ${color} overflow-hidden`}>
+                            <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                          </div>
+                          <p className="text-gray-300 text-[9px] font-medium mt-0.5">{person.name}</p>
+                          <p className="text-gray-500 text-[8px] text-center">{person.role}</p>
+                        </div>
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                          <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
+
+                {/* Level 5 - Assistentes */}
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {organogramaData['geral'].filter(p => p.level === 5).map((person, idx) => (
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-7 h-7 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                        </div>
+                        <p className="text-gray-300 text-[9px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-500 text-[8px]">{person.role}</p>
+                      </div>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-36 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
                       </div>
-                    </button>
+                    </div>
                   ))}
+                </div>
+
+                <div className="flex justify-center"><div className="w-px h-3 bg-gray-700"></div></div>
+
+                {/* Level 6 - Técnicos Base */}
+                <div className="flex justify-center gap-2 flex-wrap">
+                  {organogramaData['geral'].filter(p => p.level === 6).map((person, idx) => (
+                    <div key={idx} className="group relative">
+                      <div className="flex flex-col items-center cursor-pointer">
+                        <div className="w-6 h-6 rounded-full bg-gray-800 border border-gray-600 overflow-hidden">
+                          <img src={person.photo} alt={person.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                        </div>
+                        <p className="text-gray-400 text-[8px] font-medium mt-0.5">{person.name}</p>
+                        <p className="text-gray-500 text-[7px]">{person.role}</p>
+                      </div>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                        <p className="text-gray-300 text-[10px] leading-relaxed">{person.description}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Legenda */}
+                <div className="mt-4 pt-3 border-t border-gray-700">
+                  <p className="text-gray-500 text-[10px] text-center mb-2">Estados:</p>
+                  <div className="flex justify-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500"></div><span className="text-gray-400 text-[9px]">GO</span></div>
+                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500"></div><span className="text-gray-400 text-[9px]">R&D</span></div>
+                  </div>
                 </div>
               </div>
             ) : (
