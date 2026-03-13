@@ -68,13 +68,33 @@ const organogramaData: Record<string, { name: string; role: string; description:
     { name: 'Marcelo Gonçalves', role: 'Mechanical Technician', description: 'Técnico mecânico especializado em sistemas hidráulicos e pneumáticos.', photo: '/colaboradores/go/marcelo-goncalves.jpg', level: 6, reportsTo: 'Marcos Rosa' },
     { name: 'Higor Ataides', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por inspeções e diagnósticos de equipamentos.', photo: '/colaboradores/go/higor-ataides.jpg', level: 6, reportsTo: 'Marcos Rosa' },
   ],
-  'mg-rd': [],
+  'mg-rd': [
+    { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços, liderança estratégica e relacionamento com clientes.', photo: '/colaboradores/mg-rd/julio-sanches.jpg', level: 1 },
+    { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena toda a equipe técnica e operacional, gerencia recursos e escalas de trabalho.', photo: '/colaboradores/mg-rd/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
+    { name: 'Jadson Romano', role: 'Technical Consultant', description: 'Consultor técnico especializado em soluções avançadas e suporte técnico de alto nível.', photo: '/colaboradores/mg-rd/jadson-romano.jpg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Emerson Alexandre', role: 'Field Technical Specialist', description: 'Supervisor técnico responsável pelo suporte especializado e qualidade dos serviços em campo.', photo: '/colaboradores/mg-rd/emerson-alexandre.jpg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Rafaela Martins', role: 'Technical Analyst', description: 'Analista técnica responsável por análises de dados técnicos e relatórios de performance.', photo: '/colaboradores/mg-rd/rafaela-martins.jpg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Charles Andrade', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por manutenção e reparos de equipamentos.', photo: '/colaboradores/mg-rd/charles-andrade.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+    { name: 'José Carlos Santana', role: 'Mechanical Technician', description: 'Técnico mecânico responsável por manutenção preventiva e corretiva.', photo: '/colaboradores/mg-rd/jose-carlos-santana.jpg', level: 4, reportsTo: 'Emerson Alexandre' },
+  ],
   'mg-araxa': [],
   'mg-usiminas': [],
   'pa': [],
   'ba': [],
   'sc': [],
   'ma': [],
+  'geral': [
+    { name: 'Julio Sanches', role: 'Service Manager', description: 'Responsável pela gestão geral de todos os serviços em todos os estados do Brasil.', photo: '/colaboradores/geral/julio-sanches.jpg', level: 1 },
+    { name: 'Wallysson Santos', role: 'Service Coordinator', description: 'Coordena todas as equipes técnicas e operacionais em nível nacional.', photo: '/colaboradores/geral/wallysson-santos.jpg', level: 2, reportsTo: 'Julio Sanches' },
+    { name: 'Goiás', role: 'Equipe Goiás', description: 'Equipe completa de Goiás com 13 colaboradores.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'R&D Minas', role: 'Equipe R&D', description: 'Equipe de R&D em Minas Gerais com 7 colaboradores.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Araxá', role: 'Equipe Araxá', description: 'Equipe de Araxá em Minas Gerais.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Usiminas', role: 'Equipe Usiminas', description: 'Equipe Usiminas em Minas Gerais.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Pará', role: 'Equipe Pará', description: 'Equipe do Pará.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Bahia', role: 'Equipe Bahia', description: 'Equipe da Bahia.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Santa Catarina', role: 'Equipe SC', description: 'Equipe de Santa Catarina.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+    { name: 'Maranhão', role: 'Equipe MA', description: 'Equipe do Maranhão.', photo: '/images/placeholder-user.svg', level: 3, reportsTo: 'Wallysson Santos' },
+  ],
 };
 
 // Services Data
@@ -225,7 +245,8 @@ const stateNames: Record<string, string> = {
   'ma': 'Maranhão',
   'mg-rd': 'R&D',
   'mg-araxa': 'Araxá',
-  'mg-usiminas': 'Usiminas'
+  'mg-usiminas': 'Usiminas',
+  'geral': 'Geral - Todos Estados'
 };
 
 // Login Component
@@ -1136,7 +1157,7 @@ export default function Home() {
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowOrganograma(true);
-                    setModalState('go' as any); // Default to show Goias organograma as example
+                    setModalState('geral' as any); // Organograma geral com todos estados
                   }} 
                   className="bg-orange-600 hover:bg-orange-700 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1"
                 >
@@ -1497,8 +1518,93 @@ export default function Home() {
               </button>
             </div>
 
-            {organogramaData[modalState] && organogramaData[modalState].length > 0 ? (
+            {/* Organograma Geral - Visualização por Estados */}
+            {modalState === 'geral' ? (
+              <div className="space-y-4">
+                {/* Topo - Julio */}
+                <div className="flex justify-center">
+                  <div className="group relative">
+                    <div className="flex flex-col items-center cursor-pointer">
+                      <div className="w-14 h-14 rounded-full bg-gray-800 border-2 border-orange-500 overflow-hidden">
+                        <img src="/colaboradores/geral/julio-sanches.jpg" alt="Julio Sanches" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                      </div>
+                      <p className="text-white text-xs font-medium mt-1">Julio Sanches</p>
+                      <p className="text-orange-400 text-[10px]">Service Manager</p>
+                    </div>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                      <p className="text-gray-300 text-[11px] leading-relaxed">Responsável pela gestão geral de todos os serviços em todos os estados do Brasil.</p>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center"><div className="w-px h-4 bg-gray-700"></div></div>
+
+                {/* Wallysson */}
+                <div className="flex justify-center">
+                  <div className="group relative">
+                    <div className="flex flex-col items-center cursor-pointer">
+                      <div className="w-12 h-12 rounded-full bg-gray-800 border border-gray-500 overflow-hidden">
+                        <img src="/colaboradores/geral/wallysson-santos.jpg" alt="Wallysson Santos" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder-user.svg'; }} />
+                      </div>
+                      <p className="text-white text-[11px] font-medium mt-1">Wallysson Santos</p>
+                      <p className="text-gray-400 text-[10px]">Service Coordinator</p>
+                    </div>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 border border-gray-600 rounded p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
+                      <p className="text-gray-300 text-[11px] leading-relaxed">Coordena todas as equipes técnicas e operacionais em nível nacional.</p>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-center"><div className="w-px h-4 bg-gray-700"></div></div>
+
+                {/* Estados */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'go', name: 'Goiás', count: 13 },
+                    { id: 'mg-rd', name: 'R&D Minas', count: 7 },
+                    { id: 'mg-araxa', name: 'Araxá', count: 0 },
+                    { id: 'mg-usiminas', name: 'Usiminas', count: 0 },
+                    { id: 'pa', name: 'Pará', count: 0 },
+                    { id: 'ba', name: 'Bahia', count: 0 },
+                    { id: 'sc', name: 'Santa Catarina', count: 0 },
+                    { id: 'ma', name: 'Maranhão', count: 0 },
+                  ].map((estado) => (
+                    <button
+                      key={estado.id}
+                      onClick={() => setModalState(estado.id as any)}
+                      className="group relative bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-orange-500/50 rounded-lg p-3 transition-all"
+                    >
+                      <div className="flex flex-col items-center">
+                        <span className="material-icons text-gray-400 group-hover:text-orange-400 transition-colors">location_on</span>
+                        <p className="text-white text-[11px] font-medium mt-1">{estado.name}</p>
+                        {estado.count > 0 && (
+                          <p className="text-gray-500 text-[9px]">{estado.count} colaboradores</p>
+                        )}
+                      </div>
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-gray-800 border border-gray-600 rounded p-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg text-center">
+                        <p className="text-gray-300 text-[10px]">Clique para ver detalhes</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-gray-800"></div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* Organograma por Estado */
+              organogramaData[modalState] && organogramaData[modalState].length > 0 ? (
               <div className="space-y-3">
+                {modalState !== 'geral' && (
+                  <button 
+                    onClick={() => setModalState('geral' as any)}
+                    className="flex items-center gap-1 text-gray-400 hover:text-white text-xs mb-2 transition-colors"
+                  >
+                    <span className="material-icons text-sm">arrow_back</span>
+                    Voltar ao organograma geral
+                  </button>
+                )}
+                
                 {/* Level 1 - Top */}
                 {organogramaData[modalState].filter(p => p.level === 1).map((person, idx) => (
                   <div key={idx} className="flex justify-center">
@@ -1638,11 +1744,12 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-            ) : (
+              ) : (
               <div className="flex flex-col items-center justify-center py-8">
                 <span className="material-icons text-gray-600 text-4xl mb-2">group_off</span>
                 <p className="text-gray-400 text-sm">Organograma não disponível.</p>
               </div>
+            )
             )}
           </div>
         </div>
