@@ -75,9 +75,9 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' }
   ],
   'mg-rd': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em R&D', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
@@ -88,9 +88,9 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
   ],
   'mg-araxa': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Araxá', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
@@ -99,9 +99,9 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
   ],
   'mg-usiminas': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Usiminas', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
@@ -110,9 +110,9 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Requisições', description: 'Sistema de requisições', icon: 'assignment', url: 'https://app.powerbi.com/links/VkvtykuiEY?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare&bookmarkGuid=1b4117a2-1cf9-44a8-97d5-e00b219dfec3' }
   ],
   'go': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Goiás', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
@@ -125,36 +125,36 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Relatório diário', description: 'Relatórios diários de operação', icon: 'description', url: '/html/Relatoriodiario.html' }
   ],
   'pa': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Pará', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ba': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades na Bahia', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'sc': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Santa Catarina', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ma': [
-    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Maranhão', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
