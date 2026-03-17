@@ -1,12 +1,15 @@
 services:
   - type: web
-    name: zamine-plataforma
+    name: plataforma-de-servi-os
     env: docker
     plan: free
+    branch: main
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: DATABASE_URL
+        value: file:./db/custom.db
     healthCheckPath: /
     autoDeploy: true
