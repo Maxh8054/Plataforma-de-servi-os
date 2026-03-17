@@ -1720,252 +1720,152 @@ export default function Home() {
               {/* Dashboard Analytics */}
               {allEquipmentData.length > 0 && (
                 <div className="mb-6">
-                  {/* Status Cards - 100% Dynamic */}
-                  {(() => {
-                    // Contar todos os status dinamicamente
-                    const statusCounts: Record<string, number> = {};
-                    allEquipmentData.forEach(eq => {
-                      const status = eq.statusOperacao?.trim() || 'Sem Status';
-                      statusCounts[status] = (statusCounts[status] || 0) + 1;
-                    });
-                    const sortedStatus = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
-                    
-                    // Paleta de cores para os status (expandida)
-                    const colorPalette = [
-                      { bg: 'bg-green-500/10', text: 'text-green-500', hex: '#22c55e', icon: 'check_circle' },
-                      { bg: 'bg-yellow-500/10', text: 'text-yellow-500', hex: '#eab308', icon: 'build' },
-                      { bg: 'bg-red-500/10', text: 'text-red-500', hex: '#ef4444', icon: 'pause_circle' },
-                      { bg: 'bg-purple-500/10', text: 'text-purple-500', hex: '#a855f7', icon: 'remove_circle' },
-                      { bg: 'bg-blue-500/10', text: 'text-blue-500', hex: '#3b82f6', icon: 'info' },
-                      { bg: 'bg-orange-500/10', text: 'text-orange-500', hex: '#f97316', icon: 'warning' },
-                      { bg: 'bg-pink-500/10', text: 'text-pink-500', hex: '#ec4899', icon: 'error' },
-                      { bg: 'bg-cyan-500/10', text: 'text-cyan-500', hex: '#06b6d4', icon: 'help' },
-                      { bg: 'bg-zinc-500/10', text: 'text-zinc-400', hex: '#71717a', icon: 'fiber_manual_record' },
-                    ];
-                    
-                    // Mapear cores conhecidas para status específicos
-                    const statusColorMap: Record<string, number> = {
-                      'Operando': 0,
-                      'Manutenção': 1,
-                      'Stand-by': 2,
-                      'Descomissionada': 3,
-                      'Sem Status': 8,
-                    };
-                    
-                    return (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
-                        {/* Total Card */}
-                        <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-3 border border-zinc-700/50 hover:border-orange-500/30 transition-all">
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="material-icons text-orange-500 text-base">precision_manufacturing</span>
-                            <span className="text-[10px] text-zinc-500 uppercase">Total</span>
-                          </div>
-                          <p className="text-2xl font-bold text-white">{allEquipmentData.length}</p>
-                        </div>
-                        
-                        {/* Dynamic Status Cards */}
-                        {sortedStatus.map(([status, count], index) => {
-                          const colorIndex = statusColorMap[status] ?? (index % colorPalette.length);
-                          const color = colorPalette[colorIndex];
-                          return (
-                            <div key={status} className={`rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-3 border border-zinc-700/50 hover:border-zinc-600 transition-all`}>
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className={`material-icons ${color.text} text-base`}>{color.icon}</span>
-                                <span className="text-[10px] text-zinc-500 uppercase truncate" title={status}>{status}</span>
-                              </div>
-                              <p className="text-2xl font-bold text-white">{count}</p>
-                              <p className={`text-[10px] ${color.text}`}>{Math.round((count / allEquipmentData.length) * 100)}%</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Charts Row */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-                    {/* Status Donut Chart - Dynamic */}
-                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 border border-zinc-700/50">
-                      <h4 className="text-xs font-semibold text-white mb-3 flex items-center gap-1.5">
-                        <span className="material-icons text-orange-500 text-sm">pie_chart</span>
+                  {/* Charts Grid - Melhor Organizado */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    {/* Status de Operação - Cards Organizados */}
+                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-5 border border-zinc-700/50">
+                      <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-lg">pie_chart</span>
                         Status de Operação
                       </h4>
-                      <div className="flex items-center gap-4">
-                        {/* Donut Chart */}
-                        <div className="relative w-28 h-28 flex-shrink-0">
-                          <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                            <circle cx="18" cy="18" r="15.5" fill="none" stroke="#27272a" strokeWidth="3"></circle>
-                            {(() => {
-                              const total = allEquipmentData.length;
-                              const statusCounts: Record<string, number> = {};
-                              allEquipmentData.forEach(eq => {
-                                const status = eq.statusOperacao?.trim() || 'Sem Status';
-                                statusCounts[status] = (statusCounts[status] || 0) + 1;
-                              });
-                              
-                              const colorPalette = ['#22c55e', '#eab308', '#ef4444', '#a855f7', '#3b82f6', '#f97316', '#ec4899', '#06b6d4', '#71717a'];
-                              const statusColorMap: Record<string, number> = {
-                                'Operando': 0, 'Manutenção': 1, 'Stand-by': 2, 'Descomissionada': 3, 'Sem Status': 8,
-                              };
-                              
-                              let offset = 0;
-                              return Object.entries(statusCounts).map(([status, count], index) => {
-                                const pct = total > 0 ? (count / total) * 100 : 0;
-                                const colorIndex = statusColorMap[status] ?? (index % colorPalette.length);
-                                const color = colorPalette[colorIndex];
-                                const currentOffset = offset;
-                                offset += pct;
-                                return (
-                                  <circle 
-                                    key={status}
-                                    cx="18" cy="18" r="15.5" 
-                                    fill="none" 
-                                    stroke={color} 
-                                    strokeWidth="3" 
-                                    strokeDasharray={`${pct} ${100 - pct}`} 
-                                    strokeDashoffset={-currentOffset} 
-                                    strokeLinecap="round" 
-                                    className="transition-all duration-1000"
-                                  ></circle>
-                                );
-                              });
-                            })()}
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center">
-                              <span className="text-xl font-bold text-white">{allEquipmentData.length}</span>
-                              <span className="text-[10px] text-zinc-500 block">total</span>
-                            </div>
-                          </div>
-                        </div>
-                        {/* Legend - Dynamic */}
-                        <div className="flex-1 space-y-1.5">
-                          {(() => {
-                            const statusCounts: Record<string, number> = {};
-                            allEquipmentData.forEach(eq => {
-                              const status = eq.statusOperacao?.trim() || 'Sem Status';
-                              statusCounts[status] = (statusCounts[status] || 0) + 1;
-                            });
-                            
-                            const colorPalette = ['bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500', 'bg-blue-500', 'bg-orange-500', 'bg-pink-500', 'bg-cyan-500', 'bg-zinc-500'];
-                            const statusColorMap: Record<string, number> = {
-                              'Operando': 0, 'Manutenção': 1, 'Stand-by': 2, 'Descomissionada': 3, 'Sem Status': 8,
-                            };
-                            
-                            return Object.entries(statusCounts).sort((a, b) => b[1] - a[1]).map(([status, count], index) => {
+                      {(() => {
+                        const statusCounts: Record<string, number> = {};
+                        allEquipmentData.forEach(eq => {
+                          const status = eq.statusOperacao?.trim() || 'Sem Status';
+                          statusCounts[status] = (statusCounts[status] || 0) + 1;
+                        });
+                        const sorted = Object.entries(statusCounts).sort((a, b) => b[1] - a[1]);
+                        const total = allEquipmentData.length;
+                        const colorPalette = ['#22c55e', '#eab308', '#ef4444', '#a855f7', '#3b82f6', '#f97316', '#ec4899', '#06b6d4', '#71717a'];
+                        const statusColorMap: Record<string, number> = {
+                          'Operando': 0, 'Manutenção': 1, 'Stand-by': 2, 'Descomissionada': 3, 'Sem Status': 8,
+                        };
+                        
+                        return (
+                          <div className="grid grid-cols-2 gap-3">
+                            {sorted.map(([status, count], index) => {
                               const colorIndex = statusColorMap[status] ?? (index % colorPalette.length);
+                              const color = colorPalette[colorIndex];
+                              const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                               return (
-                                <div key={status} className="flex items-center justify-between p-1.5 rounded bg-zinc-800/50">
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${colorPalette[colorIndex]}`}></div>
-                                    <span className="text-[11px] text-zinc-300 truncate">{status}</span>
+                                <div key={status} className="bg-zinc-800/50 rounded-lg p-3 flex items-center gap-3">
+                                  <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }}></div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-zinc-300 truncate" title={status}>{status}</p>
+                                    <p className="text-lg font-bold text-white">{count} <span className="text-xs text-zinc-500 font-normal">({pct}%)</span></p>
                                   </div>
-                                  <span className="text-[11px] font-semibold text-white flex-shrink-0">{count}</span>
                                 </div>
                               );
-                            });
-                          })()}
-                        </div>
-                      </div>
+                            })}
+                          </div>
+                        );
+                      })()}
                     </div>
 
-                    {/* Location Bar Chart - Dynamic */}
-                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 border border-zinc-700/50">
-                      <h4 className="text-xs font-semibold text-white mb-3 flex items-center gap-1.5">
-                        <span className="material-icons text-orange-500 text-sm">place</span>
+                    {/* Por Local - Com Scroll */}
+                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-5 border border-zinc-700/50">
+                      <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-lg">place</span>
                         Por Local
                       </h4>
-                      <div className="space-y-1.5">
-                        {(() => {
-                          const locationCounts: Record<string, number> = {};
-                          allEquipmentData.forEach(eq => {
-                            if (eq.local?.trim()) {
-                              const local = eq.local.trim();
-                              locationCounts[local] = (locationCounts[local] || 0) + 1;
-                            }
-                          });
-                          const sorted = Object.entries(locationCounts).sort((a, b) => b[1] - a[1]);
-                          const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
-                          
-                          return sorted.map(([local, count]) => (
-                            <div key={local} className="flex items-center gap-2">
-                              <span className="text-[10px] text-zinc-400 w-16 truncate flex-shrink-0" title={local}>{local}</span>
-                              <div className="flex-1 h-4 bg-zinc-800 rounded overflow-hidden">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded transition-all duration-700 flex items-center justify-end pr-1.5"
-                                  style={{ width: `${(count / maxCount) * 100}%` }}
-                                >
-                                  <span className="text-[9px] font-bold text-white">{count}</span>
+                      {(() => {
+                        const locationCounts: Record<string, number> = {};
+                        allEquipmentData.forEach(eq => {
+                          if (eq.local?.trim()) {
+                            const local = eq.local.trim();
+                            locationCounts[local] = (locationCounts[local] || 0) + 1;
+                          }
+                        });
+                        const sorted = Object.entries(locationCounts).sort((a, b) => b[1] - a[1]);
+                        const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+                        
+                        return (
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                            {sorted.map(([local, count]) => (
+                              <div key={local} className="flex items-center gap-3">
+                                <span className="text-xs text-zinc-300 w-20 truncate flex-shrink-0" title={local}>{local}</span>
+                                <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
+                                  <div 
+                                    className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded flex items-center justify-end pr-2 transition-all duration-700"
+                                    style={{ width: `\${(count / maxCount) * 100}%` }}
+                                  >
+                                    <span className="text-[11px] font-bold text-white">{count}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ));
-                        })()}
-                      </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
-                  {/* Second Row - Client & Model */}
+                  {/* Segunda Fileira - Cliente e Modelo */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Client Distribution */}
-                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 border border-zinc-700/50">
-                      <h4 className="text-xs font-semibold text-white mb-3 flex items-center gap-1.5">
-                        <span className="material-icons text-orange-500 text-sm">business</span>
+                    {/* Por Cliente - Com Scroll */}
+                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-5 border border-zinc-700/50">
+                      <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-lg">business</span>
                         Por Cliente
                       </h4>
-                      <div className="space-y-1.5">
-                        {(() => {
-                          const clientCounts: Record<string, number> = {};
-                          allEquipmentData.forEach(eq => {
-                            if (eq.cliente?.trim()) {
-                              const cliente = eq.cliente.trim();
-                              clientCounts[cliente] = (clientCounts[cliente] || 0) + 1;
-                            }
-                          });
-                          const sorted = Object.entries(clientCounts).sort((a, b) => b[1] - a[1]);
-                          const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
-                          
-                          return sorted.map(([cliente, count]) => (
-                            <div key={cliente} className="flex items-center gap-2">
-                              <span className="text-[10px] text-zinc-400 w-20 truncate flex-shrink-0" title={cliente}>{cliente}</span>
-                              <div className="flex-1 h-3.5 bg-zinc-800 rounded overflow-hidden">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-zinc-600 to-zinc-500 rounded transition-all duration-700"
-                                  style={{ width: `${(count / maxCount) * 100}%` }}
-                                ></div>
+                      {(() => {
+                        const clientCounts: Record<string, number> = {};
+                        allEquipmentData.forEach(eq => {
+                          if (eq.cliente?.trim()) {
+                            const cliente = eq.cliente.trim();
+                            clientCounts[cliente] = (clientCounts[cliente] || 0) + 1;
+                          }
+                        });
+                        const sorted = Object.entries(clientCounts).sort((a, b) => b[1] - a[1]);
+                        const maxCount = sorted.length > 0 ? sorted[0][1] : 1;
+                        
+                        return (
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                            {sorted.map(([cliente, count]) => (
+                              <div key={cliente} className="flex items-center gap-3">
+                                <span className="text-xs text-zinc-300 w-24 truncate flex-shrink-0" title={cliente}>{cliente}</span>
+                                <div className="flex-1 h-5 bg-zinc-800 rounded overflow-hidden">
+                                  <div 
+                                    className="h-full bg-gradient-to-r from-zinc-600 to-zinc-500 rounded flex items-center justify-end pr-2 transition-all duration-700"
+                                    style={{ width: `\${(count / maxCount) * 100}%` }}
+                                  >
+                                    <span className="text-[11px] font-bold text-white">{count}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <span className="text-[10px] font-semibold text-white w-5 text-right flex-shrink-0">{count}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
 
-                    {/* Model Distribution - Dynamic */}
-                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-4 border border-zinc-700/50">
-                      <h4 className="text-xs font-semibold text-white mb-3 flex items-center gap-1.5">
-                        <span className="material-icons text-orange-500 text-sm">category</span>
+                    {/* Por Modelo - Com Scroll */}
+                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900 p-5 border border-zinc-700/50">
+                      <h4 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                        <span className="material-icons text-orange-500 text-lg">category</span>
                         Por Modelo
                       </h4>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {(() => {
-                          const modelCounts: Record<string, number> = {};
-                          allEquipmentData.forEach(eq => {
-                            if (eq.modelo?.trim()) {
-                              const modelo = eq.modelo.trim();
-                              modelCounts[modelo] = (modelCounts[modelo] || 0) + 1;
-                            }
-                          });
-                          const sorted = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]);
-                          
-                          return sorted.map(([modelo, count]) => (
-                            <div key={modelo} className="bg-zinc-800/50 rounded p-2 flex items-center justify-between gap-1">
-                              <span className="text-[10px] text-zinc-300 truncate" title={modelo}>{modelo}</span>
-                              <span className="text-[10px] font-bold text-orange-500 flex-shrink-0">{count}</span>
-                            </div>
-                          ));
-                        })()}
-                      </div>
+                      {(() => {
+                        const modelCounts: Record<string, number> = {};
+                        allEquipmentData.forEach(eq => {
+                          if (eq.modelo?.trim()) {
+                            const modelo = eq.modelo.trim();
+                            modelCounts[modelo] = (modelCounts[modelo] || 0) + 1;
+                          }
+                        });
+                        const sorted = Object.entries(modelCounts).sort((a, b) => b[1] - a[1]);
+                        
+                        return (
+                          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar content-start">
+                            {sorted.map(([modelo, count]) => (
+                              <div key={modelo} className="bg-zinc-800/50 rounded-lg p-2.5 flex items-center justify-between gap-2">
+                                <span className="text-xs text-zinc-300 truncate flex-1" title={modelo}>{modelo}</span>
+                                <span className="text-xs font-bold text-orange-500 bg-orange-500/10 px-1.5 py-0.5 rounded flex-shrink-0">{count}</span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
