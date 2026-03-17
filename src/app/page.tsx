@@ -2063,225 +2063,254 @@ export default function Home() {
 
       {/* Organogram Modal */}
       {showOrganogramModal && (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-[90] p-4" onClick={() => setShowOrganogramModal(false)}>
-          <div className="w-full max-w-6xl h-[90vh] overflow-auto bg-black rounded-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black flex items-center justify-center z-[90] p-2 sm:p-4" onClick={() => setShowOrganogramModal(false)}>
+          <div className="w-full max-w-6xl h-[95vh] overflow-auto bg-black rounded-2xl" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-black px-4 sm:px-6 py-4 border-b border-zinc-800">
+            <div className="sticky top-0 z-10 bg-black px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-800">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button 
                     onClick={() => setShowOrganogramModal(false)}
                     className="text-zinc-400 hover:text-white flex items-center gap-1"
                   >
-                    <span className="material-icons">arrow_back</span>
-                    <span className="text-sm">Voltar</span>
+                    <span className="material-icons text-lg sm:text-xl">arrow_back</span>
+                    <span className="text-xs sm:text-sm">Voltar</span>
                   </button>
-                  <div className="h-5 w-px bg-zinc-800"></div>
-                  <img src="/images/zamine-logo.png" alt="Zamine" className="h-8" />
+                  <div className="h-4 sm:h-5 w-px bg-zinc-800"></div>
+                  <img src="/images/zamine-logo.png" alt="Zamine" className="h-6 sm:h-8" />
                 </div>
-                <button onClick={() => setShowOrganogramModal(false)} className="text-zinc-400 hover:text-white p-2">
-                  <span className="material-icons">close</span>
+                <button onClick={() => setShowOrganogramModal(false)} className="text-zinc-400 hover:text-white p-1 sm:p-2">
+                  <span className="material-icons text-xl sm:text-2xl">close</span>
                 </button>
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-4 sm:p-8">
-              {/* Hierarquia Topo - Julio e Wallysson */}
-              <div className="flex flex-col items-center mb-8">
-                {/* Julio - Topo */}
-                <div className="flex flex-col items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-orange-500">
-                    <img src="/colaboradores/geral/julio-sanches.jpg" alt="Julio Sanches" className="w-full h-full object-cover" />
-                  </div>
-                  <p className="text-xs text-white mt-1 text-center font-medium">Julio Sanches</p>
-                  <p className="text-[10px] text-orange-500">Service Manager</p>
+            {/* Content - Organograma com Linhas */}
+            <div className="p-4 sm:p-8 flex flex-col items-center">
+              
+              {/* NÍVEL 1 - JULIO (Topo) */}
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-zinc-800 overflow-hidden border-2 border-orange-500 shadow-lg shadow-orange-500/20">
+                  <img src="/colaboradores/geral/julio-sanches.jpg" alt="Julio Sanches" className="w-full h-full object-cover" />
                 </div>
-                
-                {/* Linha vertical */}
-                <div className="w-0.5 h-6 bg-zinc-700"></div>
-                
-                {/* Wallysson - Segundo */}
-                <div className="flex flex-col items-center mt-2">
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-orange-500">
-                    <img src="/colaboradores/geral/wallysson-santos.jpg" alt="Wallysson Santos" className="w-full h-full object-cover" />
-                  </div>
-                  <p className="text-xs text-white mt-1 text-center font-medium">Wallysson Santos</p>
-                  <p className="text-[10px] text-orange-500">Service Coordinator</p>
-                </div>
+                <p className="text-xs sm:text-sm text-white mt-2 text-center font-semibold">Julio Sanches</p>
+                <p className="text-[10px] sm:text-xs text-orange-500 font-medium">Service Manager</p>
               </div>
+
+              {/* Linha vertical de Julio para Wallysson */}
+              <div className="w-0.5 h-6 sm:h-8 bg-gradient-to-b from-orange-500 to-orange-600"></div>
+
+              {/* NÍVEL 2 - WALLYSSON */}
+              <div className="flex flex-col items-center">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-zinc-800 overflow-hidden border-2 border-orange-500">
+                  <img src="/colaboradores/geral/wallysson-santos.jpg" alt="Wallysson Santos" className="w-full h-full object-cover" />
+                </div>
+                <p className="text-xs sm:text-sm text-white mt-2 text-center font-semibold">Wallysson Santos</p>
+                <p className="text-[10px] sm:text-xs text-orange-500 font-medium">Service Coordinator</p>
+              </div>
+
+              {/* Linha vertical de Wallysson para divisão */}
+              <div className="w-0.5 h-6 sm:h-8 bg-orange-600"></div>
 
               {/* Linha horizontal conectando as 3 colunas */}
-              <div className="hidden md:flex justify-center mb-2">
-                <div className="w-2/3 h-0.5 bg-zinc-700"></div>
+              <div className="w-[90vw] max-w-4xl h-0.5 bg-orange-600 relative">
+                {/* Linhas verticais descendo para cada coluna */}
+                <div className="absolute left-1/6 -translate-x-1/2 w-0.5 h-4 sm:h-6 bg-orange-600 -top-0"></div>
+                <div className="absolute left-1/2 -translate-x-1/2 w-0.5 h-4 sm:h-6 bg-orange-600 -top-0"></div>
+                <div className="absolute left-5/6 -translate-x-1/2 w-0.5 h-4 sm:h-6 bg-orange-600 -top-0"></div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* CONSULTORES */}
+              {/* Linhas verticais descendo */}
+              <div className="w-[90vw] max-w-4xl flex justify-between">
+                <div className="w-0.5 h-4 sm:h-6 bg-orange-600" style={{width: '16.666%'}}></div>
+                <div className="w-0.5 h-4 sm:h-6 bg-orange-600" style={{width: '16.666%'}}></div>
+                <div className="w-0.5 h-4 sm:h-6 bg-orange-600" style={{width: '16.666%'}}></div>
+              </div>
+
+              {/* 3 COLUNAS */}
+              <div className="w-full max-w-5xl grid grid-cols-3 gap-2 sm:gap-6 mt-2">
+                
+                {/* COLUNA 1 - CONSULTORES */}
                 <div className="flex flex-col items-center">
-                  <h3 className="text-lg font-bold text-orange-500 mb-6 tracking-wide">CONSULTORES</h3>
-                  <div className="flex flex-col items-center gap-4">
-                    {/* Cícero */}
-                    <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-zinc-700">
-                        <span className="text-sm text-zinc-400 font-medium">CC</span>
-                      </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Cícero Carvalho</p>
-                      <p className="text-[10px] text-zinc-600">Consultor</p>
-                    </div>
-                    {/* Warlen */}
-                    <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-zinc-700">
-                        <span className="text-sm text-zinc-400 font-medium">WS</span>
-                      </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Warlen Santos</p>
-                      <p className="text-[10px] text-zinc-600">Consultor</p>
-                    </div>
-                    {/* Emerson */}
-                    <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                  <h3 className="text-xs sm:text-lg font-bold text-orange-500 mb-4 sm:mb-6 tracking-wide text-center">CONSULTORES</h3>
+                  
+                  {/* Linha conectando consultores */}
+                  <div className="relative flex flex-col items-center">
+                    {/* Emerson - Primeiro */}
+                    <div className="flex flex-col items-center mb-3 sm:mb-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/geral/emerson-araujo.jpg" alt="Emerson Alexandre" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Emerson Alexandre</p>
-                      <p className="text-[10px] text-zinc-600">Field Technical Specialist</p>
+                      <p className="text-[10px] sm:text-xs text-zinc-300 mt-1 text-center font-medium">Emerson Alexandre</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-500">Field Technical Specialist</p>
+                    </div>
+                    
+                    {/* Linha vertical */}
+                    <div className="w-0.5 h-3 sm:h-4 bg-zinc-700"></div>
+                    
+                    {/* Warlen - Segundo */}
+                    <div className="flex flex-col items-center mb-3 sm:mb-4 mt-1">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
+                        <img src="/colaboradores/geral/warlen-santos.jpg" alt="Warlen Santos" className="w-full h-full object-cover" />
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-zinc-300 mt-1 text-center font-medium">Warlen Santos</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-500">Consultor - UMAX</p>
+                    </div>
+                    
+                    {/* Linha vertical */}
+                    <div className="w-0.5 h-3 sm:h-4 bg-zinc-700"></div>
+                    
+                    {/* Cícero - Terceiro */}
+                    <div className="flex flex-col items-center mt-1">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-zinc-600">
+                        <span className="text-xs sm:text-sm text-zinc-400 font-medium">CC</span>
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-zinc-300 mt-1 text-center font-medium">Cícero Carvalho</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-500">Consultor - UMCA</p>
                     </div>
                   </div>
                 </div>
 
-                {/* LUNDIN */}
+                {/* COLUNA 2 - LUNDIN */}
                 <div className="flex flex-col items-center">
-                  <h3 className="text-lg font-bold text-orange-500 mb-6 tracking-wide">LUNDIN</h3>
+                  <h3 className="text-xs sm:text-lg font-bold text-orange-500 mb-4 sm:mb-6 tracking-wide text-center">LUNDIN</h3>
                   
                   {/* Girlene e Ranielly lado a lado */}
-                  <div className="flex gap-8 mb-4">
+                  <div className="flex gap-4 sm:gap-8 mb-3 sm:mb-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/girlene-nogueira.jpg" alt="Girlene Nogueira" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Girlene Nogueira</p>
-                      <p className="text-[10px] text-zinc-600">Safety Technician</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Girlene N.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Safety Tech</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/ranielly-souza.jpg" alt="Ranielly Souza" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Ranielly Souza</p>
-                      <p className="text-[10px] text-zinc-600">Administrative Assistant</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Ranielly S.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Admin Assistant</p>
                     </div>
                   </div>
 
-                  {/* Tiago e Hamilton frente a frente */}
-                  <div className="flex gap-8 mb-4">
+                  {/* Linha */}
+                  <div className="w-16 sm:w-24 h-0.5 bg-zinc-700 mb-3 sm:mb-4"></div>
+
+                  {/* Tiago e Hamilton lado a lado */}
+                  <div className="flex gap-4 sm:gap-8 mb-3 sm:mb-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/tiago-carvalho.jpg" alt="Tiago Carvalho" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Tiago Carvalho</p>
-                      <p className="text-[10px] text-zinc-600">Sales Department</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Tiago C.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Sales Dept</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/hamilton-junior.jpg" alt="Hamilton Junior" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Hamilton Junior</p>
-                      <p className="text-[10px] text-zinc-600">Specialist Technician</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Hamilton J.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Spec. Tech</p>
                     </div>
                   </div>
 
-                  {/* Marcos e Max frente a frente */}
-                  <div className="flex gap-8 mb-4">
+                  {/* Linha */}
+                  <div className="w-16 sm:w-24 h-0.5 bg-zinc-700 mb-3 sm:mb-4"></div>
+
+                  {/* Max e Marcos lado a lado */}
+                  <div className="flex gap-4 sm:gap-8 mb-3 sm:mb-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/max-rufino.jpg" alt="Max Rufino" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Max Rufino</p>
-                      <p className="text-[10px] text-zinc-600">Service Assistant</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Max R.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Service Assistant</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/marcos-rosa.jpg" alt="Marcos Rosa" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Marcos Rosa</p>
-                      <p className="text-[10px] text-zinc-600">Warehouse Assistant</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Marcos R.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Warehouse</p>
                     </div>
                   </div>
 
-                  {/* Barrinha laranja */}
-                  <div className="w-48 h-1 bg-orange-500 rounded-full mb-4"></div>
+                  {/* Linha laranja */}
+                  <div className="w-20 sm:w-32 h-0.5 bg-orange-500 mb-3 sm:mb-4"></div>
 
                   {/* Técnicos */}
-                  <div className="flex gap-3 flex-wrap justify-center">
+                  <div className="flex gap-2 sm:gap-3 flex-wrap justify-center">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/wessley-ferreira.jpg" alt="Wessley Ferreira" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Wessley Ferreira</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[8px] sm:text-[10px] text-zinc-300 mt-1 text-center">Wessley</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/marcos-paulo.jpg" alt="Marcos Paulo" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Marcos Paulo</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[8px] sm:text-[10px] text-zinc-300 mt-1 text-center">Marcos P.</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/marcelo-pereira.jpg" alt="Marcelo Gonçalves" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Marcelo Gonçalves</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[8px] sm:text-[10px] text-zinc-300 mt-1 text-center">Marcelo</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/higor-araujo.jpg" alt="Higor Ataides" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Higor Ataides</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[8px] sm:text-[10px] text-zinc-300 mt-1 text-center">Higor</p>
                     </div>
                   </div>
                 </div>
 
-                {/* CMD */}
+                {/* COLUNA 3 - CMD */}
                 <div className="flex flex-col items-center">
-                  <h3 className="text-lg font-bold text-orange-500 mb-6 tracking-wide">CMD</h3>
+                  <h3 className="text-xs sm:text-lg font-bold text-orange-500 mb-4 sm:mb-6 tracking-wide text-center">CMD</h3>
                   
-                  {/* Jadson acima de Rafaela */}
-                  <div className="flex flex-col items-center gap-4 mb-4">
+                  {/* Jadson e Rafaela */}
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/jadson-reis.jpg" alt="Jadson Romano" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Jadson Romano</p>
-                      <p className="text-[10px] text-zinc-600">Technical Consultant</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Jadson R.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Tech Consultant</p>
                     </div>
+                    
+                    {/* Linha */}
+                    <div className="w-0.5 h-2 sm:h-3 bg-zinc-700"></div>
+                    
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/geral/rafaela-miranda.jpg" alt="Rafaela Martins" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Rafaela Martins</p>
-                      <p className="text-[10px] text-zinc-600">Technical Analyst</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Rafaela M.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Tech Analyst</p>
                     </div>
                   </div>
 
-                  {/* Barrinha laranja */}
-                  <div className="w-32 h-1 bg-orange-500 rounded-full mb-4"></div>
+                  {/* Linha laranja */}
+                  <div className="w-16 sm:w-24 h-0.5 bg-orange-500 mb-3 sm:mb-4"></div>
 
                   {/* Técnicos */}
-                  <div className="flex gap-4">
+                  <div className="flex gap-3 sm:gap-4">
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/go/charles-araujo.jpg" alt="Charles Andrade" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">Charles Andrade</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">Charles</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Mech. Tech</p>
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-700">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-zinc-800 overflow-hidden border-2 border-zinc-600">
                         <img src="/colaboradores/geral/jose-souza.jpg" alt="José Carlos" className="w-full h-full object-cover" />
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 text-center">José Carlos</p>
-                      <p className="text-[10px] text-zinc-600">Mechanical Technician</p>
+                      <p className="text-[9px] sm:text-[10px] text-zinc-300 mt-1 text-center">José C.</p>
+                      <p className="text-[8px] sm:text-[9px] text-zinc-500">Mech. Tech</p>
                     </div>
                   </div>
                 </div>
