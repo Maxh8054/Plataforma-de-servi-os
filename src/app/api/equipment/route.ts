@@ -70,16 +70,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { password, data } = body;
 
+    console.log('POST /api/equipment - Iniciando importação...');
+    console.log('Dados recebidos:', JSON.stringify(data).substring(0, 200));
+
     // Verify password
     if (password !== '2026') {
+      console.log('Erro: Senha incorreta');
       return NextResponse.json({ error: 'Senha incorreta' }, { status: 401 });
     }
 
     if (!data || !Array.isArray(data) || data.length === 0) {
+      console.log('Erro: Dados inválidos');
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
     }
 
     // Clear existing data and insert new
+    console.log('Limpando dados existentes...');
     await db.equipment.deleteMany();
 
     const equipmentData = data.map(item => ({
@@ -95,10 +101,12 @@ export async function POST(request: NextRequest) {
       falhasCriticas: item.falhasCriticas || null,
     }));
 
+    console.log('Inserindo', equipmentData.length, 'equipamentos...');
     const result = await db.equipment.createMany({
       data: equipmentData,
     });
 
+    console.log('Importação concluída:', result.count, 'registros');
     return NextResponse.json({ 
       success: true, 
       count: result.count,
@@ -106,7 +114,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error importing equipment:', error);
-    return NextResponse.json({ error: 'Erro ao importar equipamentos' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    return NextResponse.json({ error: 'Erro ao importar equipamentos: ' + errorMessage }, { status: 500 });
   }
 }
 
