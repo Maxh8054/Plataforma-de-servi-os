@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios Diários de Serviços - ZAMINE BRASIL</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF6600;
+            --secondary-color: #FF8800;
+            --accent-color: #FFAA00;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --card-bg: rgba(20, 20, 35, 0.8);
+            --text-light: #e0e0ff;
+            --text-dim: #a0a0c0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://hitachikenki.scene7.com/is/image/hitachikenki/Products-top-1:16-9');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            filter: brightness(0.3) contrast(1.2) saturate(1.5);
+            z-index: -2;
+        }
+        
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 102, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 136, 0, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 170, 0, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 102, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 102, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            animation: grid-move 20s linear infinite;
+        }
+        
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+        
+        .glitch {
+            position: relative;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 102, 0, 0.8);
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            animation: glitch-1 0.5s infinite linear alternate-reverse;
+            color: var(--secondary-color);
+            z-index: -1;
+        }
+        
+        .glitch::after {
+            animation: glitch-2 0.5s infinite linear alternate-reverse;
+            color: var(--accent-color);
+            z-index: -2;
+        }
+        
+        @keyframes glitch-1 {
+            0% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(20% 0 30% 0); transform: translate(-2px, 2px); }
+            40% { clip-path: inset(50% 0 20% 0); transform: translate(2px, -2px); }
+            60% { clip-path: inset(10% 0 60% 0); transform: translate(-1px, 1px); }
+            80% { clip-path: inset(80% 0 5% 0); transform: translate(1px, -1px); }
+            100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+        }
+        
+        @keyframes glitch-2 {
+            0% { clip-path: inset(0 0 0 0); transform: translate(0); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+            40% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, 1px); }
+            60% { clip-path: inset(30% 0 40% 0); transform: translate(1px, -2px); }
+            80% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, 2px); }
+            100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+        }
+        
+        .cyber-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 102, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.2), inset 0 0 20px rgba(255, 102, 0, 0.05);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: scan-line 3s infinite linear;
+        }
+        
+        @keyframes scan-line {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 102, 0, 0.3), inset 0 0 20px rgba(255, 102, 0, 0.1);
+            border-color: rgba(255, 102, 0, 0.5);
+        }
+        
+        .cyber-input {
+            background: rgba(20, 20, 35, 0.7);
+            border: 1px solid rgba(255, 102, 0, 0.3);
+            color: var(--text-light);
+            padding: 10px 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+        }
+        
+        .cyber-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+            background: rgba(20, 20, 35, 0.9);
+        }
+        
+        .cyber-button {
+            background: linear-gradient(45deg, rgba(255, 102, 0, 0.2), rgba(255, 136, 0, 0.2));
+            border: 1px solid rgba(255, 102, 0, 0.5);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cyber-button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .cyber-button:hover::before {
+            left: 100%;
+        }
+        
+        .cyber-button:hover {
+            background: linear-gradient(45deg, rgba(255, 102, 0, 0.3), rgba(255, 136, 0, 0.3));
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .cyber-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .cyber-table th {
+            background: rgba(255, 102, 0, 0.1);
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 102, 0, 0.3);
+        }
+        
+        .cyber-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 102, 0, 0.1);
+            color: var(--text-light);
+        }
+        
+        .cyber-table tr:hover {
+            background: rgba(255, 102, 0, 0.05);
+        }
+        
+        .cyber-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 102, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 102, 0, 0.2);
+            margin-bottom: 40px;
+        }
+        
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--darker-bg);
+        }
+        
+        .carousel-slide.active {
+            opacity: 1;
+        }
+        
+        .carousel-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .carousel-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .carousel-dot.active {
+            background: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+        
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .carousel-nav:hover {
+            background: rgba(255, 102, 0, 0.2);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .carousel-prev {
+            left: 20px;
+        }
+        
+        .carousel-next {
+            right: 20px;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), transparent);
+        }
+        
+        .cyber-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+        
+        .cyber-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .cyber-link::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .cyber-link:hover::after {
+            width: 100%;
+        }
+        
+        .cyber-link:hover {
+            color: var(--secondary-color);
+            text-shadow: 0 0 5px var(--secondary-color);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 40px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 102, 0, 0.3);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+        
+        .cyber-footer {
+            margin-top: 60px;
+            padding: 30px 0;
+            border-top: 1px solid rgba(255, 102, 0, 0.3);
+            text-align: center;
+            color: var(--text-dim);
+        }
+        
+        .cyber-footer p {
+            margin-bottom: 10px;
+        }
+        
+        .cyber-footer .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .cyber-footer .social-links a {
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .cyber-footer .social-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 102, 0, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            padding: 15px 20px;
+            color: var(--text-light);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .excavator-watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            opacity: 0.2;
+            z-index: -1;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .stats-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .carousel-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão Voltar para Home -->
+    <a href="/" style="position: fixed; top: 20px; left: 20px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar para Home</a>>
+    <div class="cyber-grid"></div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">CARREGANDO SISTEMA...</div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle mr-2"></i>
+        <span id="notificationText">Bem-vindo ao sistema de Relatórios Diários de Serviços</span>
+    </div>
+    
+    <!-- Header -->
+    <header class="py-6 px-6 fade-in">
+        <div class="container mx-auto flex justify-center items-center">
+            <div class="flex items-center">
+                <i class="fas fa-industry text-3xl text-orange-500 mr-3"></i>
+                <h1 class="text-2xl font-bold glitch" data-text="ZAMINE BRASIL">ZAMINE BRASIL</h1>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Hero Section with Carousel -->
+        <section class="mb-12 fade-in">
+            <div class="carousel-container" id="carousel">
+                <div class="carousel-slide active">
+                    <img src="https://picsum.photos/seed/hitachi-excavator-1/1200/500.jpg" alt="Hitachi Excavator 1">
+                </div>
+                <div class="carousel-slide">
+                    <img src="https://picsum.photos/seed/hitachi-excavator-2/1200/500.jpg" alt="Hitachi Excavator 2">
+                </div>
+                <div class="carousel-slide">
+                    <img src="https://picsum.photos/seed/hitachi-excavator-3/1200/500.jpg" alt="Hitachi Excavator 3">
+                </div>
+                <div class="carousel-slide">
+                    <img src="https://picsum.photos/seed/hitachi-excavator-4/1200/500.jpg" alt="Hitachi Excavator 4">
+                </div>
+                
+                <div class="carousel-nav carousel-prev" id="carouselPrev">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="carousel-nav carousel-next" id="carouselNext">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                
+                <div class="carousel-controls" id="carouselDots"></div>
+            </div>
+        </section>
+        
+        <!-- Title Section -->
+        <section class="text-center mb-12 fade-in">
+            <h2 class="section-title glitch" data-text="Relatórios Diários de Serviços">Relatórios Diários de Serviços</h2>
+            <p class="text-lg text-gray-400 max-w-3xl mx-auto">
+                Sistema avançado de monitoramento e registro de atividades diárias para otimização de processos e tomada de decisões estratégicas.
+            </p>
+        </section>
+        
+        <!-- Stats Section -->
+        <section class="stats-container fade-in">
+            <div class="stat-item">
+                <div class="stat-value" id="totalReports">0</div>
+                <div class="stat-label">Relatórios Totais</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="thisMonth">0</div>
+                <div class="stat-label">Este Mês</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="thisWeek">0</div>
+                <div class="stat-label">Esta Semana</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="today">0</div>
+                <div class="stat-label">Hoje</div>
+            </div>
+        </section>
+        
+        <!-- Filters Section -->
+        <section class="cyber-card p-6 mb-8 fade-in">
+            <h3 class="text-xl font-bold mb-4 text-orange-500">
+                <i class="fas fa-filter mr-2"></i> FILTROS DE PESQUISA
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="cyber-label">Ano</label>
+                    <select id="yearFilter" class="cyber-input w-full">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="cyber-label">Mês</label>
+                    <select id="monthFilter" class="cyber-input w-full">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="cyber-label">Pesquisar</label>
+                    <div class="relative">
+                        <input type="text" id="nameFilter" placeholder="Digite para pesquisar..." 
+                            class="cyber-input w-full pl-10">
+                        <i class="fas fa-search absolute left-3 top-3.5 text-orange-500"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 text-center">
+                <button id="searchBtn" class="cyber-button">
+                    <i class="fas fa-search mr-2"></i> PESQUISAR
+                </button>
+                <button id="resetBtn" class="cyber-button ml-4">
+                    <i class="fas fa-redo mr-2"></i> LIMPAR
+                </button>
+            </div>
+        </section>
+        
+        <!-- Table Section -->
+        <section class="cyber-card p-6 mb-12 fade-in">
+            <h3 class="text-xl font-bold mb-4 text-orange-500">
+                <i class="fas fa-table mr-2"></i> RELATÓRIOS DISPONÍVEIS
+            </h3>
+            <div class="overflow-x-auto">
+                <table id="reportsTable" class="cyber-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-file-alt mr-2"></i>Descrição</th>
+                            <th><i class="fas fa-calendar-alt mr-2"></i>Mês</th>
+                            <th><i class="fas fa-calendar mr-2"></i>Ano</th>
+                            <th><i class="fas fa-user mr-2"></i>Responsável</th>
+                            <th class="text-right"><i class="fas fa-download mr-2"></i>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="noResults" class="text-center py-8 hidden">
+                    <i class="fas fa-exclamation-triangle text-4xl text-yellow-400 mb-4"></i>
+                    <p class="text-xl">Nenhum resultado encontrado para os filtros selecionados.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="cyber-footer">
+        <div class="container mx-auto px-6">
+            <p>&copy; 2026 ZAMINE BRASIL - Todos os direitos reservados</p>
+            <p>Sistema de Relatórios Diários de Serviços v2.0</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+    </footer>
+    
+    <div class="excavator-watermark">HITACHI EXCAVATOR</div>
+    
+    <script>
+        // JSON data (simulated)
+        const jsonData = {
+            "2026": {
+                "Janeiro": {
+                    "count": 3,
+                    "files": [
+                        {"name": "Relatório Diário - 01/01/2026", "link": "#", "responsible": "João Silva"},
+                        {"name": "Relatório Diário - 05/01/2026", "link": "#", "responsible": "Maria Santos"},
+                        {"name": "Relatório Diário - 10/01/2026", "link": "#", "responsible": "Carlos Oliveira"}
+                    ]
+                },
+                "Fevereiro": {
+                    "count": 2,
+                    "files": [
+                        {"name": "Relatório Diário - 02/02/2026", "link": "#", "responsible": "Ana Costa"},
+                        {"name": "Relatório Diário - 15/02/2026", "link": "#", "responsible": "Pedro Almeida"}
+                    ]
+                },
+                "Março": {
+                    "count": 4,
+                    "files": [
+                        {"name": "Relatório Diário - 03/03/2026", "link": "#", "responsible": "Lucas Ferreira"},
+                        {"name": "Relatório Diário - 08/03/2026", "link": "#", "responsible": "Juliana Martins"},
+                        {"name": "Relatório Diário - 17/03/2026", "link": "#", "responsible": "Rafael Souza"},
+                        {"name": "Relatório Diário - 25/03/2026", "link": "#", "responsible": "Fernanda Lima"}
+                    ]
+                }
+            },
+            "2022": {
+                "Novembro": {
+                    "count": 2,
+                    "files": [
+                        {"name": "Relatório Diário - 05/11/2022", "link": "#", "responsible": "Roberto Gomes"},
+                        {"name": "Relatório Diário - 20/11/2022", "link": "#", "responsible": "Patricia Dias"}
+                    ]
+                },
+                "Dezembro": {
+                    "count": 3,
+                    "files": [
+                        {"name": "Relatório Diário - 01/12/2022", "link": "#", "responsible": "Marcos Paulo"},
+                        {"name": "Relatório Diário - 10/12/2022", "link": "#", "responsible": "Tatiane Ribeiro"},
+                        {"name": "Relatório Diário - 22/12/2022", "link": "#", "responsible": "Bruno Carvalho"}
+                    ]
+                }
+            }
+        };
+        
+        // JSON images data (simulated)
+        const jsonImages = [
+            {"link": "https://picsum.photos/seed/hitachi-excavator-1/1200/500.jpg"},
+            {"link": "https://picsum.photos/seed/hitachi-excavator-2/1200/500.jpg"},
+            {"link": "https://picsum.photos/seed/hitachi-excavator-3/1200/500.jpg"},
+            {"link": "https://picsum.photos/seed/hitachi-excavator-4/1200/500.jpg"}
+        ];
+        
+        // DOM elements
+        const yearFilter = document.getElementById("yearFilter");
+        const monthFilter = document.getElementById("monthFilter");
+        const nameFilter = document.getElementById("nameFilter");
+        const searchBtn = document.getElementById("searchBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        const tableBody = document.getElementById("reportsTable").querySelector("tbody");
+        const noResults = document.getElementById("noResults");
+        const loadingOverlay = document.getElementById("loadingOverlay");
+        const notification = document.getElementById("notification");
+        const notificationText = document.getElementById("notificationText");
+        
+        // Carousel elements
+        const carousel = document.getElementById("carousel");
+        const carouselSlides = carousel.querySelectorAll(".carousel-slide");
+        const carouselPrev = document.getElementById("carouselPrev");
+        const carouselNext = document.getElementById("carouselNext");
+        const carouselDots = document.getElementById("carouselDots");
+        
+        // Stats elements
+        const totalReports = document.getElementById("totalReports");
+        const thisMonth = document.getElementById("thisMonth");
+        const thisWeek = document.getElementById("thisWeek");
+        const today = document.getElementById("today");
+        
+        // Carousel variables
+        let currentSlide = 0;
+        let slideInterval;
+        
+        // Initialize carousel dots
+        function initCarouselDots() {
+            for (let i = 0; i < carouselSlides.length; i++) {
+                const dot = document.createElement("div");
+                dot.classList.add("carousel-dot");
+                if (i === 0) dot.classList.add("active");
+                dot.addEventListener("click", () => goToSlide(i));
+                carouselDots.appendChild(dot);
+            }
+        }
+        
+        // Go to specific slide
+        function goToSlide(index) {
+            carouselSlides[currentSlide].classList.remove("active");
+            carouselDots.children[currentSlide].classList.remove("active");
+            
+            currentSlide = (index + carouselSlides.length) % carouselSlides.length;
+            
+            carouselSlides[currentSlide].classList.add("active");
+            carouselDots.children[currentSlide].classList.add("active");
+            
+            resetSlideInterval();
+        }
+        
+        // Next slide
+        function nextSlide() {
+            goToSlide(currentSlide + 1);
+        }
+        
+        // Previous slide
+        function prevSlide() {
+            goToSlide(currentSlide - 1);
+        }
+        
+        // Reset slide interval
+        function resetSlideInterval() {
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+        
+        // Initialize carousel
+        function initCarousel() {
+            initCarouselDots();
+            carouselPrev.addEventListener("click", prevSlide);
+            carouselNext.addEventListener("click", nextSlide);
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+        
+        // Show notification
+        function showNotification(message, duration = 3000) {
+            notificationText.textContent = message;
+            notification.classList.add("show");
+            
+            setTimeout(() => {
+                notification.classList.remove("show");
+            }, duration);
+        }
+        
+        // Populate filters
+        function populateFilters() {
+            const years = Object.keys(jsonData).sort((a, b) => b - a);
+            years.forEach(year => {
+                const option = document.createElement("option");
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+
+            const monthOrder = [
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+            ];
+
+            const allMonths = new Set();
+            years.forEach(year => {
+                Object.keys(jsonData[year]).forEach(month => allMonths.add(month));
+            });
+
+            Array.from(allMonths).sort((a, b) => {
+                return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+            }).forEach(month => {
+                const option = document.createElement("option");
+                option.value = month;
+                option.textContent = month;
+                monthFilter.appendChild(option);
+            });
+        }
+        
+        // Calculate stats
+        function calculateStats() {
+            let totalCount = 0;
+            let monthCount = 0;
+            let weekCount = 0;
+            let dayCount = 0;
+            
+            const currentYear = new Date().getFullYear().toString();
+            const currentMonth = new Date().toLocaleDateString('pt-BR', { month: 'long' });
+            const currentDate = new Date();
+            const weekStart = new Date(currentDate);
+            weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+            
+            Object.keys(jsonData).forEach(year => {
+                Object.keys(jsonData[year]).forEach(month => {
+                    const monthData = jsonData[year][month];
+                    if (monthData && monthData.files) {
+                        totalCount += monthData.files.length;
+                        
+                        if (year === currentYear && month === currentMonth) {
+                            monthCount = monthData.files.length;
+                            
+                            monthData.files.forEach(file => {
+                                // Simulating date parsing from filename
+                                const dateMatch = file.name.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                                if (dateMatch) {
+                                    const fileDate = new Date(`${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`);
+                                    
+                                    if (fileDate >= weekStart) {
+                                        weekCount++;
+                                    }
+                                    
+                                    if (fileDate.toDateString() === currentDate.toDateString()) {
+                                        dayCount++;
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+            
+            // Animate counter
+            animateCounter(totalReports, totalCount, 1000);
+            animateCounter(thisMonth, monthCount, 1000);
+            animateCounter(thisWeek, weekCount, 1000);
+            animateCounter(today, dayCount, 1000);
+        }
+        
+        // Animate counter
+        function animateCounter(element, target, duration) {
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 16);
+        }
+        
+        // Display table
+        function displayTable() {
+            const selectedYear = yearFilter.value;
+            const selectedMonth = monthFilter.value;
+            const searchName = nameFilter.value.toLowerCase();
+
+            tableBody.innerHTML = "";
+            let hasResults = false;
+
+            const monthOrder = [
+                "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+            ];
+
+            Object.keys(jsonData).forEach(year => {
+                if (selectedYear && selectedYear !== year) return;
+
+                Object.keys(jsonData[year]).sort((a, b) => {
+                    return monthOrder.indexOf(a) - monthOrder.indexOf(b);
+                }).forEach(month => {
+                    if (selectedMonth && selectedMonth !== month) return;
+
+                    const monthData = jsonData[year][month];
+                    if (!monthData || monthData.count === 0) return;
+
+                    monthData.files.forEach(file => {
+                        if (searchName && !file.name.toLowerCase().includes(searchName)) return;
+
+                        hasResults = true;
+                        const row = document.createElement("tr");
+                        
+                        // Nome do arquivo (descrição)
+                        const nameCell = document.createElement("td");
+                        nameCell.textContent = file.name.replace('.pdf', '');
+                        
+                        // Mês
+                        const monthCell = document.createElement("td");
+                        monthCell.textContent = month;
+                        
+                        // Ano
+                        const yearCell = document.createElement("td");
+                        yearCell.textContent = year;
+                        
+                        // Responsável
+                        const responsibleCell = document.createElement("td");
+                        responsibleCell.textContent = file.responsible;
+                        
+                        // Ação (visualizar)
+                        const actionCell = document.createElement("td");
+                        actionCell.className = "text-right";
+                        const link = document.createElement("a");
+                        link.href = file.link;
+                        link.target = "_blank";
+                        link.className = "cyber-button";
+                        link.innerHTML = '<i class="fas fa-eye mr-2"></i> Visualizar';
+                        actionCell.appendChild(link);
+
+                        // Adiciona as células na ordem correta
+                        row.appendChild(nameCell);
+                        row.appendChild(monthCell);
+                        row.appendChild(yearCell);
+                        row.appendChild(responsibleCell);
+                        row.appendChild(actionCell);
+                        
+                        // Add animation
+                        row.style.opacity = "0";
+                        row.style.transform = "translateY(20px)";
+                        tableBody.appendChild(row);
+                        
+                        // Trigger animation after adding to DOM
+                        setTimeout(() => {
+                            row.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                            row.style.opacity = "1";
+                            row.style.transform = "translateY(0)";
+                        }, 50);
+                    });
+                });
+            });
+            
+            // Show or hide no results message
+            if (hasResults) {
+                noResults.classList.add("hidden");
+            } else {
+                noResults.classList.remove("hidden");
+            }
+        }
+        
+        // Reset filters
+        function resetFilters() {
+            yearFilter.value = "";
+            monthFilter.value = "";
+            nameFilter.value = "";
+            displayTable();
+            showNotification("Filtros limpos com sucesso!");
+        }
+        
+        // Setup scroll animations
+        function setupScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            
+            document.querySelectorAll(".fade-in").forEach(el => {
+                observer.observe(el);
+            });
+        }
+        
+        // Initialize page
+        function initPage() {
+            // Hide loading overlay
+            setTimeout(() => {
+                loadingOverlay.classList.add("hidden");
+                showNotification("Bem-vindo ao sistema de Relatórios Diários de Serviços da ZAMINE BRASIL");
+            }, 1500);
+            
+            // Initialize components
+            populateFilters();
+            displayTable();
+            calculateStats();
+            initCarousel();
+            setupScrollAnimations();
+            
+            // Event listeners
+            yearFilter.addEventListener("change", displayTable);
+            monthFilter.addEventListener("change", displayTable);
+            nameFilter.addEventListener("input", displayTable);
+            searchBtn.addEventListener("click", () => {
+                displayTable();
+                showNotification("Pesquisa concluída!");
+            });
+            resetBtn.addEventListener("click", resetFilters);
+        }
+        
+        // Start the application
+        document.addEventListener("DOMContentLoaded", initPage);
+    </script>
+</body>
+</html>
