@@ -34,8 +34,8 @@ ENV DATABASE_URL="file:./db/custom.db"
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Install prisma CLI globally for runtime
-RUN npm install -g prisma
+# Install prisma CLI globally for runtime (same version as package.json)
+RUN npm install -g prisma@6.11.1
 
 # Create db directory with proper permissions
 RUN mkdir -p db && chown -R nextjs:nodejs db
