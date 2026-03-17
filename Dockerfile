@@ -16,6 +16,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DATABASE_URL="file:./db/custom.db"
 
 RUN npx prisma generate
 RUN npm run build
@@ -28,9 +29,13 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=10000
 ENV HOSTNAME="0.0.0.0"
+ENV DATABASE_URL="file:./db/custom.db"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Create db directory with proper permissions
+RUN mkdir -p db && chown -R nextjs:nodejs db
 
 COPY --from=builder /app/public ./public
 
@@ -42,12 +47,18 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/db ./db
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Create startup script
+RUN echo '#!/bin/sh' > start.sh && \
+    echo 'npx prisma db push --skip-generate' >> start.sh && \
+    echo 'node server.js' >> start.sh && \
+    chmod +x start.sh && \
+    chown nextjs:nodejs start.sh
 
 USER nextjs
 
 EXPOSE 10000
 
-CMD ["node", "server.js"]
+CMD ["./start.sh"]
