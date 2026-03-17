@@ -34,6 +34,9 @@ ENV DATABASE_URL="file:./db/custom.db"
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install prisma CLI globally for runtime
+RUN npm install -g prisma
+
 # Create db directory with proper permissions
 RUN mkdir -p db && chown -R nextjs:nodejs db
 
@@ -49,13 +52,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
-# Create startup script
-RUN echo '#!/bin/sh' > start.sh && \
-    echo 'npx prisma db push --skip-generate' >> start.sh && \
-    echo 'node server.js' >> start.sh && \
+# Create startup script that initializes the database
+RUN printf '#!/bin/sh\nset -e\necho "Running prisma db push..."\nnpx prisma db push --skip-generate --accept-data-loss\necho "Starting server..."\nexec node server.js\n' > start.sh && \
     chmod +x start.sh && \
     chown nextjs:nodejs start.sh
+
+# Give ownership to nextjs user
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
