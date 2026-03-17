@@ -66,6 +66,7 @@ const ADMIN_EMAIL = 'max-r@zaminebrasil.com';
 const COMERCIAL_URL = 'https://zaminebrasil.sharepoint.com/_layouts/15/sharepoint.aspx';
 const OPORTUNIDADES_VENDA_URL = 'https://zaminebrasil.sharepoint.com/:u:/s/SERVIOS-LUNDIN/IQCftieI2euhSLNNxiO9NZJzASI3bPdRe1vVb1QV2RrHbCA?e=zOrOGd';
 const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/:f:/s/SERVIOS-LUNDIN/IgC0u_WmXr-EQKr7KBf8HkJdASeXO_D2gOXspSIhUXjb_4s?e=hex2ds';
+const SHAREPOINT_SERVICOS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERVIOS-LUNDIN/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSERVIOS%2DLUNDIN%2FShared%20Documents%2FSERVI%C3%87OS&viewid=c13d8cad%2Da802%2D45ff%2D9ca9%2De5760b0f6790';
 
 // Services Data
 const servicesData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
@@ -77,6 +78,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em R&D', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -90,6 +92,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg-araxa': [
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Araxá', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -101,6 +104,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg-usiminas': [
     { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Usiminas', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -112,6 +116,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Goiás', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -127,6 +132,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'pa': [
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Pará', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -136,6 +142,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'ba': [
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades na Bahia', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -145,6 +152,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'sc': [
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades em Santa Catarina', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
@@ -154,6 +162,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'ma': [
     { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
     { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
+    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Equipamentos Hitachi Brasil', description: 'Lista de equipamentos Hitachi', icon: 'precision_manufacturing', url: '#equipamentos' },
     { title: 'Oportunidades de Venda', description: 'Explore oportunidades no Maranhão', icon: 'trending_up', url: OPORTUNIDADES_VENDA_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
