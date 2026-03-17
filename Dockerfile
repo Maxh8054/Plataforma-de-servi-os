@@ -55,7 +55,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modul
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Create startup script that initializes the database
-RUN printf '#!/bin/sh\nset -e\necho "Running prisma db push..."\nnpx prisma db push --skip-generate --accept-data-loss\necho "Starting server..."\nexec node server.js\n' > start.sh && \
+RUN printf '#!/bin/sh\nset -e\necho "Running prisma db push..."\nnpx prisma db push --accept-data-loss\necho "Starting server..."\nexec node server.js\n' > start.sh && \
     chmod +x start.sh && \
     chown nextjs:nodejs start.sh
 
