@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre o Desenvolvedor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        body {
+            background-color: #111827;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão Voltar para Home -->
+    <a href="/" style="position: fixed; top: 20px; left: 20px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar para Home</a> class="min-h-screen flex items-center justify-center">
+    <div class="bg-gray-800 rounded-xl p-8 max-w-2xl w-full mx-4" data-aos="zoom-in">
+        <div class="space-y-6">
+            <h1 class="text-3xl font-bold text-orange-500 text-center mb-6">Sobre o Desenvolvedor</h1>
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <img src="S:/DEPARTAMENTO DE SERVIÇOS/Clientes/LUNDIN/Relatorio project/Sistema/Desenvolvedor.jpeg" 
+                     alt="Foto do Desenvolvedor" 
+                     class="w-32 h-32 rounded-full object-cover border-4 border-orange-500">
+                <div>
+                    <h2 class="text-xl font-bold text-orange-500">Max Henrique</h2>
+                    <p class="text-gray-300">Assistente de Serviços da Zamine</p>
+                </div>
+            </div>
+            
+            <div class="bg-gray-700 p-6 rounded-lg">
+                <h3 class="text-xl font-semibold text-orange-500 mb-4">Tecnologias Utilizadas</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="flex items-center gap-2">
+                        <i data-feather="code" class="text-orange-500"></i>
+                        <span>Python</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-feather="database" class="text-orange-500"></i>
+                        <span>JSON</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-feather="code" class="text-orange-500"></i>
+                        <span>JavaScript</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-feather="layout" class="text-orange-500"></i>
+                        <span>HTML</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-feather="feather" class="text-orange-500"></i>
+                        <span>CSS</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-feather="wind" class="text-orange-500"></i>
+                        <span>Tailwind CSS</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h3 class="text-xl font-semibold text-orange-500">Objetivo do Sistema</h3>
+                <p class="text-gray-300">
+                    Proporcionar uma visualização mais eficiente dos indicadores disponíveis no CMD em Minas Gerais e na Lundin Mining em Goiás, 
+                    unindo organização e facilidade de acesso às informações.
+                </p>
+            </div>
+
+            <div class="bg-gray-700 p-6 rounded-lg">
+                <h3 class="text-xl font-semibold text-orange-500 mb-4">Contato</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <i data-feather="mail" class="text-orange-500"></i>
+                        <a href="mailto:Max-r@zaminebrasil.com" class="text-orange-500 hover:underline">Max-r@zaminebrasil.com</a>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-feather="phone" class="text-orange-500"></i>
+                        <a href="https://wa.me/5562982093453" target="_blank" class="text-orange-500 hover:underline">(62) 98209-3453</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center mt-6">
+                <a href="mailto:Max-r@zaminebrasil.com?subject=Feedback%20sobre%20o%20sistema&body=Enquanto%20navegava,%20vi%20algo%20que%20gostaria%20de%20reportar'" 
+                   class="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors">
+                    <i data-feather="mail" class="mr-2"></i> Enviar Feedback
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        AOS.init();
+        feather.replace();
+    </script>
+</body>
+</html>
