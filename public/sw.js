@@ -1,5 +1,5 @@
 // Service Worker para PWA - Zamine Plataforma
-const CACHE_NAME = 'zamine-v11';
+const CACHE_NAME = 'zamine-v12';
 
 // Arquivos para cachear
 const urlsToCache = [
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event
+// Activate event - limpa caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,16 +39,26 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event
+// Fetch event - Network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Ignorar requests não-GET
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        if (response) {
-          return response;
+        // Se a requisição foi bem sucedida, atualiza o cache
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
         }
-        return fetch(event.request);
-      }
-    )
+        return response;
+      })
+      .catch(() => {
+        // Se offline, tenta pegar do cache
+        return caches.match(event.request);
+      })
   );
 });

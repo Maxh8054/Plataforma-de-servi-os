@@ -252,6 +252,38 @@ function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
   const [isIOS, setIsIOS] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showInstallCard, setShowInstallCard] = useState(true);
+  const [cacheCleared, setCacheCleared] = useState(false);
+
+  const clearAppCache = async () => {
+    try {
+      // 1. Limpar todos os caches do service worker
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+      
+      // 2. Unregister service workers antigos
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+      }
+      
+      // 3. Limpar localStorage antigo (preserva login)
+      const userEmail = localStorage.getItem('zamine_user');
+      localStorage.clear();
+      if (userEmail) localStorage.setItem('zamine_user', userEmail);
+      
+      // 4. Recarregar a página
+      setCacheCleared(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err) {
+      console.error('Erro ao limpar cache:', err);
+      // Fallback: força reload mesmo com erro
+      window.location.reload();
+    }
+  };
 
   // PWA Install prompt
   useEffect(() => {
@@ -658,6 +690,20 @@ Obrigado(a).`);
           >
             <span className="material-icons">login</span>
             Entrar
+          </button>
+
+          <button
+            type="button"
+            onClick={clearAppCache}
+            disabled={cacheCleared}
+            className={`w-full py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2 text-sm ${
+              cacheCleared 
+                ? 'bg-green-500/20 border border-green-500/50 text-green-400 cursor-default' 
+                : 'bg-gray-800 border border-gray-700 text-gray-400 hover:border-orange-500/50 hover:text-orange-400 active:scale-[0.98]'
+            }`}
+          >
+            <span className="material-icons text-base">{cacheCleared ? 'check_circle' : 'sync'}</span>
+            {cacheCleared ? 'Cache limpo! Atualizando...' : 'Atualizar App (limpar cache)'}
           </button>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
