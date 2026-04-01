@@ -57,6 +57,7 @@ const AUTHORIZED_USERS = [
   'marlon-m@zaminebrasil.com',
   'ranielly-s@zaminebrasil.com',
   'girlene-n@zaminebrasil.com',
+  'hamilton-j@zaminebrasil.com',
   'max-r@zaminebrasil.com', // Max Henrique (desenvolvedor)
 ];
 
