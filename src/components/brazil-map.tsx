@@ -178,7 +178,7 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
 
   return (
     <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
-      <div className="relative w-full h-full max-w-5xl max-h-full mx-auto px-2 sm:px-4"
+      <div className="relative w-full h-full max-w-7xl max-h-full mx-auto px-1 sm:px-2"
         onMouseMove={(e) => {
           const rect = containerRef.current?.getBoundingClientRect();
           if (rect) {

@@ -1448,12 +1448,12 @@ export default function Home() {
                 </div>
 
                 {/* State Title */}
-                <div className="pt-12 sm:pt-24 px-3 sm:px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }} onClick={(e) => e.stopPropagation()}>
+                <div className="pt-8 sm:pt-20 px-3 sm:px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }} onClick={(e) => e.stopPropagation()}>
                   <h2 className="text-lg sm:text-2xl md:text-4xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stateNames[selectedState] || 'Minas Gerais'}</h2>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-2 sm:pt-6 flex items-center justify-center gap-6 px-4" onClick={(e) => e.stopPropagation()}>
+                <div className="pt-1 sm:pt-4 flex items-center justify-center gap-6 px-4" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={(e) => { e.stopPropagation(); openModal('services', selectedState); }}
                     className="text-white/80 hover:text-white active:text-white active:scale-95 px-6 py-4 sm:px-10 sm:py-5 transition-all flex flex-col items-center gap-1.5 sm:gap-2 group rounded-xl bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 hover:border-orange-500/30"
@@ -1480,7 +1480,7 @@ export default function Home() {
             {/* Services/Security Modal */}
             {activeModal && modalState && (
               <div className="absolute inset-0 z-30 bg-black/80 flex items-end sm:items-center justify-center sm:p-4" onClick={closeModal}>
-                <div className="bg-gray-800 rounded-t-2xl sm:rounded-2xl p-3 sm:p-6 max-w-2xl w-full max-h-[85vh] sm:max-h-[85vh] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                <div className="bg-gray-800 rounded-t-2xl sm:rounded-2xl p-3 sm:p-6 max-w-2xl w-full max-h-[92vh] sm:max-h-[85vh] overflow-y-auto overscroll-contain" onClick={(e) => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
                   <div className="flex justify-between items-center mb-2 sm:mb-4 min-h-[36px] sm:min-h-[44px]">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                       {(showSecurityContent || modalState?.startsWith('mg-')) && (
@@ -1761,21 +1761,21 @@ export default function Home() {
             )}
 
             {/* Footer */}
-            <div className="absolute bottom-0 left-0 w-full px-2 py-1.5 sm:p-4 bg-gradient-to-t from-black/80 to-transparent z-20">
-              <div className="flex justify-between items-center">
+            <div className="absolute bottom-0 left-0 right-0 px-3 py-2 sm:p-4 bg-gradient-to-t from-black/90 to-transparent z-20">
+              <div className="flex justify-between items-center max-w-7xl mx-auto">
                 <div className="text-[10px] sm:text-xs text-gray-400">
                   © 2026 Zamine Brasil
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4">
                   <button 
                     onClick={() => setShowOrganogramModal(true)}
-                    className="text-xs text-white/60 hover:text-orange-500 transition-colors"
+                    className="text-[10px] sm:text-xs text-white/60 hover:text-orange-500 transition-colors"
                   >
                     Organograma
                   </button>
                   <button 
                     onClick={() => setShowDeveloperModal(true)}
-                    className="text-xs text-white/60 hover:text-white transition-colors"
+                    className="text-[10px] sm:text-xs text-white/60 hover:text-white transition-colors"
                   >
                     Sobre
                   </button>
