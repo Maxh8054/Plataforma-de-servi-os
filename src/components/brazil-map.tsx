@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 const STATE_NAMES: Record<string, string> = {
   AC: "Acre",
@@ -96,6 +96,8 @@ const LABEL_POSITIONS: Record<string, { x: number; y: number }> = {
 
 export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
+  const [mousePos, setMousePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleStateClick = useCallback(
     (uf: string) => {
@@ -152,8 +154,15 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative w-full h-full max-w-5xl max-h-full mx-auto px-2 sm:px-4">
+    <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
+      <div className="relative w-full h-full max-w-5xl max-h-full mx-auto px-2 sm:px-4"
+        onMouseMove={(e) => {
+          const rect = containerRef.current?.getBoundingClientRect();
+          if (rect) {
+            setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+          }
+        }}
+      >
         <svg
           viewBox="0 0 1080 1080"
           className="w-full h-full"
@@ -231,10 +240,15 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
           </g>
         </svg>
 
-        {/* Hover tooltip - shows state name only */}
+        {/* Hover tooltip - follows mouse cursor */}
         {hoveredState && (
           <div
-            className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium border border-orange-500/30 pointer-events-none z-50 whitespace-nowrap shadow-xl"
+            className="absolute bg-black/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-orange-500/30 pointer-events-none z-50 whitespace-nowrap shadow-xl"
+            style={{
+              left: mousePos.x + 15,
+              top: mousePos.y - 10,
+              transform: "translate(0, -100%)",
+            }}
           >
             <span>{STATE_NAMES[hoveredState]}</span>
           </div>

@@ -1376,10 +1376,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
+    <div className="min-h-screen text-white flex flex-col overflow-hidden">
       <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: "url('/images/map-bg.png')" }}></div>
 
-        <div className="fixed inset-0 z-10 flex flex-col">
+        <div className="fixed inset-0 z-10 flex flex-col" style={{ background: 'transparent' }}>
           <div className="flex-grow relative w-full h-full">
             {/* Interactive SVG Map */}
             {!selectedState && (
@@ -1454,18 +1454,11 @@ export default function Home() {
                 {/* Action Buttons */}
                 <div className="pt-2 sm:pt-6 flex items-center justify-center gap-6 px-4" onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => openModal('services', selectedState)}
-                    className="text-white/80 hover:text-white active:text-white active:scale-95 px-4 py-3 sm:px-8 sm:py-4 transition-all flex flex-col items-center gap-1 sm:gap-1.5 group rounded-xl"
+                    onClick={(e) => { e.stopPropagation(); openModal('services', selectedState); }}
+                    className="text-white/80 hover:text-white active:text-white active:scale-95 px-6 py-4 sm:px-10 sm:py-5 transition-all flex flex-col items-center gap-1.5 sm:gap-2 group rounded-xl bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 hover:border-orange-500/30"
                   >
-                    <span className="material-icons text-2xl sm:text-4xl group-hover:scale-110 transition-transform">business_center</span>
-                    <span className="text-xs sm:text-base font-medium tracking-wide">Serviços</span>
-                  </button>
-                  <button
-                    onClick={() => openModal('security', selectedState)}
-                    className="text-white/80 hover:text-white active:text-white active:scale-95 px-4 py-3 sm:px-8 sm:py-4 transition-all flex flex-col items-center gap-1 sm:gap-1.5 group rounded-xl"
-                  >
-                    <span className="material-icons text-2xl sm:text-4xl group-hover:scale-110 transition-transform">shield</span>
-                    <span className="text-xs sm:text-base font-medium tracking-wide">Segurança</span>
+                    <span className="material-icons text-3xl sm:text-5xl group-hover:scale-110 transition-transform">business_center</span>
+                    <span className="text-sm sm:text-lg font-medium tracking-wide">Serviços</span>
                   </button>
                 </div>
 
