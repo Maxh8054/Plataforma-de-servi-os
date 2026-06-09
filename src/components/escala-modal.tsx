@@ -108,11 +108,11 @@ function getShiftForDay(person: PersonKey, date: Date): ShiftType {
   const diffTime = date.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   const cycleDay = ((diffDays % 8) + 8) % 8;
-  const phaseIndex = Math.floor(cycleDay / 2);
-  // Phase 0: D=Manhã, A=Noite, B/C=Folga
-  // Phase 1: B=Manhã, D=Noite, A/C=Folga
-  // Phase 2: C=Manhã, B=Noite, A/D=Folga
-  // Phase 3: A=Manhã, C=Noite, B/D=Folga
+  const phaseIndex = Math.floor((cycleDay + 1) / 2) % 4;
+  // Phase 0 (cycle day 7,0): D=Manhã, A=Noite, B/C=Folga
+  // Phase 1 (cycle day 1-2): B=Manhã, D=Noite, A/C=Folga
+  // Phase 2 (cycle day 3-4): C=Manhã, B=Noite, A/D=Folga
+  // Phase 3 (cycle day 5-6): A=Manhã, C=Noite, B/D=Folga
   const phaseMap: Record<string, ShiftType>[] = [
     { A: 'Noite', B: 'Folga', C: 'Folga', D: 'Manhã' },
     { A: 'Folga', B: 'Manhã', C: 'Folga', D: 'Noite' },

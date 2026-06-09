@@ -34,10 +34,10 @@ const DIA_SEMANA: Record<number, string> = {
 /**
  * 8-day cycle definition (each phase lasts 2 days):
  *
- * Phase 0 (cycle day 0-1): D=Manhã, A=Noite, C=Folga, B=Folga
- * Phase 1 (cycle day 2-3): B=Manhã, D=Noite, A=Folga, C=Folga
- * Phase 2 (cycle day 4-5): C=Manhã, B=Noite, D=Folga, A=Folga
- * Phase 3 (cycle day 6-7): A=Manhã, C=Noite, B=Folga, D=Folga
+ * Phase 0 (cycle day 7,0): D=Manhã, A=Noite, C=Folga, B=Folga
+ * Phase 1 (cycle day 1-2): B=Manhã, D=Noite, A=Folga, C=Folga
+ * Phase 2 (cycle day 3-4): C=Manhã, B=Noite, D=Folga, A=Folga
+ * Phase 3 (cycle day 5-6): A=Manhã, C=Noite, B=Folga, D=Folga
  */
 const CYCLE_PHASES: { manha: string; noite: string; folga1: string; folga2: string }[] = [
   { manha: "D", noite: "A", folga1: "C", folga2: "B" },
@@ -74,7 +74,7 @@ function generateLundinData(): EscalaLundinEntry[] {
     const date = new Date(current);
     const daysSinceStart = Math.round((current - startTime) / msPerDay);
     const cycleDay = daysSinceStart % CYCLE_LENGTH;
-    const phaseIndex = Math.floor(cycleDay / 2);
+    const phaseIndex = Math.floor((cycleDay + 1) / 2) % 4;
     const phase = CYCLE_PHASES[phaseIndex];
 
     const letters = [phase.manha, phase.noite, phase.folga1, phase.folga2];
