@@ -177,8 +177,8 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
   }, []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
-      <div className="relative w-full h-full max-w-7xl max-h-full mx-auto px-1 sm:px-2"
+    <div className="relative w-full h-full flex items-center justify-center overflow-hidden" ref={containerRef}>
+      <div className="relative w-full h-full mx-auto"
         onMouseMove={(e) => {
           const rect = containerRef.current?.getBoundingClientRect();
           if (rect) {
@@ -189,8 +189,8 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
         <svg
           viewBox="0 0 1080 1080"
           className="w-full h-full"
-          style={{ filter: "drop-shadow(0 0 30px rgba(244, 114, 22, 0.06))" }}
-          preserveAspectRatio="xMidYMid meet"
+          style={{ filter: "drop-shadow(0 0 30px rgba(244, 114, 22, 0.06))", minWidth: '100%', minHeight: '100%' }}
+          preserveAspectRatio="xMidYMid slice"
         >
           <defs>
             {/* Glow filter for highlighted states */}
