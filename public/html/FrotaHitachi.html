@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frota Hitachi — Brasil</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0e;--bg2:#0f1218;--bg3:#161b25;
+  --br:rgba(255,255,255,.06);--brh:rgba(255,255,255,.12);
+  --t1:#eef0f4;--t2:#7c8494;--t3:#3e4452;
+  --blue:#388add;--blue-d:rgba(56,138,221,.12);
+  --green:#1d9e75;--orange:#c98a1e;--pink:#d4537e;--purple:#7f77dd;
+  --r:14px;--font:'Inter',sans-serif;--disp:'Space Grotesk',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.018;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.bg-seq{position:fixed;inset:0;z-index:0}
+.bg-seq img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:opacity}
+.bg-seq img.on{opacity:1}
+.bg-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,14,.5) 0%,rgba(8,10,14,.75) 50%,rgba(8,10,14,.96) 100%)}
+.bg-vig{position:absolute;inset:0;box-shadow:inset 0 0 220px 80px rgba(8,10,14,.85)}
+
+.content{position:relative;z-index:1;min-height:100vh}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:3rem 2rem;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);background:var(--blue-d);border:1px solid rgba(56,138,221,.2);padding:6px 16px;border-radius:99px;margin-bottom:20px}
+.hero h1{font-family:var(--disp);font-size:clamp(34px,5.5vw,68px);font-weight:700;line-height:1;letter-spacing:-.03em;margin-bottom:12px}
+.hero h1 span{color:var(--blue)}
+.hero p{font-size:15px;color:var(--t2);max-width:440px;line-height:1.6}
+
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:800px;width:100%;margin-top:44px}
+.cat-card{position:relative;height:280px;border-radius:var(--r);overflow:hidden;cursor:pointer;border:1px solid var(--br);transition:all .35s ease}
+.cat-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94);animation:kb 28s ease-in-out infinite alternate}
+@keyframes kb{0%{transform:scale(1) translate(0,0)}100%{transform:scale(1.1) translate(-.8%,-.6%)}}
+.cat-card:nth-child(2) img{animation-delay:-14s}
+.cat-card .cg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,14,.15) 0%,rgba(8,10,14,.25) 40%,rgba(8,10,14,.88) 100%);z-index:1}
+.cat-card .scan{position:absolute;top:0;left:-40%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.05),transparent);z-index:2;animation:sc 6s ease-in-out infinite;pointer-events:none}
+.cat-card:nth-child(2) .scan{animation-delay:-3s}
+@keyframes sc{0%{left:-40%}100%{left:100%}}
+.cat-card .cb{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:24px;display:flex;flex-direction:column;gap:5px}
+.cat-card .ci{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:2px;transition:all .3s}
+.cat-card h2{font-family:var(--disp);font-size:19px;font-weight:600;color:#fff}
+.cat-card .cc{font-size:13px;color:var(--t2)}
+.cat-card .cc b{color:var(--t1);font-weight:700;font-family:var(--disp);font-size:22px}
+.cat-card:hover{border-color:var(--brh);transform:translateY(-4px);box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.cat-card:hover img{transform:scale(1.06)}
+.cat-card.sel{border-color:var(--blue);box-shadow:0 0 40px rgba(56,138,221,.18),0 24px 64px rgba(0,0,0,.4)}
+.cat-card.sel .scan{background:linear-gradient(90deg,transparent,rgba(56,138,221,.1),transparent)}
+.cat-card.sel .ci{background:var(--blue)!important;color:#fff!important;box-shadow:0 0 24px rgba(56,138,221,.45)}
+
+.detail{padding:0 2rem 6rem;max-width:1200px;margin:0 auto;opacity:0;transform:translateY(28px);transition:opacity .45s ease,transform .45s ease;pointer-events:none}
+.detail.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.dh{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--br)}
+.dh h2{font-family:var(--disp);font-size:22px;font-weight:700}
+.back{background:var(--bg3);border:1px solid var(--br);border-radius:10px;padding:8px 16px;font-size:13px;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;font-family:var(--font)}
+.back:hover{border-color:var(--brh);color:var(--t1)}
+
+.chips{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.chip{background:var(--bg3);border:1px solid var(--br);border-radius:99px;padding:7px 14px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:7px;transition:all .2s;font-family:var(--font);white-space:nowrap}
+.chip:hover{border-color:var(--brh);color:var(--t1)}
+.chip.on{background:var(--blue-d);border-color:rgba(56,138,221,.3);color:var(--blue)}
+.chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.chip .n{font-size:11px;opacity:.55}
+
+.sg{margin-bottom:32px}
+.sgh{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sgh .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sgh h3{font-family:var(--disp);font-size:15px;font-weight:600;color:#fff}
+.sgh span{font-size:12px;color:var(--t3);margin-left:auto}
+
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--br);background:rgba(15,18,24,.55);backdrop-filter:blur(10px)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl thead th{text-align:left;padding:12px 16px;font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2);background:rgba(22,27,37,.7);border-bottom:1px solid var(--br);white-space:nowrap;position:sticky;top:0;z-index:2}
+.tbl tbody tr{transition:background .15s}
+.tbl tbody tr:hover{background:rgba(56,138,221,.06)}
+.tbl tbody td{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:none}
+.td-id{font-family:var(--disp);font-weight:600;color:#fff}
+.td-model{color:var(--t1);font-weight:500}
+.badge{font-size:10px;padding:3px 10px;border-radius:99px;font-weight:600;letter-spacing:.3px;display:inline-block}
+.b-ex{background:rgba(56,138,221,.12);color:#6aadee;border:1px solid rgba(56,138,221,.15)}
+.b-eh4{background:rgba(212,83,126,.12);color:#e87da3;border:1px solid rgba(212,83,126,.15)}
+.b-ex5{background:rgba(186,117,23,.12);color:#d9a244;border:1px solid rgba(186,117,23,.15)}
+.td-emp{color:var(--t2)}
+.td-ano{color:var(--t2)}
+.td-emp i,.td-ano i{vertical-align:middle;opacity:.4;margin-right:4px}
+.td-um{color:var(--t2)}
+.tbl-count{font-size:12px;color:var(--t3);margin-top:8px;text-align:right}
+
+.no-r{text-align:center;padding:4rem 1rem;color:var(--t3);font-size:14px}
+.pl{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--blue),#5bb8ff);z-index:10000;transition:width .3s;box-shadow:0 0 14px rgba(56,138,221,.5)}
+
+@media(max-width:700px){
+  .cat-grid{grid-template-columns:1fr;max-width:400px}
+  .cat-card{height:220px}
+  .hero{padding:2rem 1.5rem}
+  .detail{padding:0 1rem 4rem}
+  .tbl{font-size:12px}
+  .tbl thead th{padding:10px 12px;font-size:10px}
+  .tbl tbody td{padding:8px 12px}
+}
+</style>
+</head>
+<body>
+
+<div class="pl" id="pl" style="width:0%"></div>
+
+<div class="bg-seq">
+  <img id="b0" src="https://z-cdn-media.chatglm.cn/files/8945af8f-e508-42ae-8ca6-a834a4d392c9.png?auth_key=1879820970-778bc3bf8a9b4bbfa407904bec583589-0-d53a3f41119d392be0f30cb5715e3670" class="on" alt="">
+  <img id="b1" src="https://z-cdn-media.chatglm.cn/files/a0124a78-7877-4f14-90f2-bb94e72e160b.png?auth_key=1879820970-de0bdb130dba46b0aa1ecdd0da60836e-0-6b86c381241f6bc6b061a0dfc86aaea4" alt="">
+  <img id="b2" src="https://z-cdn-media.chatglm.cn/files/8945af8f-e508-42ae-8ca6-a834a4d392c9.png?auth_key=1879820970-778bc3bf8a9b4bbfa407904bec583589-0-d53a3f41119d392be0f30cb5715e3670" alt="">
+  <div class="bg-ov"></div>
+  <div class="bg-vig"></div>
+</div>
+
+<div class="content">
+  <section class="hero">
+    <div class="hero-tag"><i class="ti ti-bulldozer" style="font-size:14px"></i> Hitachi Construction Machinery</div>
+    <h1>Frota <span>Brasil</span></h1>
+    <p>Selecione uma categoria para explorar os equipamentos em operação nos principais canteiros de mineração.</p>
+    <div class="cat-grid">
+      <div class="cat-card" id="cE" onclick="sel('e')">
+        <img src="https://z-cdn-media.chatglm.cn/files/8945af8f-e508-42ae-8ca6-a834a4d392c9.png?auth_key=1879820970-778bc3bf8a9b4bbfa407904bec583589-0-d53a3f41119d392be0f30cb5715e3670" alt="Escavadeira EX2600">
+        <div class="cg"></div>
+        <div class="scan"></div>
+        <div class="cb">
+          <div class="ci" style="background:rgba(56,138,221,.15);color:var(--blue)"><i class="ti ti-bulldozer"></i></div>
+          <h2>Escavadeiras</h2>
+          <div class="cc"><b id="nE">0</b> unidades em operação</div>
+        </div>
+      </div>
+      <div class="cat-card" id="cC" onclick="sel('c')">
+        <img src="https://z-cdn-media.chatglm.cn/files/a0124a78-7877-4f14-90f2-bb94e72e160b.png?auth_key=1879820970-de0bdb130dba46b0aa1ecdd0da60836e-0-6b86c381241f6bc6b061a0dfc86aaea4" alt="Caminhão EH4000">
+        <div class="cg"></div>
+        <div class="scan"></div>
+        <div class="cb">
+          <div class="ci" style="background:rgba(29,158,117,.15);color:var(--green)"><i class="ti ti-truck"></i></div>
+          <h2>Caminhões EH4000</h2>
+          <div class="cc"><b id="nC">0</b> unidades em operação</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="detail" id="det">
+    <div class="dh">
+      <button class="back" onclick="go()"><i class="ti ti-arrow-left"></i> Voltar</button>
+      <h2 id="dT"></h2>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div id="area"></div>
+  </section>
+</div>
+
+<script>
+/* ── ESCAVADEIRAS (tudo que tem EX) ── */
+const ESC=[
+["EH-01","EX2600-7","Lundin","EX2600","Alto Horizonte","Lundin Mining",2022],
+["EH-02","EX2600-7","Lundin","EX2600","Alto Horizonte","Lundin Mining",2023],
+["EH-03","EX2600-7","Lundin","EX2600","Alto Horizonte","Lundin Mining",2023],
+["EH-4034","EX1200-7","U&M","EX1200","Alto Horizonte","Lundin Mining",2021],
+["EH-5006","EX2500-6","U&M","EX2600","Alto Horizonte","Lundin Mining",2008],
+["EH-5012","EX2600-6","U&M","EX2600","Alto Horizonte","Lundin Mining",2012],
+["EH-5035","EX2600-7","U&M","EX2600","Alto Horizonte","Lundin Mining",2021],
+["EH-6003","EX5500-5","U&M","EX5600","Alto Horizonte","Lundin Mining",2008],
+["EH-6005","EX5500-5","U&M","EX5600","Alto Horizonte","Lundin Mining",2002],
+["EH-4010","EX1200-5","U&M","EX1200","Araxá","Mosaic Fertilizantes",2008],
+["EH-4012","EX1200-6","U&M","EX1200","Araxá","Mosaic Fertilizantes",2008],
+["EH-4013","EX1200-6","U&M","EX1200","Araxá","Mosaic Fertilizantes",2008],
+["EH-4017","EX1200-6","U&M","EX1200","Araxá","Mosaic Fertilizantes",2009],
+["EH-4022","EX1200-6","U&M","EX1200","Araxá","Mosaic Fertilizantes",2011],
+["EH-4037","EX1200-7","U&M","EX1200","Araxá","Mosaic Fertilizantes",2021],
+["EH-4038","EX1200-7","U&M","EX1200","Araxá","Mosaic Fertilizantes",2021],
+["EH-4040","EX1200-7","U&M","EX1200","Araxá","Mosaic Fertilizantes",2022],
+["EH-4043","EX1200-7","U&M","EX1200","Araxá","Mosaic Fertilizantes",2022],
+["EH-5010","EX2600-6","U&M","EX2600","Araxá","Mosaic Fertilizantes",2012],
+["EH-5011","EX2600-6","U&M","EX2600","Araxá","Mosaic Fertilizantes",2012],
+["EH-5014","EX2500-5","U&M","EX2600","Araxá","Mosaic Fertilizantes",2005],
+["EH-5015","EX2500-6","U&M","EX2600","Araxá","Mosaic Fertilizantes",2010],
+["EH-5017","EX2500-6","U&M","EX2600","Araxá","Mosaic Fertilizantes",2010],
+["EH-5024","EX2500-5","U&M","EX2600","Araxá","Mosaic Fertilizantes",2005],
+["EH-4020","EX1200-6","U&M","EX1200","Canaã dos Carajás","U&M",2011],
+["EH-4021","EX1200-6","U&M","EX1200","Canaã dos Carajás","U&M",2011],
+["EH-4025","EX1200-6","U&M","EX1200","Canaã dos Carajás","U&M",2019],
+["EH-4047","EX1200-7","U&M","EX1200","Canaã dos Carajás","U&M",2023],
+["EH-5005","EX2500-6","U&M","EX2600","Canaã dos Carajás","U&M",2007],
+["EH-5016","EX2500-6","U&M","EX2600","Canaã dos Carajás","U&M",2008],
+["EH-5019","EX2500-5","U&M","EX2600","Canaã dos Carajás","U&M",2002],
+["EH-5027","EX2500-6","U&M","EX2600","Canaã dos Carajás","Vale",2010],
+["EH-5031","EX2500-6","U&M","EX2600","Canaã dos Carajás","U&M",2011],
+["EH-5032","EX2500-6","U&M","EX2600","Canaã dos Carajás","U&M",2008],
+["EH-5033","EX2500-6","U&M","EX2600","Canaã dos Carajás","Vale",2008],
+["EH-5034","EX2500-6","U&M","EX2600","Canaã dos Carajás","U&M",2008],
+["EH-5037","EX2600-7","U&M","EX2600","Canaã dos Carajás","Vale",2022],
+["EH-6001","EX5500-6","U&M","EX5600","Canaã dos Carajás","U&M",2009],
+["EH-6002","EX5500-6","U&M","EX5600","Canaã dos Carajás","Vale",2010],
+["EH-6009","EX5600-6","U&M","EX5600","Canaã dos Carajás","Vale",2018],
+["EH112","EX2600-7","R&D","EX2600","Conceição do Mato Dentro","Anglo American",2024],
+["RED004","EX2600-7","R&D","EX2600","Conceição do Mato Dentro","Anglo American",2023],
+["RED054","EX2600-7","R&D","EX2600","Conceição do Mato Dentro","Anglo American",2023],
+["EH132","EX1200-7","R&D","EX1200","Godofredo Viana","Equinox Gold",2024],
+["EH133","EX1200-7","R&D","EX1200","Godofredo Viana","Equinox Gold",2024],
+["EH-4027","EX1200-6","U&M","EX1200","Godofredo Viana","Equinox Gold",2019],
+["EH-4029","EX1200-6","U&M","EX1200","Godofredo Viana","Equinox Gold",2019],
+["EH-4030","EX1200-6","U&M","EX1200","Godofredo Viana","Equinox Gold",2019],
+["EH-5001","EX2500-5","U&M","EX2600","Godofredo Viana","Equinox Gold",2003],
+["EH-5002","EX2500-5","U&M","EX2600","Godofredo Viana","Equinox Gold",2005],
+["EH-4028","EX1200-6","U&M","EX1200","Juiz de Fora","U&M",2019],
+["EH-4048","EX1200-7","U&M","EX1200","Juiz de Fora","U&M",2023],
+["EH-4049","EX1200-7","U&M","EX1200","Juiz de Fora","U&M",2023],
+["EH-4050","EX1200-7","U&M","EX1200","Juiz de Fora","U&M",2023],
+["EH-5021","EX2500-5","U&M","EX2600","Juiz de Fora","U&M",2001],
+["EH-5025","EX2500-5","U&M","EX2600","Juiz de Fora","U&M",2004],
+["EH-5026","EX2500-5","U&M","EX2600","Juiz de Fora","U&M",2004],
+["EH-5029","EX2500-5","U&M","EX2600","Juiz de Fora","U&M",2005],
+["EH-5030","EX2500-5","U&M","EX2600","Juiz de Fora","U&M",2005],
+["EH-6006","EX5500-5","U&M","EX5600","Juiz de Fora","U&M",2005],
+["EH-6009b","EX5500-5","U&M","EX5600","Juiz de Fora","U&M",2018],
+["EH-6010","EX5500-5","U&M","EX5600","Juiz de Fora","U&M",2005],
+["EH-4044","EX1200-7","U&M","EX1200","Juruti","Alcoa",2023],
+["EH-4046","EX1200-7","U&M","EX1200","Juruti","Alcoa",2023],
+["EH-4026","EX1200-6","U&M","EX1200","Parauapebas","Vale",2019],
+["EH-4035","EX1200-7","U&M","EX1200","Parauapebas","Vale",2021],
+["EH-4039","EX1200-7","U&M","EX1200","Parauapebas","Vale",2021],
+["EH-4041","EX1200-7","U&M","EX1200","Parauapebas","Vale",2022],
+["EH-5003","EX2500-5","U&M","EX2600","Parauapebas","Vale",2005],
+["EH-5004","EX2500-5","U&M","EX2600","Parauapebas","Vale",2007],
+["EH-5036","EX2600-7","U&M","EX2600","Parauapebas","Vale",2022],
+["EH-4042","EX1200-7","U&M","EX1200","Riacho dos Machados","Equinox Gold",2022],
+["EH-4031","EX1200-7","U&M","EX1200","Santa Luz","Equinox Gold",2021],
+["EH-4032","EX1200-7","U&M","EX1200","Santa Luz","Equinox Gold",2021],
+["EH-4033","EX1200-7","U&M","EX1200","Santa Luz","Equinox Gold",2021],
+["EH-4036","EX1200-7","U&M","EX1200","Santa Luz","Equinox Gold",2021],
+["EH-4045","EX1200-7","U&M","EX1200","Santa Luz","Equinox Gold",2023],
+["EH-5018","EX2500-5","U&M","EX2600","Santa Luz","Equinox Gold",2006],
+["EH-5020","EX2500-5","U&M","EX2600","Santa Luz","Equinox Gold",2001],
+];
+
+/* ── CAMINHÕES (só EH4000-AC3 — os únicos Hitachi no Brasil) ── */
+const CAM=[
+["RED030","EH4000-AC3","R&D","Conceição do Mato Dentro","Anglo American",2024],
+["RED031","EH4000-AC3","R&D","Conceição do Mato Dentro","Anglo American",2024],
+["RED032","EH4000-AC3","R&D","Conceição do Mato Dentro","Anglo American",2024],
+];
+
+const SC={"Alto Horizonte":"#378ADD","Araxá":"#1D9E75","Canaã dos Carajás":"#BA7517","Conceição do Mato Dentro":"#D4537E","Godofredo Viana":"#7F77DD","Juiz de Fora":"#639922","Juruti":"#D85A30","Parauapebas":"#0F6E56","Riacho dos Machados":"#993556","Santa Luz":"#533AB7"};
+
+/* ═══ BG SCROLL ═══ */
+const bf=[document.getElementById('b0'),document.getElementById('b1'),document.getElementById('b2')];
+let bl=0;
+bf.forEach(i=>{const l=new Image();l.onload=l.onerror=()=>{bl++;document.getElementById('pl').style.width=(bl/3*100)+'%';if(bl===3)setTimeout(()=>document.getElementById('pl').style.opacity='0',300)};l.src=i.src});
+function uBg(){const s=document.documentElement.scrollHeight-innerHeight;if(s<=0){bf[0].style.opacity=1;bf[1].style.opacity=0;bf[2].style.opacity=0;return}const p=Math.min(1,scrollY/s),pos=p*2,c=Math.floor(pos),n=Math.min(c+1,2),f=pos-c;bf.forEach((fr,i)=>{fr.style.opacity=i===c?1-f:i===n?f:0})}
+addEventListener('scroll',uBg,{passive:true});
+
+/* ═══ COUNT UP ═══ */
+function cu(el,t){let s=null;const d=1400;(function step(ts){if(!s)s=ts;const p=Math.min((ts-s)/d,1);el.textContent=Math.round((1-Math.pow(1-p,3))*t);if(p<1)requestAnimationFrame(step)})(performance.now())}
+
+/* ═══ STATE ═══ */
+let ac=null,as='';
+
+function sel(c){if(ac===c){go();return}ac=c;as='';document.getElementById('cE').classList.toggle('sel',c==='e');document.getElementById('cC').classList.toggle('sel',c==='c');document.getElementById('dT').textContent=c==='e'?'Escavadeiras Hidráulicas':'Caminhões EH4000-AC3';bChips(c);rMach(c,'');document.getElementById('det').classList.add('show');setTimeout(()=>document.getElementById('det').scrollIntoView({behavior:'smooth',block:'start'}),120)}
+
+function go(){ac=null;as='';document.getElementById('cE').classList.remove('sel');document.getElementById('cC').classList.remove('sel');document.getElementById('det').classList.remove('show');scrollTo({top:0,behavior:'smooth'})}
+
+function bChips(c){const d=c==='e'?ESC:CAM;const sites=[...new Set(d.map(r=>r[c==='e'?4:3]))].sort();const ct={};d.forEach(r=>{const k=r[c==='e'?4:3];ct[k]=(ct[k]||0)+1});document.getElementById('chips').innerHTML=`<button class="chip on" onclick="fS('')">Todos <span class="n">${d.length}</span></button>`+sites.map(s=>`<button class="chip" data-s="${s}" onclick="fS('${s}')"><span class="dot" style="background:${SC[s]||'#888'}"></span>${s} <span class="n">${ct[s]}</span></button>`).join('')}
+
+function fS(s){as=s;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.s===s||(!s&&!c.dataset.s)));rMach(ac,s)}
+
+function sBadge(s){const m={EX1200:'b-ex',EX2600:'b-ex',EX5600:'b-ex5',EH4000:'b-eh4'};return`<span class="badge ${m[s]||'b-ex'}">${s}</span>`}
+
+function rMach(c,site){
+  const area=document.getElementById('area');
+  let d;
+  if(c==='e')d=ESC.filter(r=>!site||r[4]===site).map(r=>({id:r[0],mod:r[1],um:r[2],sz:r[3],site:r[4],emp:r[5],ano:r[6]}));
+  else d=CAM.filter(r=>!site||r[3]===site).map(r=>({id:r[0],mod:r[1],um:r[2],sz:'EH4000',site:r[3],emp:r[4],ano:r[5]}));
+  if(!d.length){area.innerHTML='<div class="no-r"><i class="ti ti-search-off" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>Nenhum equipamento neste site</div>';return}
+  const g={};d.forEach(m=>{if(!g[m.site])g[m.site]=[];g[m.site].push(m)});
+  area.innerHTML=Object.entries(g).map(([s,machines])=>{
+    const col=SC[s]||'#888';
+    const rows=machines.map(m=>`<tr><td class="td-id">${m.id}</td><td class="td-model">${m.mod}</td><td>${sBadge(m.sz)}</td><td class="td-um">${m.um}</td><td class="td-emp"><i class="ti ti-building" style="font-size:12px;opacity:.4"></i>${m.emp}</td><td class="td-ano"><i class="ti ti-calendar" style="font-size:11px;opacity:.4"></i>${m.ano}</td></tr>`).join('');
+    return`<div class="sg"><div class="sgh"><span class="dot" style="background:${col};box-shadow:0 0 8px ${col}80"></span><h3>${s}</h3><span>${machines.length} un.</span></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Equipamento</th><th>Modelo</th><th>Tamanho</th><th>Operador</th><th>Empresa</th><th>Ano</th></tr></thead><tbody>${rows}</tbody></table></div><div class="tbl-count">${machines.length} equipamento${machines.length>1?'s':''}</div></div>`}).join('');
+}
+
+cu(document.getElementById('nE'),ESC.length);
+cu(document.getElementById('nC'),CAM.length);
+</script>
+</body>
+</html>

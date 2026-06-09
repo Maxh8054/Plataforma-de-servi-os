@@ -1,50 +1,97 @@
-import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
-export async function GET() {
+function safeJsonParse(str: string, fallback: unknown) {
   try {
-    const usuarios = await db.zabUsuario.findMany({
-      orderBy: { nome: "asc" },
-    });
-    // Don't return passwords in the list
-    const safeUsuarios = usuarios.map(({ senha, ...rest }) => rest);
-    return NextResponse.json({ usuarios: safeUsuarios });
-  } catch (error) {
-    console.error("Error fetching usuarios:", error);
-    return NextResponse.json({ usuarios: [] }, { status: 500 });
+    return JSON.parse(str);
+  } catch {
+    return fallback;
   }
 }
 
-export async function POST(request: Request) {
+// GET /api/zab-flow/usuarios - List all users
+export async function GET() {
+  try {
+    const usuarios = await db.zabUsuario.findMany({
+      orderBy: { id: 'asc' },
+    });
+
+    // Parse conquistas from JSON string to array
+    const parsed = usuarios.map((u) => ({
+      ...u,
+      conquistas: safeJsonParse(u.conquistas, []),
+    }));
+
+    return NextResponse.json(parsed);
+  } catch (error) {
+    console.error('Error listing usuarios:', error);
+    return NextResponse.json(
+      { error: 'Erro ao listar usuários' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/zab-flow/usuarios - Create a new user
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const { nome, email, senha, nivel, pontos, conquistas, role } = body;
+
+    // Validate required fields
+    if (!nome || !email || !senha) {
+      return NextResponse.json(
+        { error: 'Nome, email e senha são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    // Check for unique nome
+    const existingNome = await db.zabUsuario.findFirst({
+      where: { nome },
+    });
+    if (existingNome) {
+      return NextResponse.json(
+        { error: 'Já existe um usuário com este nome' },
+        { status: 409 }
+      );
+    }
+
+    // Check for unique email
+    const existingEmail = await db.zabUsuario.findFirst({
+      where: { email },
+    });
+    if (existingEmail) {
+      return NextResponse.json(
+        { error: 'Já existe um usuário com este email' },
+        { status: 409 }
+      );
+    }
+
     const usuario = await db.zabUsuario.create({
       data: {
-        nome: body.nome || "",
-        email: body.email || "",
-        senha: body.senha || "2026",
-        nivel: body.nivel || "Junior",
-        pontos: 0,
-        conquistas: "[]",
-        role: body.role || "funcionario",
+        nome,
+        email,
+        senha,
+        nivel: nivel || 'Junior',
+        pontos: pontos || 0,
+        conquistas: JSON.stringify(conquistas || []),
+        role: role || 'funcionario',
       },
     });
 
-    // Create audit entry
-    await db.zabAudit.create({
-      data: {
-        acao: "CREATE",
-        tabela: "zab_usuarios",
-        registroId: usuario.id,
-        dadosNovos: JSON.stringify({ nome: usuario.nome, email: usuario.email, nivel: usuario.nivel, role: usuario.role }),
-        dataHora: new Date().toISOString(),
+    return NextResponse.json(
+      {
+        ...usuario,
+        conquistas: safeJsonParse(usuario.conquistas, []),
       },
-    });
-
-    const { senha, ...safeUsuario } = usuario;
-    return NextResponse.json({ usuario: safeUsuario }, { status: 201 });
+      { status: 201 }
+    );
   } catch (error) {
-    console.error("Error creating usuario:", error);
-    return NextResponse.json({ error: "Failed to create usuario" }, { status: 500 });
+    console.error('Error creating usuario:', error);
+    return NextResponse.json(
+      { error: 'Erro ao criar usuário' },
+      { status: 500 }
+    );
   }
 }

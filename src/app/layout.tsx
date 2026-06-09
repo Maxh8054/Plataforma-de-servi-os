@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import QueryProvider from "@/components/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,18 +13,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#ff6600",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "Plataforma de Serviços — Zamine Brasil",
-  description: "Plataforma de gestão de serviços, equipamentos e demandas da Zamine Brasil.",
-  keywords: ["Zamine", "serviços", "mineração", "equipamentos", "gestão"],
-  authors: [{ name: "Zamine Brasil" }],
+  title: "Zamine Plataforma",
+  description: "Plataforma de Serviços Zamine Brasil",
+  keywords: ["Zamine", "Hitachi", "Serviços", "Manutenção", "Mineração"],
+  authors: [{ name: "Max Henrique" }],
+  manifest: "/manifest.json",
   icons: {
-    icon: "/zamine-logo.png",
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-512.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Zamine Plataforma",
   },
   openGraph: {
-    title: "Plataforma de Serviços — Zamine Brasil",
-    description: "Gestão de serviços, equipamentos e demandas",
-    siteName: "Zamine Brasil",
+    title: "Zamine Plataforma",
+    description: "Plataforma de Serviços Zamine Brasil",
     type: "website",
   },
 };
@@ -36,13 +48,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Zamine" />
+        <link rel="manifest" href="/manifest.json" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <QueryProvider>
-          {children}
-        </QueryProvider>
+        {children}
         <Toaster />
       </body>
     </html>

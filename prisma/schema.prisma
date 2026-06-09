@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -26,32 +24,36 @@ model EscalaData {
 }
 
 model Equipment {
-  id              String   @id @default(cuid())
-  equipamento     String
-  modelo          String
-  cliente         String
-  size            String
-  local           String
-  empresa         String
-  ano             String
-  statusOperacao  String?  @map("status_operacao")
-  motivoStandby   String?  @map("motivo_standby")
-  falhasCriticas  String?  @map("falhas_criticas")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  equipamento           String
+  modelo                String
+  cliente               String
+  size                  String
+  local                 String
+  empresa               String
+  ano                   String
+  statusOperacao        String?  @map("status_operacao")
+  motivoStandby         String?  @map("motivo_standby")
+  falhasCriticas        String?  @map("falhas_criticas")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   @@map("equipment")
 }
 
+// ==========================================
+// ZAB-Flow Models (GestorZA Integration)
+// ==========================================
+
 model ZabUsuario {
-  id          Int      @id @default(autoincrement())
-  nome        String   @unique
-  email       String   @unique
+  id          Int    @id @default(autoincrement())
+  nome        String @unique
+  email       String @unique
   senha       String
-  nivel       String   @default("Junior") // Junior/Pleno/Senior/Administrador/Coordenador/Gerente
-  pontos      Int      @default(0)
-  conquistas  String   @default("[]") // JSON array: ["star","fire","gold","silver","crown"]
-  role        String   @default("funcionario") // funcionario or gestor
+  nivel       String @default("Junior")   // Junior/Pleno/Senior/Administrador/Coordenador/Gerente
+  pontos      Int    @default(0)
+  conquistas  String @default("[]")       // JSON array: ["star","fire","gold","silver","crown"]
+  role        String @default("funcionario") // funcionario or gestor
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -59,64 +61,77 @@ model ZabUsuario {
 }
 
 model ZabDemanda {
-  id               Int      @id @default(autoincrement())
-  funcionarioId    Int
-  nomeFuncionario  String
-  emailFuncionario String
-  categoria        String
-  prioridade       String   // Importante/Média/Relevante
-  complexidade     String   // Fácil/Médio/Difícil
-  descricao        String
-  local            String   // Lundin/R&D/U&M
-  dataCriacao      String   @default("CURRENT_TIMESTAMP")
-  dataLimite       String
-  status           String   @default("pendente")
-  isRotina         Int      @default(0) // 0 or 1 boolean
-  diasSemana       String?  // JSON array of day indices [0-6]
-  tag              String?  // Auto-generated: "ZAB-XX"
-  comentarios      String?  @default("")
-  comentarioGestor String?  @default("")
-  dataConclusao    String?
-  atribuidos       String   @default("[]") // JSON array of {id, nome, email}
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                                Int     @id @default(autoincrement())
+  funcionarioId                     Int
+  nomeFuncionario                   String
+  emailFuncionario                  String
+  categoria                         String
+  prioridade                        String   // Importante/Média/Relevante
+  complexidade                      String   // Fácil/Médio/Difícil
+  descricao                         String
+  local                             String   // Lundin/R&D/U&M
+  dataCriacao                       String   @default("CURRENT_TIMESTAMP")
+  dataLimite                        String
+  status                            String   @default("pendente")
+  isRotina                          Int      @default(0) // 0 or 1 boolean
+  diasSemana                        String?  // JSON array of day indices [0-6]
+  tag                               String?  // Auto-generated: "ZAB-XX"
+  comentarios                       String?  @default("")
+  comentarioGestor                  String?  @default("")
+  dataConclusao                     String?
+  atribuidos                        String   @default("[]")  // JSON array of {id, nome, email}
+  anexosCriacao                     String   @default("[]")  // JSON array of base64 attachments
+  anexosResolucao                   String   @default("[]")  // JSON array of base64 attachments
+  comentarioReprovacaoAtribuicao    String?  @default("")
+  nomeDemanda                       String?
+  dataAtualizacao                   String?  @default("CURRENT_TIMESTAMP")
+  criadoPor                         Int?
+  atualizadoPor                     Int?
+  comentariosUsuarios               String   @default("[]")  // JSON array of user comments
+  createdAt                         DateTime @default(now())
+  updatedAt                         DateTime @updatedAt
 
+  @@index([status])
+  @@index([funcionarioId])
+  @@index([dataLimite])
+  @@index([categoria])
+  @@index([prioridade])
   @@map("zab_demandas")
 }
 
 model ZabAudit {
-  id           Int      @id @default(autoincrement())
-  acao         String   // CREATE/UPDATE/DELETE/EXTEND_DEADLINE/REASSIGN
-  tabela       String
-  registroId   Int
+  id          Int     @id @default(autoincrement())
+  acao        String  // CREATE/UPDATE/DELETE/EXTEND_DEADLINE/REASSIGN
+  tabela      String
+  registroId  Int
   dadosAntigos String?
   dadosNovos   String?
-  usuarioId    Int?
-  dataHora     String   @default("CURRENT_TIMESTAMP")
-  ip           String?
-  createdAt    DateTime @default(now())
+  usuarioId   Int?
+  dataHora    String  @default("CURRENT_TIMESTAMP")
+  ip          String?
+  createdAt   DateTime @default(now())
 
   @@map("zab_audit")
 }
 
 model ZabFeedback {
-  id           Int      @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   funcionarioId Int
-  gestorId     Int      @default(99)
-  tipo         String
-  mensagem     String
-  dataCriacao  String   @default("CURRENT_TIMESTAMP")
-  createdAt    DateTime @default(now())
+  gestorId      Int     @default(99)
+  tipo          String
+  mensagem      String
+  dataCriacao   String  @default("CURRENT_TIMESTAMP")
+  createdAt     DateTime @default(now())
 
   @@map("zab_feedbacks")
 }
 
 model ZabNote {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   titulo      String
   conteudo    String
-  cor         String   @default("#3498db") // Blue/Green/Red/Yellow/Purple
-  dataCriacao String   @default("CURRENT_TIMESTAMP")
+  cor         String  @default("#3498db")  // Blue/Green/Red/Yellow/Purple
+  dataCriacao String  @default("CURRENT_TIMESTAMP")
   criadoPor   Int
   atribuidoA  Int?
   audioData   String?  // Base64 audio transcription
@@ -128,15 +143,15 @@ model ZabNote {
 }
 
 model ZabNotification {
-  id         Int      @id @default(autoincrement())
-  usuarioId  Int      // Who receives the notification
-  titulo     String
-  mensagem   String
-  tipo       String   @default("info") // info, warning, danger, success, atribuicao, aprovacao, reprovacao, cobranca
-  lida       Int      @default(0) // 0 = unread, 1 = read
-  demandaId  Int?
-  criadoEm   String   @default("CURRENT_TIMESTAMP")
-  createdAt  DateTime @default(now())
+  id          Int     @id @default(autoincrement())
+  usuarioId   Int     // Who receives the notification
+  titulo      String
+  mensagem    String
+  tipo        String  @default("info") // info, warning, danger, success, atribuicao, aprovacao, reprovacao, cobranca
+  lida        Int     @default(0) // 0 = unread, 1 = read
+  demandaId   Int?
+  criadoEm    String  @default("CURRENT_TIMESTAMP")
+  createdAt   DateTime @default(now())
 
   @@index([usuarioId])
   @@index([lida])
