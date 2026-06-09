@@ -19,3 +19,22 @@ Stage Summary:
 - "Segurança" is accessible inside the Serviços modal as the first item
 - Clicking "Serviços" properly opens the modal instead of going back to the map
 - All verification steps passed successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Add "Estoque" option inside Goiás (GO) state services that links to an external URL
+
+Work Log:
+- Read current page.tsx to understand the Goiás services data structure
+- Identified the 'go' services array at line 119 in servicesData
+- Added new entry: { title: 'Estoque', description: 'Gestão de estoque - Goiás', icon: 'inventory', url: 'https://example.com/estoque-go' }
+- Since it's an external URL (not a hash like #escala or #zabflow), it automatically renders as an <a> tag with target="_blank"
+- Ran lint check - no errors
+- Verified with Agent Browser: logged in, navigated to Goiás, clicked Serviços, confirmed "Estoque" appears in the list with correct link URL and target
+
+Stage Summary:
+- "Estoque" option added to Goiás services list
+- Uses placeholder URL https://example.com/estoque-go (user will replace with real URL later)
+- Opens in new tab (target="_blank") with "inventory" icon and "open_in_new" indicator
+- Lint passes, browser verification confirms feature works correctly
