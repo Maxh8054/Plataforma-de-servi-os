@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import EpiAuditModal from "@/components/epi-audit-modal";
 import EscalaModal from "@/components/escala-modal";
 import ZabFlowModal from "@/components/zab-flow-modal";
+import BrazilMap from "@/components/brazil-map";
 
 // Types
 type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | null;
@@ -1371,14 +1372,9 @@ export default function Home() {
 
         <div className="fixed inset-0 z-10 flex flex-col">
           <div className="flex-grow relative w-full h-full">
-            <video autoPlay muted loop playsInline className="w-full h-full object-cover pointer-events-none" style={{ pointerEvents: 'none' }}>
-              <source src="/videos/Mapa.mp4" type="video/mp4" />
-            </video>
-
-            {selectedState && (
-              <video autoPlay muted loop playsInline className="absolute inset-0 w-full h-full object-cover z-15 transition-opacity duration-1000 pointer-events-none" style={{ opacity: 1, pointerEvents: 'none' }}>
-                <source src={`/videos/${selectedState === 'mg-mosaic' ? 'Mosaic' : selectedState === 'mg' ? 'Minas' : selectedState === 'go' ? 'Goiás' : selectedState === 'pa' ? 'Pará' : selectedState === 'ba' ? 'Bahia' : selectedState === 'sc' ? 'SantaCatarina' : 'Minas'}.mp4`} type="video/mp4" />
-              </video>
+            {/* Interactive SVG Map */}
+            {!selectedState && (
+              <BrazilMap onStateClick={handleMarkerClick} />
             )}
 
             {/* Header */}
@@ -1399,112 +1395,19 @@ export default function Home() {
               </div>
             </div>
 
-            {/* State Markers */}
-            {!selectedState && (
-              <div className="absolute inset-0 z-20" onClick={(e) => e.stopPropagation()}>
-                {/* MG Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-mg"
-                  style={{ top: '48%', left: '66%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('mg'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">MG</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Minas Gerais
-                    </div>
-                  </div>
-                </div>
-
-                {/* GO Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-go"
-                  style={{ top: '41%', left: '52%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('go'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">GO</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Goiás
-                    </div>
-                  </div>
-                </div>
-
-                {/* PA Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-pa"
-                  style={{ top: '22%', left: '37%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('pa'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">PA</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Pará
-                    </div>
-                  </div>
-                </div>
-
-                {/* BA Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-ba"
-                  style={{ top: '25%', left: '65%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('ba'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">BA</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Bahia
-                    </div>
-                  </div>
-                </div>
-
-                {/* SC Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-sc"
-                  style={{ top: '78%', left: '57%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('sc'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">SC</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Santa Catarina
-                    </div>
-                  </div>
-                </div>
-
-                {/* MA Marker */}
-                <div 
-                  className="absolute cursor-pointer group marker-ma"
-                  style={{ top: '20%', left: '59%' }}
-                  onClick={(e) => { e.stopPropagation(); handleMarkerClick('ma'); }}
-                >
-                  <div className="relative">
-                    <div className="w-5 h-5 sm:w-7 sm:h-7 bg-orange-500 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform border border-white">
-                      <span className="text-white font-bold text-[7px] sm:text-[10px]">MA</span>
-                    </div>
-                    <div className="marker-tooltip absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 px-3 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                      Maranhão
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* State Content - Click anywhere to go back */}
             {selectedState && (
               <div 
                 className="absolute inset-0 z-20 flex flex-col cursor-pointer"
                 onClick={resetToInitialState}
+                style={{ 
+                  background: selectedState === 'mg' ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)' :
+                              selectedState === 'go' ? 'linear-gradient(135deg, #1a1a2e 0%, #1e3a2f 50%, #0f4c35 100%)' :
+                              selectedState === 'pa' ? 'linear-gradient(135deg, #1a1a2e 0%, #2e1a1a 50%, #4c0f0f 100%)' :
+                              selectedState === 'ba' ? 'linear-gradient(135deg, #1a1a2e 0%, #2e2a1a 50%, #4c3f0f 100%)' :
+                              selectedState === 'sc' ? 'linear-gradient(135deg, #1a1a2e 0%, #1a2e2a 50%, #0f4c3f 100%)' :
+                              'linear-gradient(135deg, #1a1a2e 0%, #2e1a2a 50%, #4c0f3f 100%)'
+                }}
               >
                 {/* Back Button */}
                 <div className="absolute top-10 sm:top-16 left-2 sm:left-4 z-30" onClick={(e) => e.stopPropagation()}>
@@ -1517,19 +1420,31 @@ export default function Home() {
                   </button>
                 </div>
 
+                {/* Mini Map - showing selected state */}
+                <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 z-30 w-24 h-20 sm:w-36 sm:h-28 opacity-60" onClick={(e) => e.stopPropagation()}>
+                  <BrazilMap onStateClick={() => {}} activeState={selectedState} />
+                </div>
+
                 {/* State Title */}
                 <div className="pt-12 sm:pt-24 px-3 sm:px-4 text-center" style={{ animation: 'slideIn 0.5s ease-out' }} onClick={(e) => e.stopPropagation()}>
                   <h2 className="text-lg sm:text-2xl md:text-4xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stateNames[selectedState] || 'Minas Gerais'}</h2>
                 </div>
 
-                {/* Action Button - Minimalist */}
-                <div className="pt-2 sm:pt-6 flex items-center justify-center px-4" onClick={(e) => e.stopPropagation()}>
+                {/* Action Buttons */}
+                <div className="pt-2 sm:pt-6 flex items-center justify-center gap-6 px-4" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => openModal('services', selectedState)}
                     className="text-white/80 hover:text-white active:text-white active:scale-95 px-4 py-3 sm:px-8 sm:py-4 transition-all flex flex-col items-center gap-1 sm:gap-1.5 group rounded-xl"
                   >
                     <span className="material-icons text-2xl sm:text-4xl group-hover:scale-110 transition-transform">business_center</span>
                     <span className="text-xs sm:text-base font-medium tracking-wide">Serviços</span>
+                  </button>
+                  <button
+                    onClick={() => openModal('security', selectedState)}
+                    className="text-white/80 hover:text-white active:text-white active:scale-95 px-4 py-3 sm:px-8 sm:py-4 transition-all flex flex-col items-center gap-1 sm:gap-1.5 group rounded-xl"
+                  >
+                    <span className="material-icons text-2xl sm:text-4xl group-hover:scale-110 transition-transform">shield</span>
+                    <span className="text-xs sm:text-base font-medium tracking-wide">Segurança</span>
                   </button>
                 </div>
 
