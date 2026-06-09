@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
 const STATE_NAMES: Record<string, string> = {
   AC: "Acre",
@@ -96,7 +96,6 @@ const LABEL_POSITIONS: Record<string, { x: number; y: number }> = {
 
 export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null);
-  const [highlightedStates, setHighlightedStates] = useState<Set<string>>(ACTIVE_STATES);
 
   const handleStateClick = useCallback(
     (uf: string) => {
@@ -108,51 +107,34 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
     [onStateClick]
   );
 
-  const handleToggleHighlight = useCallback((uf: string) => {
-    setHighlightedStates((prev) => {
-      const next = new Set(prev);
-      if (next.has(uf)) {
-        next.delete(uf);
-      } else {
-        next.add(uf);
-      }
-      return next;
-    });
-  }, []);
-
-  const handleReset = useCallback(() => {
-    setHighlightedStates(new Set(ACTIVE_STATES));
-    onStateClick(null);
-  }, [onStateClick]);
-
   const getStateFill = useCallback(
     (uf: string) => {
-      const isHighlighted = highlightedStates.has(uf);
+      const isActiveState = ACTIVE_STATES.has(uf);
       const isHovered = hoveredState === uf;
       const isActive = activeState && UF_TO_STATE[uf] === activeState;
 
       if (isActive) return "#f47216";
-      if (isHovered && isHighlighted) return "#ff8c3a";
-      if (isHighlighted) return "#f47216";
+      if (isHovered && isActiveState) return "#ff8c3a";
+      if (isActiveState) return "#f47216";
       if (isHovered) return "#3a3d42";
       return "#252830";
     },
-    [highlightedStates, hoveredState, activeState]
+    [hoveredState, activeState]
   );
 
   const getStateStroke = useCallback(
     (uf: string) => {
-      const isHighlighted = highlightedStates.has(uf);
+      const isActiveState = ACTIVE_STATES.has(uf);
       const isHovered = hoveredState === uf;
       const isActive = activeState && UF_TO_STATE[uf] === activeState;
 
       if (isActive) return "#ff8c3a";
-      if (isHovered && isHighlighted) return "#ff8c3a";
-      if (isHighlighted) return "rgba(244,114,22,0.7)";
+      if (isHovered && isActiveState) return "#ff8c3a";
+      if (isActiveState) return "rgba(244,114,22,0.7)";
       if (isHovered) return "#5a5d65";
       return "#4a4d55";
     },
-    [highlightedStates, hoveredState, activeState]
+    [hoveredState, activeState]
   );
 
   const getStateOpacity = useCallback(
@@ -160,24 +142,14 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
       if (activeState) {
         return UF_TO_STATE[uf] === activeState ? 1 : 0.35;
       }
-      return highlightedStates.has(uf) ? 0.9 : 0.55;
+      return ACTIVE_STATES.has(uf) ? 0.9 : 0.55;
     },
-    [activeState, highlightedStates]
+    [activeState]
   );
 
   const handleMouseLeave = useCallback(() => {
     setHoveredState(null);
   }, []);
-
-  const hasCustomHighlights = useMemo(() => {
-    for (const uf of highlightedStates) {
-      if (!ACTIVE_STATES.has(uf)) return true;
-    }
-    for (const uf of ACTIVE_STATES) {
-      if (!highlightedStates.has(uf)) return true;
-    }
-    return false;
-  }, [highlightedStates]);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
@@ -219,11 +191,11 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
             {/* State paths */}
             {STATE_PATHS.map(({ uf, gx, gy, px, py, d }) => {
               const isClickable = uf in UF_TO_STATE;
-              const isHighlighted = highlightedStates.has(uf);
-              const isActiveState = activeState && UF_TO_STATE[uf] === activeState;
-              const filterId = isActiveState
+              const isActiveState = ACTIVE_STATES.has(uf);
+              const isActive = activeState && UF_TO_STATE[uf] === activeState;
+              const filterId = isActive
                 ? "url(#map-glow-active)"
-                : isHighlighted
+                : isActiveState
                   ? "url(#map-glow)"
                   : undefined;
 
@@ -248,8 +220,6 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
                       e.stopPropagation();
                       if (isClickable) {
                         handleStateClick(uf);
-                      } else {
-                        handleToggleHighlight(uf);
                       }
                     }}
                   />
@@ -257,113 +227,20 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
               );
             })}
 
-            {/* Labels for active Zamine states */}
-            {STATE_PATHS
-              .filter(({ uf }) => uf in UF_TO_STATE)
-              .map(({ uf, gx, gy, px, py }) => {
-                const center = LABEL_POSITIONS[uf];
-                if (!center) return null;
-                const isHighlighted = highlightedStates.has(uf);
-                const isActiveState = activeState && UF_TO_STATE[uf] === activeState;
-                if (!isHighlighted && !isActiveState) return null;
-
-                // Convert absolute coords back to the local group coordinate system
-                const localX = center.x - 540 - gx - px;
-                const localY = center.y - 540 - gy - py;
-
-                return (
-                  <g key={`label-${uf}`} transform={`matrix(1 0 0 1 ${gx} ${gy})`} style={{ pointerEvents: "none" }}>
-                    {/* Shadow background for readability */}
-                    <text
-                      x={localX + 0.8}
-                      y={localY + 0.8}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fill="rgba(0,0,0,0.8)"
-                      fontSize="16"
-                      fontWeight="bold"
-                      fontFamily="system-ui, sans-serif"
-                      transform={`translate(${px}, ${py})`}
-                    >
-                      {uf}
-                    </text>
-                    {/* Main label */}
-                    <text
-                      x={localX}
-                      y={localY}
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fill="white"
-                      fontSize="16"
-                      fontWeight="bold"
-                      fontFamily="system-ui, sans-serif"
-                      transform={`translate(${px}, ${py})`}
-                      style={{
-                        textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      {uf}
-                    </text>
-                  </g>
-                );
-              })}
+            {/* No labels on map - hover tooltip shows state names */}
           </g>
         </svg>
 
-        {/* Hover tooltip */}
+        {/* Hover tooltip - shows state name only */}
         {hoveredState && (
           <div
-            className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium border border-orange-500/30 pointer-events-none z-50 whitespace-nowrap flex items-center gap-2 shadow-xl"
+            className="absolute top-2 left-1/2 -translate-x-1/2 bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium border border-orange-500/30 pointer-events-none z-50 whitespace-nowrap shadow-xl"
           >
             <span>{STATE_NAMES[hoveredState]}</span>
-            {UF_TO_STATE[hoveredState] && (
-              <span className="text-orange-400 text-xs">• Clique para ver serviços</span>
-            )}
           </div>
         )}
 
-        {/* Legend */}
-        <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 flex flex-col gap-1.5 text-xs bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2.5 border border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#f47216" }} />
-            <span className="text-white/70">Operação Zamine</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: "#252830" }} />
-            <span className="text-white/70">Sem operação</span>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 pt-1.5 border-t border-white/5">
-            <div className="w-3 h-3 rounded-sm border border-dashed border-white/20" style={{ backgroundColor: "transparent" }} />
-            <span className="text-white/40 text-[10px]">Clique p/ destacar</span>
-          </div>
-        </div>
 
-        {/* Reset button */}
-        {hasCustomHighlights && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleReset();
-            }}
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/60 hover:bg-orange-500/20 text-white/80 hover:text-orange-400 px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-all border border-white/10 hover:border-orange-500/30"
-            title="Resetar mapa"
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            Resetar
-          </button>
-        )}
 
         {/* Active state indicator */}
         {activeState && (

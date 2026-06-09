@@ -225,6 +225,15 @@ const stateNames: Record<string, string> = {
   'mg-araxa': 'Araxá'
 };
 
+const stateVideos: Record<string, string> = {
+  'mg': '/videos/Minas.mp4',
+  'go': '/videos/Go.mp4',
+  'pa': '/videos/Pará.mp4',
+  'ba': '/videos/Bahia.mp4',
+  'sc': '/videos/SantaCatarina.mp4',
+  'ma': '/videos/Mosaic.mp4',
+};
+
 // Login Component
 function LoginScreen({ onLogin }: { onLogin: (email: string) => void }) {
   const [email, setEmail] = useState('');
@@ -1368,7 +1377,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
-      <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: "url('/images/Fundo.jpg')" }}></div>
+      <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: "url('/images/map-bg.png')" }}></div>
 
         <div className="fixed inset-0 z-10 flex flex-col">
           <div className="flex-grow relative w-full h-full">
@@ -1409,6 +1418,18 @@ export default function Home() {
                               'linear-gradient(135deg, #1a1a2e 0%, #2e1a2a 50%, #4c0f3f 100%)'
                 }}
               >
+                {/* Background video */}
+                <video
+                  key={selectedState}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover opacity-30"
+                >
+                  <source src={stateVideos[selectedState] || '/videos/Mosaic.mp4'} type="video/mp4" />
+                </video>
+
                 {/* Back Button */}
                 <div className="absolute top-10 sm:top-16 left-2 sm:left-4 z-30" onClick={(e) => e.stopPropagation()}>
                   <button 
