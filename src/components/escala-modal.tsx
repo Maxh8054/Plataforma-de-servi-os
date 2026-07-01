@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { getLundinShift } from '@/data/escala-lundin';
 
 // Types
-type PersonKey = 'A' | 'B' | 'C' | 'D';
+type PersonKey = 'A' | 'B' | 'C' | 'D' | 'E';
 type ShiftType = 'Manhã' | 'Noite' | 'Folga';
 
 interface Atestado {
@@ -36,11 +36,12 @@ interface ADM {
 interface Evento {
   id: string;
   person: PersonKey;
-  tipo: 'folga' | 'viagem' | 'treinamento' | 'férias';
+  tipo: 'folga' | 'viagem' | 'treinamento' | 'férias' | 'backup';
   startDate: string;
   endDate: string;
   horas: number;
   operacao: 'adicionar' | 'subtrair';
+  backupOf?: PersonKey; // who this person is backing up (only for tipo='backup')
 }
 
 interface EscalaData {
@@ -63,6 +64,7 @@ const PEOPLE: PersonInfo[] = [
   { key: 'B', name: 'Higor Ataides', photo: '/escala/Higor ataides.jpeg' },
   { key: 'C', name: 'Marcos Paulo', photo: '/escala/Marcos Paulo.jpeg' },
   { key: 'D', name: 'Marcelo', photo: '/escala/Marcelo.jpeg' },
+  { key: 'E', name: 'Guilherme', photo: '/escala/guilherme.png' },
 ];
 
 const PERSON_FULL_NAMES: Record<PersonKey, string> = {
@@ -70,6 +72,7 @@ const PERSON_FULL_NAMES: Record<PersonKey, string> = {
   B: 'B - Higor Ataides',
   C: 'C - Marcos Paulo',
   D: 'D - Marcelo',
+  E: 'E - Guilherme',
 };
 
 const MONTH_NAMES = [
@@ -162,7 +165,20 @@ const PERSON_HIGHLIGHT: Record<PersonKey, string> = {
   B: '#c8e6c9',
   C: '#bbdefb',
   D: '#fff9c4',
+  E: '#e1bee7',
 };
+
+const SHIFT_TOTAL_HOURS = 12; // Total shift duration
+const SHIFT_WORK_HOURS = 11;  // Work hours (excluding 1h lunch)
+const LUNCH_START = 12;       // Lunch starts at 12:00
+const LUNCH_END = 13;         // Lunch ends at 13:00
+const LUNCH_SECONDS = 1 * 3600; // 1 hour lunch
+const LUNCH_NIGHT_START = 22;  // Night shift lunch starts at 22:00
+const LUNCH_NIGHT_END = 23;    // Night shift lunch ends at 23:00
+
+// ADM work hours for Guilherme
+const ADM_DEFAULT_START = '07:30';
+const ADM_DEFAULT_END = '16:47';
 
 // Shift format strings for display in the table
 function getShiftDisplayString(shift: ShiftType): string {
@@ -197,6 +213,7 @@ function formatCountdown(totalSec: number): string {
 
 export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const mainRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
   const [data, setData] = useState<EscalaData | null>(null);
@@ -231,11 +248,12 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const [admHoraFim, setAdmHoraFim] = useState('16:50');
 
   // Evento form
-  const [evTipo, setEvTipo] = useState<'folga' | 'viagem' | 'treinamento' | 'férias'>('folga');
+  const [evTipo, setEvTipo] = useState<'folga' | 'viagem' | 'treinamento' | 'férias' | 'backup'>('folga');
   const [evStartDate, setEvStartDate] = useState('');
   const [evEndDate, setEvEndDate] = useState('');
   const [evHoras, setEvHoras] = useState(0);
   const [evOperacao, setEvOperacao] = useState<'adicionar' | 'subtrair'>('adicionar');
+  const [evBackupOf, setEvBackupOf] = useState<PersonKey | ''>('');
 
   // Set initial month/year to current
   useEffect(() => {
@@ -297,6 +315,28 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     return { atestado, spot, adm, evento };
   }, [data]);
 
+  // Get who person is backing up on a given date
+  const getBackupTarget = useCallback((person: PersonKey, date: Date): PersonKey | null => {
+    if (!data) return null;
+    const ev = data.eventos[person]?.find((e: Evento) =>
+      e.tipo === 'backup' && e.backupOf && isDateInRange(date, e.startDate, e.endDate)
+    );
+    return ev?.backupOf || null;
+  }, [data]);
+
+  // Get who is backing up a given person on a date
+  const getBackupProvider = useCallback((targetPerson: PersonKey, date: Date): PersonKey | null => {
+    if (!data) return null;
+    for (const p of PEOPLE) {
+      if (p.key === targetPerson) continue;
+      const ev = data.eventos[p.key]?.find((e: Evento) =>
+        e.tipo === 'backup' && e.backupOf === targetPerson && isDateInRange(date, e.startDate, e.endDate)
+      );
+      if (ev) return p.key;
+    }
+    return null;
+  }, [data]);
+
   // Get event icons for the Letra column (matching original HTML)
   const getEventIcons = useCallback((person: PersonKey, date: Date) => {
     if (!data) return '';
@@ -311,93 +351,204 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       else if (tipo === 'viagem') icons.push('✈️');
       else if (tipo === 'treinamento') icons.push('📚');
       else if (tipo === 'folga') icons.push('📅');
+      else if (tipo === 'backup') {
+        const ev = overrides.evento!;
+        if (ev.backupOf) {
+          icons.push(`🔄→${ev.backupOf}`);
+        } else {
+          icons.push('🔄');
+        }
+      }
     }
     if (overrides.adm) icons.push('🏢');
 
     return icons.join(' ');
   }, [data, getOverrides]);
 
-  // Calculate hours worked for a person - matching original HTML logic with real-time tracking
+  // Calculate hours worked for a person with separate normal/backup hour tracking
   const calculateHoursWorked = useCallback((person: PersonKey) => {
     const now = currentTime;
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const currentSecond = now.getSeconds();
     const currentTotalMinutes = currentHour * 60 + currentMinute;
+    const currentTotalSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
 
     const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
     const isRealCurrentMonth = (now.getMonth() === selectedMonth && now.getFullYear() === selectedYear);
 
-    let totalWorkSeconds = 0;
+    let normalWorkSeconds = 0;
+    let backupWorkSeconds = 0;
     let workDays = 0;
     let totalDays = 0;
 
-    // 1. Calculate base work from schedule
+    // Helper: calc shift seconds with real-time for Manhã
+    const calcMorningSeconds = (isToday: boolean, isPast: boolean): number => {
+      if (!isRealCurrentMonth || isPast) return SHIFT_WORK_HOURS * 3600;
+      if (isToday && currentTotalMinutes >= 7 * 60) {
+        if (currentTotalMinutes >= 19 * 60) return SHIFT_WORK_HOURS * 3600;
+        let wm = currentTotalMinutes - 7 * 60;
+        if (currentTotalMinutes >= LUNCH_END * 60) wm -= 60;
+        else if (currentTotalMinutes >= LUNCH_START * 60) wm -= (currentTotalMinutes - LUNCH_START * 60);
+        if (wm < 0) wm = 0;
+        return Math.min(wm * 60 + currentSecond, SHIFT_WORK_HOURS * 3600);
+      }
+      return 0;
+    };
+
+    // Helper: calc shift seconds with real-time for Noite (today portion after 19:00)
+    const calcNightEveningSeconds = (): number => {
+      if (currentTotalMinutes >= 19 * 60) {
+        let wm = currentTotalMinutes - 19 * 60;
+        if (currentTotalMinutes >= LUNCH_NIGHT_END * 60) wm -= 60;
+        else if (currentTotalMinutes >= LUNCH_NIGHT_START * 60) wm -= (currentTotalMinutes - LUNCH_NIGHT_START * 60);
+        if (wm < 0) wm = 0;
+        return Math.min(wm * 60 + currentSecond, SHIFT_WORK_HOURS * 3600);
+      }
+      return 0;
+    };
+
+    // Helper: calc yesterday's night shift extending into today (before 7:00)
+    const calcNightMorningSeconds = (targetPerson: PersonKey): number => {
+      if (currentTotalMinutes >= 7 * 60) return SHIFT_WORK_HOURS * 3600;
+      const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const yShift = getShiftForDay(targetPerson, yesterday);
+      if (yShift === 'Noite') {
+        let wm = 5 * 60 + currentTotalMinutes;
+        wm -= 60; // subtract night lunch
+        if (wm < 0) wm = 0;
+        return wm * 60 + currentSecond;
+      }
+      return 0;
+    };
+
+    // Helper: check if on backup for a date
+    const isOnBackupForDate = (date: Date): PersonKey | null => getBackupTarget(person, date);
+
+    // ---- MAIN LOOP ----
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(selectedYear, selectedMonth, day);
-      const shift = getShiftForDay(person, date);
-      const overrides = getOverrides(person, date);
-
+      const dayOfWeek = date.getDay();
       const isPast = date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const isToday = date.getTime() === new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-      if (shift !== 'Folga') {
-        totalDays++;
+      if (isRealCurrentMonth && !isPast && !isToday) continue;
 
-        let shiftSeconds = 0;
+      const backupTarget = isOnBackupForDate(date);
 
-        // If not the real current month, assume full shifts
-        if (!isRealCurrentMonth) {
-          shiftSeconds = 12 * 3600;
+      if (person === 'E') {
+        // Guilherme: Mon-Fri only
+        if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+        if (backupTarget) {
+          // BACKUP DAY - use target's shift
+          const backupShift = getShiftForDay(backupTarget, date);
+          if (backupShift !== 'Folga') {
+            totalDays++;
+            let sec = 0;
+            if (!isRealCurrentMonth || isPast) {
+              sec = SHIFT_WORK_HOURS * 3600;
+            } else if (isToday) {
+              if (backupShift === 'Manhã') {
+                sec = calcMorningSeconds(true, false);
+              } else if (backupShift === 'Noite') {
+                sec = calcNightEveningSeconds();
+                if (sec === 0 && currentTotalMinutes < 7 * 60) sec = calcNightMorningSeconds(backupTarget);
+              }
+            }
+            backupWorkSeconds += sec;
+            if (sec > 0) workDays++;
+          }
         } else {
-          // Real current month logic
-          if (isPast) {
-            if (shift === 'Manhã') {
-              shiftSeconds = 12 * 3600;
-            } else if (shift === 'Noite') {
-              const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-              if (date.getTime() === yesterday.getTime()) {
-                if (currentTotalMinutes >= 7 * 60) {
-                  shiftSeconds = 12 * 3600;
+          // NORMAL ADM DAY
+          totalDays++;
+          const admStartParts = ADM_DEFAULT_START.split(':');
+          const admEndParts = ADM_DEFAULT_END.split(':');
+          let dailySec = (parseInt(admEndParts[0]) - parseInt(admStartParts[0])) * 3600 +
+                         (parseInt(admEndParts[1]) - parseInt(admStartParts[1])) * 60 - LUNCH_SECONDS;
+
+          if (isRealCurrentMonth && isToday) {
+            const admStartMin = parseInt(admStartParts[0]) * 60 + parseInt(admStartParts[1]);
+            const admEndMin = parseInt(admEndParts[0]) * 60 + parseInt(admEndParts[1]);
+            if (currentTotalMinutes >= admEndMin) {
+              workDays++;
+            } else if (currentTotalMinutes >= admStartMin) {
+              let wm = currentTotalMinutes - admStartMin;
+              if (currentTotalMinutes >= LUNCH_END * 60) wm -= 60;
+              else if (currentTotalMinutes >= LUNCH_START * 60) wm -= (currentTotalMinutes - LUNCH_START * 60);
+              if (wm < 0) wm = 0;
+              dailySec = wm * 60 + currentSecond;
+              if (dailySec > 0) workDays++;
+            } else {
+              dailySec = 0;
+            }
+          } else {
+            workDays++;
+          }
+          normalWorkSeconds += dailySec;
+        }
+      } else {
+        // A-D: Shift workers
+        if (backupTarget) {
+          // BACKUP DAY
+          const backupShift = getShiftForDay(backupTarget, date);
+          if (backupShift !== 'Folga') {
+            totalDays++;
+            let sec = 0;
+            if (!isRealCurrentMonth || isPast) {
+              sec = SHIFT_WORK_HOURS * 3600;
+            } else if (isToday) {
+              if (backupShift === 'Manhã') {
+                sec = calcMorningSeconds(true, false);
+              } else if (backupShift === 'Noite') {
+                sec = calcNightEveningSeconds();
+                if (sec === 0 && currentTotalMinutes < 7 * 60) sec = calcNightMorningSeconds(backupTarget);
+              }
+            }
+            backupWorkSeconds += sec;
+            if (sec > 0) workDays++;
+          }
+        } else {
+          // NORMAL DAY
+          const ownShift = getShiftForDay(person, date);
+          const overrides = getOverrides(person, date);
+
+          if (ownShift !== 'Folga') {
+            totalDays++;
+            let sec = 0;
+            if (!isRealCurrentMonth || isPast) {
+              if (ownShift === 'Noite') {
+                const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                if (date.getTime() === yesterday.getTime() && currentTotalMinutes < 7 * 60) {
+                  sec = calcNightMorningSeconds(person);
                 } else {
-                  const hoursAfterMidnight = currentTotalMinutes * 60 + currentSecond;
-                  shiftSeconds = (5 * 3600) + hoursAfterMidnight;
+                  sec = SHIFT_WORK_HOURS * 3600;
                 }
               } else {
-                shiftSeconds = 12 * 3600;
+                sec = SHIFT_WORK_HOURS * 3600;
+              }
+            } else if (isToday) {
+              if (ownShift === 'Manhã') {
+                sec = calcMorningSeconds(true, false);
+              } else if (ownShift === 'Noite') {
+                sec = calcNightEveningSeconds();
+                if (sec === 0 && currentTotalMinutes < 7 * 60) sec = calcNightMorningSeconds(person);
               }
             }
-          } else if (isToday) {
-            if (shift === 'Manhã') {
-              if (currentTotalMinutes >= 7 * 60) {
-                if (currentTotalMinutes >= 19 * 60) {
-                  shiftSeconds = 12 * 3600;
-                } else {
-                  shiftSeconds = (currentTotalMinutes - 7 * 60) * 60 + currentSecond;
-                }
-              }
-            } else if (shift === 'Noite') {
-              if (currentTotalMinutes >= 19 * 60) {
-                shiftSeconds = (currentTotalMinutes - 19 * 60) * 60 + currentSecond;
-              }
-            }
+            normalWorkSeconds += sec;
+            if (isPast || (isToday && sec > 0)) workDays++;
+          }
+
+          // Spot hours on folga days
+          if (ownShift === 'Folga' && overrides.spot) {
+            normalWorkSeconds += overrides.spot.horasPorDia * 3600;
           }
         }
-
-        totalWorkSeconds += shiftSeconds;
-
-        if (isPast || (isToday && shiftSeconds > 0)) {
-          workDays++;
-        }
-      }
-
-      // Add spot hours on folga days
-      if (shift === 'Folga' && overrides.spot) {
-        totalWorkSeconds += overrides.spot.horasPorDia * 3600;
       }
     }
 
-    // 2. Apply adjustments (Atestados, Spots, Eventos, ADM) matching original logic
+    // ---- ADJUSTMENTS (only affect normalWorkSeconds, skip backup days) ----
+
     // --- ATESTADOS ---
     if (data && data.atestados[person]) {
       data.atestados[person].forEach((ast: Atestado) => {
@@ -406,7 +557,6 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         const startDate = new Date(Number(sy), Number(sm) - 1, Number(sd));
         const endDate = new Date(Number(ey), Number(em) - 1, Number(ed));
         const loopDate = new Date(startDate);
-
         while (loopDate <= endDate) {
           if (loopDate.getMonth() === selectedMonth && loopDate.getFullYear() === selectedYear) {
             let shouldProcess = true;
@@ -414,14 +564,13 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
               const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
               if (loopDate > todayStart) shouldProcess = false;
             }
-
-            if (shouldProcess) {
+            if (shouldProcess && !isOnBackupForDate(loopDate)) {
               const shift = getShiftForDay(person, loopDate);
               if (shift !== 'Folga') {
                 if (ast.porHora) {
-                  totalWorkSeconds -= ast.horas * 3600;
+                  normalWorkSeconds -= ast.horas * 3600;
                 } else {
-                  totalWorkSeconds -= 12 * 3600;
+                  normalWorkSeconds -= SHIFT_WORK_HOURS * 3600;
                   workDays--;
                 }
               }
@@ -440,7 +589,6 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         const startDate = new Date(Number(sy), Number(sm) - 1, Number(sd));
         const endDate = new Date(Number(ey), Number(em) - 1, Number(ed));
         const loopDate = new Date(startDate);
-
         while (loopDate <= endDate) {
           if (loopDate.getMonth() === selectedMonth && loopDate.getFullYear() === selectedYear) {
             let shouldProcess = true;
@@ -448,8 +596,8 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
               const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
               if (loopDate > todayStart) shouldProcess = false;
             }
-            if (shouldProcess) {
-              totalWorkSeconds += sp.horasPorDia * 3600;
+            if (shouldProcess && !isOnBackupForDate(loopDate)) {
+              normalWorkSeconds += sp.horasPorDia * 3600;
             }
           }
           loopDate.setDate(loopDate.getDate() + 1);
@@ -465,7 +613,6 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         const startDate = new Date(Number(sy), Number(sm) - 1, Number(sd));
         const endDate = new Date(Number(ey), Number(em) - 1, Number(ed));
 
-        // Férias: subtract 12h per day and reduce work days
         if (evento.tipo === 'férias') {
           const loopDate = new Date(startDate);
           while (loopDate <= endDate) {
@@ -475,18 +622,28 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                 const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 if (loopDate > todayStart) shouldReduce = false;
               }
-              if (shouldReduce) {
-                const shift = getShiftForDay(person, loopDate);
-                if (shift !== 'Folga') {
-                  totalWorkSeconds -= 12 * 3600;
-                  workDays--;
+              if (shouldReduce && !isOnBackupForDate(loopDate)) {
+                if (person === 'E') {
+                  const dow = loopDate.getDay();
+                  if (dow !== 0 && dow !== 6) {
+                    const asp = ADM_DEFAULT_START.split(':');
+                    const aep = ADM_DEFAULT_END.split(':');
+                    normalWorkSeconds -= (parseInt(aep[0]) - parseInt(asp[0])) * 3600 +
+                                        (parseInt(aep[1]) - parseInt(asp[1])) * 60 - LUNCH_SECONDS;
+                    workDays--;
+                  }
+                } else {
+                  const shift = getShiftForDay(person, loopDate);
+                  if (shift !== 'Folga') {
+                    normalWorkSeconds -= SHIFT_WORK_HOURS * 3600;
+                    workDays--;
+                  }
                 }
               }
             }
             loopDate.setDate(loopDate.getDate() + 1);
           }
-        } else if (evento.horas > 0) {
-          // Other events with custom hours
+        } else if (evento.tipo !== 'backup' && evento.horas > 0) {
           if (startDate.getMonth() === selectedMonth && startDate.getFullYear() === selectedYear) {
             const dayNum = startDate.getDate();
             if (!isRealCurrentMonth || dayNum <= now.getDate()) {
@@ -496,9 +653,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                 daysInEvento = Math.floor((lastDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
               }
               if (evento.operacao === 'adicionar') {
-                totalWorkSeconds += daysInEvento * evento.horas * 3600;
+                normalWorkSeconds += daysInEvento * evento.horas * 3600;
               } else {
-                totalWorkSeconds -= daysInEvento * evento.horas * 3600;
+                normalWorkSeconds -= daysInEvento * evento.horas * 3600;
               }
             }
           }
@@ -513,45 +670,42 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         const [ey, em, ed] = adm.endDate.split('-');
         const startDate = new Date(Number(sy), Number(sm) - 1, Number(sd));
         const endDate = new Date(Number(ey), Number(em) - 1, Number(ed));
-
         if (startDate.getMonth() === selectedMonth && startDate.getFullYear() === selectedYear) {
           if (!isRealCurrentMonth || startDate <= new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
             const admStartParts = adm.horaInicio.split(':');
             const admEndParts = adm.horaFim.split(':');
-
-            const admDailySeconds =
-              (parseInt(admEndParts[0]) - parseInt(admStartParts[0])) * 3600 +
-              (parseInt(admEndParts[1]) - parseInt(admStartParts[1])) * 60;
-
-            const standardShiftSeconds = 12 * 3600;
+            const admDailySeconds = (parseInt(admEndParts[0]) - parseInt(admStartParts[0])) * 3600 +
+                                    (parseInt(admEndParts[1]) - parseInt(admStartParts[1])) * 60;
+            const standardShiftSeconds = SHIFT_TOTAL_HOURS * 3600;
             const admAdjustment = admDailySeconds - standardShiftSeconds;
-
             const lastDate = (isRealCurrentMonth && now < endDate) ? now : endDate;
             let daysInAdm = 1;
             if (endDate >= startDate) {
               daysInAdm = Math.floor((lastDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
             }
-
-            totalWorkSeconds += admAdjustment * daysInAdm;
+            normalWorkSeconds += admAdjustment * daysInAdm;
           }
         }
       });
     }
 
+    const totalWorkSeconds = normalWorkSeconds + backupWorkSeconds;
     const displayWorkDays = workDays < 0 ? 0 : workDays;
-    const hours = Math.floor(totalWorkSeconds / 3600);
-    const minutes = Math.floor((totalWorkSeconds % 3600) / 60);
-    const seconds = Math.floor(totalWorkSeconds % 60);
 
     return {
       totalWorkSeconds,
-      hours,
-      minutes,
-      seconds,
+      normalWorkSeconds,
+      backupWorkSeconds,
+      hours: Math.floor(totalWorkSeconds / 3600),
+      minutes: Math.floor((totalWorkSeconds % 3600) / 60),
+      seconds: Math.floor(totalWorkSeconds % 60),
+      backupHours: Math.floor(backupWorkSeconds / 3600),
+      backupMinutes: Math.floor((backupWorkSeconds % 3600) / 60),
+      backupSeconds: Math.floor(backupWorkSeconds % 60),
       workDays: displayWorkDays,
       totalDays,
     };
-  }, [selectedMonth, selectedYear, currentTime, data, getOverrides]);
+  }, [selectedMonth, selectedYear, currentTime, data, getOverrides, getBackupTarget]);
 
   // Real-time shift status for each person
   const shiftStatus = useMemo(() => {
@@ -580,11 +734,123 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       const yesterdayShift = getShiftForDay(person.key, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
       const overrides = getOverrides(person.key, now);
 
+      // Guilherme (E) - check backup first, then ADM
+      if (person.key === 'E') {
+        const backupTarget = getBackupTarget('E', now);
+        if (backupTarget) {
+          const backupShift = getShiftForDay(backupTarget, now);
+          const backupName = PEOPLE.find(p => p.key === backupTarget)?.name || backupTarget;
+          const prefix = `🔄 Backup de ${backupName} - `;
+          if (backupShift === 'Manhã') {
+            if (currentTotalMinutes >= 7 * 60 && currentTotalMinutes < 19 * 60) {
+              if (currentTotalMinutes >= LUNCH_START * 60 && currentTotalMinutes < LUNCH_END * 60) {
+                status[person.key] = { isOnShift: true, shiftType: 'Manhã', shiftLabel: `${prefix}🍔 Almoço (12:00 – 13:00)`, countdownSeconds: (LUNCH_END * 3600) - currentTotalSeconds, countdownLabel: 'Volta do almoço em' };
+              } else {
+                let rem = (19 * 3600) - currentTotalSeconds;
+                if (currentTotalMinutes < LUNCH_START * 60) rem -= LUNCH_SECONDS;
+                if (rem < 0) rem = 0;
+                status[person.key] = { isOnShift: true, shiftType: 'Manhã', shiftLabel: `${prefix}Manhã (07:00 – 19:00)`, countdownSeconds: rem, countdownLabel: 'Tempo restante' };
+              }
+            } else if (currentTotalMinutes < 7 * 60) {
+              status[person.key] = { isOnShift: false, shiftType: 'Manhã', shiftLabel: `${prefix}Manhã (07:00 – 19:00)`, countdownSeconds: (7 * 3600) - currentTotalSeconds, countdownLabel: 'Início em' };
+            } else {
+              status[person.key] = { isOnShift: false, shiftType: 'Manhã', shiftLabel: `${prefix}Manhã (07:00 – 19:00)`, countdownSeconds: 0, countdownLabel: 'Turno encerrado' };
+            }
+          } else if (backupShift === 'Noite') {
+            if (currentTotalMinutes >= 19 * 60) {
+              if (currentTotalMinutes >= LUNCH_NIGHT_START * 60 && currentTotalMinutes < LUNCH_NIGHT_END * 60) {
+                status[person.key] = { isOnShift: true, shiftType: 'Noite', shiftLabel: `${prefix}🍔 Almoço (22:00 – 23:00)`, countdownSeconds: (LUNCH_NIGHT_END * 3600) - currentTotalSeconds, countdownLabel: 'Volta do almoço em' };
+              } else {
+                let rem = (24 * 3600 + 7 * 3600) - currentTotalSeconds;
+                if (currentTotalMinutes < LUNCH_NIGHT_START * 60) rem -= LUNCH_SECONDS;
+                if (rem < 0) rem = 0;
+                status[person.key] = { isOnShift: true, shiftType: 'Noite', shiftLabel: `${prefix}Noite (19:00 – 07:00)`, countdownSeconds: rem, countdownLabel: 'Tempo restante' };
+              }
+            } else if (currentTotalMinutes < 7 * 60) {
+              const yShift = getShiftForDay(backupTarget, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+              if (yShift === 'Noite') {
+                status[person.key] = { isOnShift: true, shiftType: 'Noite', shiftLabel: `${prefix}Noite (19:00 – 07:00)`, countdownSeconds: (7 * 3600) - currentTotalSeconds, countdownLabel: 'Tempo restante' };
+              } else {
+                status[person.key] = { isOnShift: false, shiftType: 'Noite', shiftLabel: `${prefix}Noite (19:00 – 07:00)`, countdownSeconds: (19 * 3600) - currentTotalSeconds, countdownLabel: 'Início em' };
+              }
+            } else {
+              status[person.key] = { isOnShift: false, shiftType: 'Noite', shiftLabel: `${prefix}Noite (19:00 – 07:00)`, countdownSeconds: (19 * 3600) - currentTotalSeconds, countdownLabel: 'Início em' };
+            }
+          } else {
+            status[person.key] = { isOnShift: false, shiftType: 'Folga', shiftLabel: `${prefix}Folga`, countdownSeconds: 0, countdownLabel: '' };
+          }
+          continue;
+        }
+        const dayOfWeek = now.getDay();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          // Saturday and Sunday - Folga
+          status[person.key] = {
+            isOnShift: false,
+            shiftType: 'Folga',
+            shiftLabel: dayOfWeek === 0 ? 'Folga (Domingo)' : 'Folga (Sábado)',
+            countdownSeconds: 0,
+            countdownLabel: '',
+          };
+        } else {
+          // Mon-Fri - ADM
+          const admStartMin = 7 * 60 + 30; // 07:30
+          const admEndMin = 16 * 60 + 47;  // 16:47
+
+          if (currentTotalMinutes < admStartMin) {
+            // Before shift
+            status[person.key] = {
+              isOnShift: false,
+              shiftType: 'Manhã',
+              shiftLabel: 'ADM (07:30 – 16:47)',
+              countdownSeconds: (admStartMin * 60) - currentTotalSeconds,
+              countdownLabel: 'Início em',
+            };
+          } else if (currentTotalMinutes >= admEndMin) {
+            // After shift
+            status[person.key] = {
+              isOnShift: false,
+              shiftType: 'Manhã',
+              shiftLabel: 'ADM (07:30 – 16:47)',
+              countdownSeconds: 0,
+              countdownLabel: 'Turno encerrado',
+            };
+          } else if (currentTotalMinutes >= LUNCH_START * 60 && currentTotalMinutes < LUNCH_END * 60) {
+            // Lunch break (12:00 - 13:00)
+            status[person.key] = {
+              isOnShift: true,
+              shiftType: 'Manhã',
+              shiftLabel: '🍔 Almoço (12:00 – 13:00)',
+              countdownSeconds: (LUNCH_END * 3600) - currentTotalSeconds,
+              countdownLabel: 'Volta do almoço em',
+            };
+          } else {
+            // On shift
+            let remainingSeconds = (admEndMin * 60) - currentTotalSeconds;
+            // Subtract lunch if not yet passed
+            if (currentTotalMinutes < LUNCH_START * 60) {
+              remainingSeconds -= LUNCH_SECONDS;
+            }
+            if (remainingSeconds < 0) remainingSeconds = 0;
+            status[person.key] = {
+              isOnShift: true,
+              shiftType: 'Manhã',
+              shiftLabel: 'ADM (07:30 – 16:47)',
+              countdownSeconds: remainingSeconds,
+              countdownLabel: 'Tempo restante',
+            };
+          }
+        }
+        continue; // skip normal shift logic for Guilherme
+      }
+
       let isOnShift = false;
       let shiftType: ShiftType = todayShift;
       let shiftLabel = '';
       let countdownSeconds = 0;
       let countdownLabel = '';
+
+      // Check if this person is backing up someone today
+      const backupTargetStatus = getBackupTarget(person.key, now);
 
       // Check if atestado overrides today
       const hasAtestado = overrides.atestado !== null;
@@ -593,18 +859,100 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       if (hasAtestado || hasFerias) {
         isOnShift = false;
         shiftType = 'Folga';
-        shiftLabel = hasAtestado ? 'Atestado' : 'Férias';
+        if (hasFerias) {
+          const backupProvider = getBackupProvider(person.key, now);
+          if (backupProvider) {
+            const providerName = PEOPLE.find(p => p.key === backupProvider)?.name || backupProvider;
+            shiftLabel = `🏖️ Férias | Backup: ${providerName}`;
+          } else {
+            shiftLabel = '🏖️ Férias';
+          }
+        } else {
+          shiftLabel = 'Atestado';
+        }
         countdownSeconds = 0;
         countdownLabel = '';
+      } else if (backupTargetStatus) {
+        // This person is backing up someone - use backed-up person's shift
+        const backupShift = getShiftForDay(backupTargetStatus, now);
+        const backupName = PEOPLE.find(p => p.key === backupTargetStatus)?.name || backupTargetStatus;
+        const bPrefix = `🔄 Backup de ${backupName} - `;
+        const effectiveShiftType = backupShift;
+        if (backupShift === 'Manhã') {
+          if (currentTotalMinutes >= 7 * 60 && currentTotalMinutes < 19 * 60) {
+            if (currentTotalMinutes >= LUNCH_START * 60 && currentTotalMinutes < LUNCH_END * 60) {
+              isOnShift = true; shiftLabel = `${bPrefix}🍔 Almoço (12:00 – 13:00)`;
+              countdownSeconds = (LUNCH_END * 3600) - currentTotalSeconds; countdownLabel = 'Volta do almoço em';
+            } else {
+              isOnShift = true; shiftLabel = `${bPrefix}Manhã (07:00 – 19:00)`;
+              let rem = (19 * 3600) - currentTotalSeconds;
+              if (currentTotalMinutes < LUNCH_START * 60) rem -= LUNCH_SECONDS;
+              if (rem < 0) rem = 0;
+              countdownSeconds = rem; countdownLabel = 'Tempo restante';
+            }
+          } else if (currentTotalMinutes < 7 * 60) {
+            isOnShift = false; shiftLabel = `${bPrefix}Manhã (07:00 – 19:00)`;
+            countdownSeconds = (7 * 3600) - currentTotalSeconds; countdownLabel = 'Início em';
+          } else {
+            isOnShift = false; shiftLabel = `${bPrefix}Manhã (07:00 – 19:00)`;
+            countdownSeconds = 0; countdownLabel = 'Turno encerrado';
+          }
+        } else if (backupShift === 'Noite') {
+          if (currentTotalMinutes >= 19 * 60) {
+            if (currentTotalMinutes >= LUNCH_NIGHT_START * 60 && currentTotalMinutes < LUNCH_NIGHT_END * 60) {
+              isOnShift = true; shiftLabel = `${bPrefix}🍔 Almoço (22:00 – 23:00)`;
+              countdownSeconds = (LUNCH_NIGHT_END * 3600) - currentTotalSeconds; countdownLabel = 'Volta do almoço em';
+            } else {
+              isOnShift = true; shiftLabel = `${bPrefix}Noite (19:00 – 07:00)`;
+              let rem = (24 * 3600 + 7 * 3600) - currentTotalSeconds;
+              if (currentTotalMinutes < LUNCH_NIGHT_START * 60) rem -= LUNCH_SECONDS;
+              if (rem < 0) rem = 0;
+              countdownSeconds = rem; countdownLabel = 'Tempo restante';
+            }
+          } else if (currentTotalMinutes < 7 * 60) {
+            const yS = getShiftForDay(backupTargetStatus, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+            if (yS === 'Noite') {
+              isOnShift = true; shiftLabel = `${bPrefix}Noite (19:00 – 07:00)`;
+              countdownSeconds = (7 * 3600) - currentTotalSeconds; countdownLabel = 'Tempo restante';
+            } else {
+              isOnShift = false; shiftLabel = `${bPrefix}Noite (19:00 – 07:00)`;
+              countdownSeconds = (19 * 3600) - currentTotalSeconds; countdownLabel = 'Início em';
+            }
+          } else {
+            isOnShift = false; shiftLabel = `${bPrefix}Noite (19:00 – 07:00)`;
+            countdownSeconds = (19 * 3600) - currentTotalSeconds; countdownLabel = 'Início em';
+          }
+        } else {
+          isOnShift = false; shiftType = 'Folga'; shiftLabel = `${bPrefix}Folga`;
+          countdownSeconds = 0; countdownLabel = '';
+        }
+        shiftType = effectiveShiftType;
       } else if (todayShift === 'Manhã') {
         // Morning shift: 07:00 - 19:00
         if (currentTotalMinutes >= 7 * 60 && currentTotalMinutes < 19 * 60) {
-          isOnShift = true;
-          shiftLabel = 'Manhã (07:00 – 19:00)';
-          // Countdown to 19:00
-          const endSeconds = 19 * 3600;
-          countdownSeconds = endSeconds - currentTotalSeconds;
-          countdownLabel = 'Tempo restante';
+          // Check if currently in lunch break (12:00 - 13:00)
+          if (currentTotalMinutes >= LUNCH_START * 60 && currentTotalMinutes < LUNCH_END * 60) {
+            isOnShift = true;
+            shiftLabel = '🍔 Almoço (12:00 – 13:00)';
+            // Countdown to end of lunch (13:00)
+            const lunchEndSeconds = LUNCH_END * 3600;
+            countdownSeconds = lunchEndSeconds - currentTotalSeconds;
+            countdownLabel = 'Volta do almoço em';
+          } else {
+            isOnShift = true;
+            shiftLabel = 'Manhã (07:00 – 19:00)';
+            // Calculate countdown to 19:00, accounting for lunch
+            const endSeconds = 19 * 3600;
+            let remainingSeconds = endSeconds - currentTotalSeconds;
+            // If before lunch, add 1 hour for upcoming lunch
+            if (currentTotalMinutes < LUNCH_START * 60) {
+              remainingSeconds -= LUNCH_SECONDS; // subtract lunch from remaining
+            }
+            // If after lunch, lunch already deducted by time passed
+            if (remainingSeconds < 0) remainingSeconds = 0;
+            countdownSeconds = remainingSeconds;
+            countdownLabel = 'Tempo restante';
+          }
         } else if (currentTotalMinutes < 7 * 60) {
           isOnShift = false;
           shiftLabel = 'Manhã (07:00 – 19:00)';
@@ -620,12 +968,21 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       } else if (todayShift === 'Noite') {
         // Night shift: 19:00 - 07:00 (spans midnight)
         if (currentTotalMinutes >= 19 * 60) {
-          isOnShift = true;
-          shiftLabel = 'Noite (19:00 – 07:00)';
-          // Countdown to 07:00 tomorrow
-          const endSeconds = 24 * 3600 + 7 * 3600;
-          countdownSeconds = endSeconds - currentTotalSeconds;
-          countdownLabel = 'Tempo restante';
+          if (currentTotalMinutes >= LUNCH_NIGHT_START * 60 && currentTotalMinutes < LUNCH_NIGHT_END * 60) {
+            isOnShift = true;
+            shiftLabel = '🍔 Almoço (22:00 – 23:00)';
+            countdownSeconds = (LUNCH_NIGHT_END * 3600) - currentTotalSeconds;
+            countdownLabel = 'Volta do almoço em';
+          } else {
+            isOnShift = true;
+            shiftLabel = 'Noite (19:00 – 07:00)';
+            const endSeconds = 24 * 3600 + 7 * 3600;
+            let remainingSeconds = endSeconds - currentTotalSeconds;
+            if (currentTotalMinutes < LUNCH_NIGHT_START * 60) remainingSeconds -= LUNCH_SECONDS;
+            if (remainingSeconds < 0) remainingSeconds = 0;
+            countdownSeconds = remainingSeconds;
+            countdownLabel = 'Tempo restante';
+          }
         } else if (currentTotalMinutes < 7 * 60) {
           // Could be continuing yesterday's night shift
           if (yesterdayShift === 'Noite') {
@@ -666,7 +1023,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     }
 
     return status;
-  }, [currentTime, getOverrides]);
+  }, [currentTime, getOverrides, getBackupTarget, getBackupProvider]);
 
   // Handler functions
   const handleAddAtestado = () => {
@@ -754,6 +1111,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       endDate: evEndDate,
       horas: evHoras,
       operacao: evOperacao,
+      backupOf: evTipo === 'backup' ? (evBackupOf as PersonKey) : undefined,
     };
 
     const newData = {
@@ -799,7 +1157,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setAdmStartDate('');
     setAdmEndDate('');
     setAdmHoraInicio('07:30');
-    setAdmHoraFim('16:50');
+    setAdmHoraFim('16:47');
   };
 
   const resetEventoForm = () => {
@@ -808,6 +1166,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setEvEndDate('');
     setEvHoras(0);
     setEvOperacao('adicionar');
+    setEvBackupOf('');
   };
 
   // Reset filters
@@ -816,24 +1175,40 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setPersonFilter('');
   };
 
-  // Screenshot
-  const captureScreenshot = async () => {
-    if (!mainRef.current) return;
+  // Import JSON markings
+  const handleImportJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(mainRef.current, {
-        backgroundColor: '#f5f7fa',
-        scale: 2,
-      });
-      const link = document.createElement('a');
-      const date = new Date();
-      const timestamp = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}_${date.getHours()}h${date.getMinutes()}`;
-      link.download = `screenshot_${timestamp}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      const text = await file.text();
+      const imported = JSON.parse(text);
+      if (!imported.atestados || !imported.spots || !imported.adms || !imported.eventos) {
+        alert('Arquivo JSON inválido. O arquivo deve conter atestados, spots, adms e eventos.');
+        return;
+      }
+      const confirmed = window.confirm(`Deseja importar as marcações do arquivo?
+
+Isso vai SUBSTITUIR todas as marcações atuais.
+
+Arquivo: ${file.name}`);
+      if (!confirmed) return;
+      // Ensure all person keys exist
+      const keys: PersonKey[] = ['A', 'B', 'C', 'D', 'E'];
+      const newData: EscalaData = { atestados: {} as any, spots: {} as any, adms: {} as any, eventos: {} as any };
+      for (const k of keys) {
+        newData.atestados[k] = imported.atestados[k] || [];
+        newData.spots[k] = imported.spots[k] || [];
+        newData.adms[k] = imported.adms[k] || [];
+        newData.eventos[k] = imported.eventos[k] || [];
+      }
+      await saveData(newData);
+      alert('Marcações importadas com sucesso!');
     } catch (err) {
-      console.error('Error capturing screenshot:', err);
+      console.error('Error importing JSON:', err);
+      alert('Erro ao importar arquivo JSON. Verifique o formato do arquivo.');
     }
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // Generate PPT
@@ -929,8 +1304,29 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                       date.getFullYear() === now.getFullYear();
 
       for (const person of PEOPLE) {
-        const shift = getShiftForDay(person.key, date);
-        const shiftDisplay = getShiftDisplayString(shift);
+        let shift: ShiftType;
+        let shiftDisplay: string;
+
+        if (person.key === 'E') {
+          const dayOfWeek = date.getDay();
+          if (dayOfWeek === 0 || dayOfWeek === 6) {
+            shift = 'Folga';
+            shiftDisplay = 'Folga';
+          } else {
+            const bt = getBackupTarget(person.key, date);
+            if (bt) {
+              shift = getShiftForDay(bt, date);
+              shiftDisplay = `Backup ${PEOPLE.find(p => p.key === bt)?.name || bt} - ${getShiftDisplayString(shift)}`;
+            } else {
+              shift = 'Manhã';
+              shiftDisplay = 'ADM (07:30 – 16:47)';
+            }
+          }
+        } else {
+          shift = getShiftForDay(person.key, date);
+          shiftDisplay = getShiftDisplayString(shift);
+        }
+
         const icons = getEventIcons(person.key, date);
 
         // Apply filters
@@ -955,7 +1351,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     }
 
     return rows;
-  }, [selectedMonth, selectedYear, currentTime, shiftFilter, personFilter, getEventIcons]);
+  }, [selectedMonth, selectedYear, currentTime, shiftFilter, personFilter, getEventIcons, getBackupTarget]);
 
   // Calendar vars
   const today = currentTime;
@@ -992,56 +1388,105 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         color: '#2c3e50',
       }}
     >
-      {/* Voltar para Home button */}
-      <button
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: 20,
-          left: 20,
-          zIndex: 9999,
-          background: 'linear-gradient(135deg, #f97316, #ea580c)',
-          color: 'white',
-          padding: '10px 20px',
-          borderRadius: 8,
-          border: 'none',
-          fontWeight: 600,
-          boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-          fontSize: '0.9rem',
-        }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-        Voltar para Home
-      </button>
-
-      {/* Title + Action Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 20, marginBottom: 20, marginTop: 20, flexWrap: 'wrap' as const }}>
-        <h2 style={{ margin: 0, color: '#2c3e50', textAlign: 'center' as const, fontWeight: 600, fontSize: '1.8rem' }}>
-          Escala de Trabalho - Lundin Mining
-        </h2>
-        <button
-          onClick={generatePowerPointReport}
-          style={{ padding: '8px 15px', background: '#3498db', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}
-          onMouseOver={(e) => { e.currentTarget.style.background = '#2980b9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseOut={(e) => { e.currentTarget.style.background = '#3498db'; e.currentTarget.style.transform = 'translateY(0)'; }}
-        >
-          Download Relatório PPT
-        </button>
-        <button
-          onClick={captureScreenshot}
-          style={{ padding: '8px 15px', background: '#27ae60', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}
-          onMouseOver={(e) => { e.currentTarget.style.background = '#219a52'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseOut={(e) => { e.currentTarget.style.background = '#27ae60'; e.currentTarget.style.transform = 'translateY(0)'; }}
-        >
-          Capturar Tela (PNG)
-        </button>
+      {/* ===== NAVBAR ===== */}
+      <div style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 9999,
+        background: '#1e293b',
+        padding: '12px 24px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap' as const,
+        gap: 12,
+        marginBottom: 20,
+        borderRadius: 10,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'linear-gradient(135deg, #f97316, #ea580c)',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontSize: '0.85rem',
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(249,115,22,0.5)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Voltar
+          </button>
+          <h2 style={{ margin: 0, color: 'white', fontWeight: 600, fontSize: '1.2rem', letterSpacing: '0.5px' }}>
+            Escala de Trabalho - Lundin Mining
+          </h2>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+          <button
+            onClick={generatePowerPointReport}
+            style={{ padding: '7px 14px', background: '#3b82f6', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
+            onMouseOver={(e) => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Download Relatório PPT
+          </button>
+          <button
+            onClick={() => {
+              if (!data) return;
+              const exportData = {
+                exportDate: new Date().toISOString(),
+                month: MONTH_NAMES[selectedMonth],
+                year: selectedYear,
+                atestados: data.atestados,
+                spots: data.spots,
+                adms: data.adms,
+                eventos: data.eventos,
+              };
+              const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.download = `escala-marcacoes-${MONTH_NAMES[selectedMonth]}-${selectedYear}.json`;
+              link.href = url;
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+            style={{ padding: '7px 14px', background: '#f59e0b', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
+            onMouseOver={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar Marcações
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            style={{ padding: '7px 14px', background: '#10b981', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
+            onMouseOver={(e) => { e.currentTarget.style.background = '#059669'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.background = '#10b981'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar Marcações
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleImportJSON}
+            style={{ display: 'none' }}
+          />
+        </div>
       </div>
 
       {/* Filters Container */}
@@ -1210,7 +1655,11 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                   )}
 
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 2 }}>
-                    Horas: {formatSeconds(hoursInfo.totalWorkSeconds > 0 ? hoursInfo.totalWorkSeconds : 0)}
+                    Normais: {formatSeconds(hoursInfo.normalWorkSeconds > 0 ? hoursInfo.normalWorkSeconds : 0)}
+                    {hoursInfo.backupWorkSeconds > 0 && (
+                      <span style={{ color: '#f59e0b', marginLeft: 8 }}>Backup: {formatSeconds(hoursInfo.backupWorkSeconds)}</span>
+                    )}
+                    <span style={{ color: '#2c3e50', fontWeight: 600, marginLeft: 8 }}>Total: {formatSeconds(hoursInfo.totalWorkSeconds > 0 ? hoursInfo.totalWorkSeconds : 0)}</span>
                   </div>
                 </div>
               </div>
@@ -1250,14 +1699,22 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                 onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${person.key.toLowerCase()}/80/80.jpg`; }}
               />
               <div style={{ fontWeight: 600, marginBottom: 5, color: '#2c3e50' }}>{PERSON_FULL_NAMES[person.key]}</div>
-              <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 5 }}>
-                Horas trabalhadas: {hoursInfo.hours}h {hoursInfo.minutes}m {hoursInfo.seconds}s
+              <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 3 }}>
+                Normais: {hoursInfo.hours}h {hoursInfo.minutes}m {hoursInfo.seconds}s
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 5 }}>
-                Dias no mês: {hoursInfo.totalDays}
+              {hoursInfo.backupWorkSeconds > 0 && (
+                <div style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 600, marginBottom: 3 }}>
+                  🔄 Backup: {hoursInfo.backupHours}h {hoursInfo.backupMinutes}m {hoursInfo.backupSeconds}s
+                </div>
+              )}
+              <div style={{ fontSize: '0.8rem', color: '#2c3e50', fontWeight: 600, marginBottom: 3 }}>
+                Total: {hoursInfo.hours}h {hoursInfo.minutes}m {hoursInfo.seconds}s
+                {hoursInfo.backupWorkSeconds > 0 && (
+                  <span style={{ color: '#666', fontWeight: 400 }}> ({formatSeconds(hoursInfo.totalWorkSeconds)})</span>
+                )}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 5 }}>
-                Dias trabalhados: {hoursInfo.workDays}
+              <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 3 }}>
+                Dias no mês: {hoursInfo.totalDays} | Trab: {hoursInfo.workDays}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 5, justifyContent: 'center', marginTop: 10 }}>
                 <button
@@ -1442,7 +1899,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                 <h4 style={{ marginBottom: 5, color: '#2c3e50' }}>Histórico:</h4>
                 {data.atestados[atestadoModal.person].map((at: Atestado) => (
                   <div key={at.id} style={{ fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ color: '#2c3e50' }}>{formatDateFromStr(at.startDate)} a {formatDateFromStr(at.endDate)} {at.porHora ? `(${at.horas}h)` : '(12h/dia)'}</span>
+                    <span style={{ color: '#2c3e50' }}>{formatDateFromStr(at.startDate)} a {formatDateFromStr(at.endDate)} {at.porHora ? `(${at.horas}h)` : '(11h/dia)'}</span>
                     <button onClick={() => handleDeleteItem('atestados', atestadoModal.person!, at.id)} style={{ padding: '2px 6px', fontSize: '0.7rem', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 3, cursor: 'pointer' }}>×</button>
                   </div>
                 ))}
@@ -1480,7 +1937,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
             {/* Default text */}
             {!atPorHora && (
               <div style={{ marginBottom: 15, color: '#666', fontSize: '0.85rem', fontStyle: 'italic' }}>
-                * Se desmarcado, reduzirá automaticamente 12h/dia e a contagem de dias trabalhados.
+                * Se desmarcado, reduzirá automaticamente 11h/dia e a contagem de dias trabalhados.
               </div>
             )}
 
@@ -1577,7 +2034,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
               <input type="time" value={admHoraInicio} onChange={(e) => setAdmHoraInicio(e.target.value)} style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }} />
             </div>
             <div style={{ marginBottom: 15 }}>
-              <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Horário Fim (padrão 16:50):</label>
+              <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Horário Fim (padrão 16:47):</label>
               <input type="time" value={admHoraFim} onChange={(e) => setAdmHoraFim(e.target.value)} style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }} />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1607,7 +2064,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
                 <h4 style={{ marginBottom: 5, color: '#2c3e50' }}>Histórico:</h4>
                 {data.eventos[eventoModal.person].map((ev: Evento) => (
                   <div key={ev.id} style={{ fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                    <span style={{ color: '#2c3e50' }}>{formatDateFromStr(ev.startDate)} a {formatDateFromStr(ev.endDate)} ({ev.tipo}, {ev.operacao === 'adicionar' ? '+' : '-'}{ev.horas}h)</span>
+                    <span style={{ color: '#2c3e50' }}>{formatDateFromStr(ev.startDate)} a {formatDateFromStr(ev.endDate)} ({ev.tipo}{ev.backupOf ? ` → ${PEOPLE.find(p => p.key === ev.backupOf)?.name || ev.backupOf}` : ''}, {ev.operacao === 'adicionar' ? '+' : '-'}{ev.horas}h)</span>
                     <button onClick={() => handleDeleteItem('eventos', eventoModal.person!, ev.id)} style={{ padding: '2px 6px', fontSize: '0.7rem', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 3, cursor: 'pointer' }}>×</button>
                   </div>
                 ))}
@@ -1618,15 +2075,32 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
               <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Tipo de Evento:</label>
               <select
                 value={evTipo}
-                onChange={(e) => setEvTipo(e.target.value as 'folga' | 'viagem' | 'treinamento' | 'férias')}
+                onChange={(e) => setEvTipo(e.target.value as 'folga' | 'viagem' | 'treinamento' | 'férias' | 'backup')}
                 style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }}
               >
                 <option value="folga" style={{ color: '#2c3e50' }}>Folga</option>
                 <option value="viagem" style={{ color: '#2c3e50' }}>Viagem</option>
                 <option value="treinamento" style={{ color: '#2c3e50' }}>Treinamento</option>
                 <option value="férias" style={{ color: '#2c3e50' }}>Férias</option>
+                <option value="backup" style={{ color: '#2c3e50' }}>Backup</option>
               </select>
             </div>
+
+            {evTipo === 'backup' && (
+              <div style={{ marginBottom: 10 }}>
+                <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Quem está sendo substituído?:</label>
+                <select
+                  value={evBackupOf}
+                  onChange={(e) => setEvBackupOf(e.target.value as PersonKey)}
+                  style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }}
+                >
+                  <option value="">Selecione...</option>
+                  {PEOPLE.filter(p => p.key !== eventoModal.person).map(p => (
+                    <option key={p.key} value={p.key}>{PERSON_FULL_NAMES[p.key]}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div style={{ marginBottom: 10 }}>
               <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Data Início:</label>

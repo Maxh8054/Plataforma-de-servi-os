@@ -2,10 +2,10 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 const DEFAULT_DATA = {
-  atestados: { A: [], B: [], C: [], D: [] },
-  spots: { A: [], B: [], C: [], D: [] },
-  adms: { A: [], B: [], C: [], D: [] },
-  eventos: { A: [], B: [], C: [], D: [] },
+  atestados: { A: [], B: [], C: [], D: [], E: [] },
+  spots: { A: [], B: [], C: [], D: [], E: [] },
+  adms: { A: [], B: [], C: [], D: [], E: [] },
+  eventos: { A: [], B: [], C: [], D: [], E: [] },
 };
 
 export async function GET() {

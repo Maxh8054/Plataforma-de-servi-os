@@ -51,4 +51,18 @@ prompt
 
 server.log
 # Skills directory
-/skills/
+/skills/node_modules/
+.next/
+*.db
+*.db-journal
+dev.log
+upload/
+tool-results/
+.env
+.env.local
+worklog.md
+restart-server.sh
+keep-alive.sh
+start.sh
+*.bak
+server-dev.ts
