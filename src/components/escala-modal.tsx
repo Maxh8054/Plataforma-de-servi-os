@@ -274,7 +274,16 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/escala');
       if (res.ok) {
         const jsonData = await res.json();
-        setData(jsonData);
+        // Ensure all person keys exist (A-E) even if DB data is missing them
+        const keys: PersonKey[] = ['A', 'B', 'C', 'D', 'E'];
+        const normalized: EscalaData = { atestados: {} as any, spots: {} as any, adms: {} as any, eventos: {} as any };
+        for (const k of keys) {
+          normalized.atestados[k] = jsonData.atestados?.[k] || [];
+          normalized.spots[k] = jsonData.spots?.[k] || [];
+          normalized.adms[k] = jsonData.adms?.[k] || [];
+          normalized.eventos[k] = jsonData.eventos?.[k] || [];
+        }
+        setData(normalized);
       }
     } catch (err) {
       console.error('Error fetching escala data:', err);
@@ -1133,7 +1142,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       ...data,
       [type]: {
         ...data[type],
-        [person]: data[type][person].filter((item: { id: string }) => item.id !== id),
+        [person]: (data[type][person] || []).filter((item: { id: string }) => item.id !== id),
       },
     };
     saveData(newData);
