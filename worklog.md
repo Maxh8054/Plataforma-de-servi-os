@@ -38,3 +38,27 @@ Stage Summary:
 - Uses placeholder URL https://example.com/estoque-go (user will replace with real URL later)
 - Opens in new tab (target="_blank") with "inventory" icon and "open_in_new" indicator
 - Lint passes, browser verification confirms feature works correctly
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix eventos não sendo marcados na escala + erro 500 no Render
+
+Work Log:
+- Investigated POST /api/escala 500 error on Render.com
+- Found root cause: Dockerfile didn't create db/ directory or run prisma db push on startup
+- Found that saveData() only updated local state on successful server response (res.ok)
+- When server returned 500, setData was never called, so events never appeared in the table
+- Implemented optimistic update: setData(newData) is called BEFORE the API request
+- saveData now returns Promise<boolean> for success/failure feedback
+- All handlers (handleAddAtestado, handleAddSpot, handleAddADM, handleAddEvento) now show error alert on failure
+- Fixed Dockerfile: added entrypoint.sh that creates db/ dir and runs prisma db push
+- Verified fix with agent-browser: events (🏖️ férias) correctly render in escala table
+- Verified API works correctly via curl (POST returns 200, data persists)
+- Pushed commit 93f33d8 to GitHub (only 2 files changed: escala-modal.tsx, Dockerfile)
+
+Stage Summary:
+- Key fix: Optimistic UI update ensures events appear instantly in the escala table
+- Dockerfile fix resolves 500 error on Render.com by initializing the SQLite database
+- Error feedback: users now see an alert if server save fails
+- Committed and pushed to origin/main
