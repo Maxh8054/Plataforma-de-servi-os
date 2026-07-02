@@ -296,8 +296,10 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     fetchData();
   }, [fetchData]);
 
-  // Save data
-  const saveData = useCallback(async (newData: EscalaData) => {
+  // Save data - optimistic update: always update local state, then persist to server
+  const saveData = useCallback(async (newData: EscalaData): Promise<boolean> => {
+    // Optimistic update - show changes immediately in the UI
+    setData(newData);
     try {
       const res = await fetch('/api/escala', {
         method: 'POST',
@@ -305,10 +307,14 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         body: JSON.stringify(newData),
       });
       if (res.ok) {
-        setData(newData);
+        return true;
+      } else {
+        console.error('Server returned error:', res.status, await res.text().catch(() => ''));
+        return false;
       }
     } catch (err) {
       console.error('Error saving escala data:', err);
+      return false;
     }
   }, []);
 
@@ -1055,7 +1061,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       },
     };
 
-    saveData(newData);
+    saveData(newData).then(ok => {
+      if (!ok) alert('⚠️ Erro ao salvar no servidor. A marcação aparece localmente mas pode ser perdida ao recarregar.');
+    });
     setAtestadoModal({ open: false, person: null });
     resetAtestadoForm();
   };
@@ -1079,7 +1087,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       },
     };
 
-    saveData(newData);
+    saveData(newData).then(ok => {
+      if (!ok) alert('⚠️ Erro ao salvar no servidor. A marcação aparece localmente mas pode ser perdida ao recarregar.');
+    });
     setSpotModal({ open: false, person: null });
     resetSpotForm();
   };
@@ -1104,7 +1114,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       },
     };
 
-    saveData(newData);
+    saveData(newData).then(ok => {
+      if (!ok) alert('⚠️ Erro ao salvar no servidor. A marcação aparece localmente mas pode ser perdida ao recarregar.');
+    });
     setAdmModal({ open: false, person: null });
     resetADMForm();
   };
@@ -1131,7 +1143,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       },
     };
 
-    saveData(newData);
+    saveData(newData).then(ok => {
+      if (!ok) alert('⚠️ Erro ao salvar no servidor. A marcação aparece localmente mas pode ser perdida ao recarregar.');
+    });
     setEventoModal({ open: false, person: null });
     resetEventoForm();
   };
