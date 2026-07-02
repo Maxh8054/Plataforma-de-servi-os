@@ -92,3 +92,23 @@ Stage Summary:
 - JSON backup é importado por arquivo, não por texto colado
 - Fotos são vinculadas automaticamente pelo nome do arquivo na pasta GitHub
 - Push: 0b71d4b..4547a92 main -> main
+
+---
+Task ID: 2
+Agent: Main
+Task: Fix 500 error no Render para endpoints do Estoque
+
+Work Log:
+- Analisou erro 500 em /api/estoque-goias e /api/estoque-goias/import-excel no Render
+- Causa 1: pacote xlsx não estava incluído no container runner do Docker
+- Causa 2: entrypoint.sh escondia erros do prisma db push (2>/dev/null || true)
+- Correção 1: adicionado serverExternalPackages: ['xlsx'] em next.config.ts
+- Correção 2: Dockerfile agora copia node_modules/xlsx para o container
+- Correção 3: entrypoint.sh agora mostra logs do prisma db push ao invés de esconder
+- Testou localmente: todos os 3 endpoints retornam 200 OK
+- Commit e push: 4547a92..124b9c4
+
+Stage Summary:
+- O erro 500 era porque o Render ainda tinha o deploy anterior (sem tabela estoque_goias e sem xlsx)
+- Push feito com Dockerfile corrigido, Render vai fazer novo deploy automaticamente
+- Após o novo deploy, prisma db push cria a tabela e xlsx fica disponível
