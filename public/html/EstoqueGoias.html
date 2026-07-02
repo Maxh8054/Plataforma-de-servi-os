@@ -439,7 +439,36 @@ async function getJSON(key, fallback){
 async function setJSON(key, val){
   try{ await window.storage.set(key, JSON.stringify(val), true); }catch(e){ console.error('storage set fail',key,e); }
 }
+const FOTO_BASE = '/estoque/fotos/';
+const FOTO_EXTS = ['.jpg','.jpeg','.png','.webp'];
+
+/* Resolve foto: prioridade 1) cache 2) pasta GitHub 3) IndexedDB */
+function resolveFotoUrl(pn){
+  for(const ext of FOTO_EXTS){ const u = FOTO_BASE + encodeURIComponent(pn) + ext; if(S._urlCache[u]) return u; }
+  return null;
+}
+function tryLoadFromFolder(pn){
+  return new Promise(resolve => {
+    let tried = 0;
+    function next(){
+      if(tried >= FOTO_EXTS.length){ resolve(null); return; }
+      const u = FOTO_BASE + encodeURIComponent(pn) + FOTO_EXTS[tried];
+      const img = new Image();
+      img.onload = ()=>{ S._urlCache[u]=true; S.fotoCache[pn]=u; resolve(u); };
+      img.onerror = ()=>{ tried++; next(); };
+      img.src = u;
+    }
+    next();
+  });
+}
 async function getFoto(pn){
+  // 1) cache de URL já resolvida
+  const url = resolveFotoUrl(pn);
+  if(url) return url;
+  // 2) tenta carregar da pasta /estoque/fotos/
+  const loaded = await tryLoadFromFolder(pn);
+  if(loaded) return loaded;
+  // 3) fallback IndexedDB (upload manual)
   try{ const r = await window.storage.get('foto:'+pn, true); return r ? r.value : null; }
   catch(e){ return null; }
 }
@@ -450,7 +479,7 @@ const S = {
   ready:false, user:null,
   loginSel:null, loginErr:'', loginPw:'', userDDOpen:false,
   pecas:{}, retiradas:[], pesquisas:[], logins:[],
-  fotoCache:{},
+  fotoCache:{}, _urlCache:{},
   search:'', catFilter:'all', sortBy:'nome', view:'grid', searchFocus:false,
   sidebarOpen:false, cartOpen:false, cart:[],
   modal:null, modalData:null, detailEdit:false,
@@ -825,7 +854,7 @@ function renderCatalog(){
     return `<div class="grid-wrap"><div class="empty-state">
       ${ic('package',42)}
       <p class="big">Nenhuma peça cadastrada</p>
-      <p>${S.user.admin? 'Abra o menu e use "Importar" para subir sua planilha Excel.' : 'Aguarde o time cadastrar o estoque.'}</p>
+      <p>${S.user.admin? 'Abra o menu e use "Importar" para subir sua planilha Excel. As fotos são vinculadas automaticamente pela pasta <code style="background:var(--steel);padding:2px 6px;border-radius:4px;font-size:12px">/estoque/fotos/</code> (nome do arquivo = PN da peça).' : 'Aguarde o time cadastrar o estoque.'}</p>
     </div></div>`;
   }
   if(!list.length){
@@ -844,7 +873,7 @@ function ensureFoto(p){
   const foto = S.fotoCache[p.pn];
   if(foto===undefined){
     S.fotoCache[p.pn]=null;
-    getFoto(p.pn).then(f=>{ S.fotoCache[p.pn]=f; if(f){ const el=document.querySelector(`img[data-pnimg="${p.pn}"]`); if(el) el.src=f; } });
+    getFoto(p.pn).then(f=>{ S.fotoCache[p.pn]=f; if(f){ const el=document.querySelector(`img[data-pnimg="${p.pn}"]`); if(el) el.src=f; } render(); });
   }
   return S.fotoCache[p.pn];
 }
