@@ -128,7 +128,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
     { title: 'KPI Performance', description: 'Indicadores de performance', icon: 'bar_chart', url: 'https://app.powerbi.com/links/aIKzcce3Nx?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
     { title: 'Escala de Turno', description: 'Gerenciamento de escalas', icon: 'schedule', url: '#escala' },
-    { title: 'Estoque', description: 'Gestão de estoque - Goiás', icon: 'inventory', url: 'https://example.com/estoque-go' }
+    { title: 'Estoque', description: 'Gestão de estoque - Goiás', icon: 'inventory', url: '/html/EstoqueGoias.html' }
   ],
   'pa': [
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
