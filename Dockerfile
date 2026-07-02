@@ -35,8 +35,8 @@ COPY --from=builder /app/public ./public
 # Copy Prisma schema for runtime db push
 COPY --from=builder /app/prisma ./prisma
 
-# Create directories with correct permissions
-RUN mkdir -p .next db && chown nextjs:nodejs .next db
+# Create db directory with correct ownership BEFORE switching user
+RUN mkdir -p .next db && chown -R nextjs:nodejs .next db
 
 # Copy node_modules needed at runtime
 # Prisma: CLI + generated client + engine + client package
@@ -50,12 +50,23 @@ COPY --from=builder /app/node_modules/xlsx ./node_modules/xlsx
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Create entrypoint script (before switching user)
+# Create entrypoint script as root (before switching user)
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
-    echo 'echo "=== Entrypoint: initializing database ===" >&2' >> /app/entrypoint.sh && \
+    echo 'set -e' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
+    echo 'echo "=== Entrypoint: starting ===" >&2' >> /app/entrypoint.sh && \
+    echo 'echo "DATABASE_URL=$DATABASE_URL" >&2' >> /app/entrypoint.sh && \
+    echo 'echo "CWD=$(pwd)" >&2' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
+    echo '# Ensure db directory exists and is writable' >> /app/entrypoint.sh && \
     echo 'mkdir -p /app/db' >> /app/entrypoint.sh && \
-    echo 'node /app/node_modules/prisma/build/index.js db push --skip-generate 2>&1' >> /app/entrypoint.sh && \
-    echo 'echo "=== Prisma db push done, starting server ===" >&2' >> /app/entrypoint.sh && \
+    echo 'ls -la /app/db/ >&2' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
+    echo '# Run prisma db push to create/update tables' >> /app/entrypoint.sh && \
+    echo 'echo "Running prisma db push..." >&2' >> /app/entrypoint.sh && \
+    echo 'node /app/node_modules/prisma/build/index.js db push --skip-generate 2>&1 || echo "WARNING: prisma db push failed, app will use fallback table creation" >&2' >> /app/entrypoint.sh && \
+    echo '' >> /app/entrypoint.sh && \
+    echo 'echo "=== Starting server ===" >&2' >> /app/entrypoint.sh && \
     echo 'exec node server.js' >> /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
 
