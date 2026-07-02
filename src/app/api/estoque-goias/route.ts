@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, ensureTables } from '@/lib/db';
 
 // GET /api/estoque-goias — load all estoque data
 export async function GET() {
   try {
+    await ensureTables();
     let row = await db.estoqueGoias.findUnique({ where: { id: 1 } });
     if (!row) {
       row = await db.estoqueGoias.create({
@@ -25,10 +26,10 @@ export async function GET() {
 // POST /api/estoque-goias — save estoque data (partial or full)
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const body = await req.json();
     const { pecas, retiradas, pesquisas, logins } = body;
 
-    // Build update object with only provided fields
     const updateData: Record<string, string> = {};
     if (pecas !== undefined) updateData.pecas = JSON.stringify(pecas);
     if (retiradas !== undefined) updateData.retiradas = JSON.stringify(retiradas);

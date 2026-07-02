@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, ensureTables } from '@/lib/db';
 
 // POST /api/estoque-goias/import-json — restore full backup from JSON file
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 

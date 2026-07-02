@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { db, ensureTables } from '@/lib/db';
 
 // POST /api/estoque-goias/import-excel — server-side Excel processing
 export async function POST(req: NextRequest) {
   try {
+    await ensureTables();
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -23,13 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Load current pecas from DB
-    let row;
-    try {
-      row = await db.estoqueGoias.findUnique({ where: { id: 1 } });
-    } catch (dbErr) {
-      console.error('DB error in import-excel:', dbErr);
-      return NextResponse.json({ error: 'Erro de banco de dados — tabela não inicializada' }, { status: 500 });
-    }
+    const row = await db.estoqueGoias.findUnique({ where: { id: 1 } });
     const currentPecas: Record<string, Record<string, unknown>> = row ? JSON.parse(row.pecas) : {};
 
     let count = 0;
