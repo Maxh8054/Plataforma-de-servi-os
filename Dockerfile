@@ -39,8 +39,11 @@ COPY --from=builder /app/prisma ./prisma
 RUN mkdir -p .next db && chown nextjs:nodejs .next db
 
 # Copy node_modules needed at runtime
+# Prisma: CLI + generated client + engine + client package
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# xlsx for server-side Excel processing
 COPY --from=builder /app/node_modules/xlsx ./node_modules/xlsx
 
 # Automatically leverage output traces to reduce image size
@@ -51,7 +54,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 RUN echo '#!/bin/sh' > /app/entrypoint.sh && \
     echo 'echo "=== Entrypoint: initializing database ===" >&2' >> /app/entrypoint.sh && \
     echo 'mkdir -p /app/db' >> /app/entrypoint.sh && \
-    echo 'npx prisma db push --skip-generate 2>&1' >> /app/entrypoint.sh && \
+    echo 'node /app/node_modules/prisma/build/index.js db push --skip-generate 2>&1' >> /app/entrypoint.sh && \
     echo 'echo "=== Prisma db push done, starting server ===" >&2' >> /app/entrypoint.sh && \
     echo 'exec node server.js' >> /app/entrypoint.sh && \
     chmod +x /app/entrypoint.sh
