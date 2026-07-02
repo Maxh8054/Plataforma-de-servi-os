@@ -157,3 +157,17 @@ model ZabNotification {
   @@index([lida])
   @@map("zab_notifications")
 }
+
+// ==========================================
+// Estoque Goiás
+// ==========================================
+
+model EstoqueGoias {
+  id         Int    @id @default(1)
+  pecas      String @default("{}")      // JSON: { "PN": { pn, nome, qtd, ... } }
+  retiradas  String @default("[]")      // JSON array
+  pesquisas  String @default("[]")      // JSON array
+  logins     String @default("[]")      // JSON array
+
+  @@map("estoque_goias")
+}
