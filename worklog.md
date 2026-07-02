@@ -62,3 +62,33 @@ Stage Summary:
 - Dockerfile fix resolves 500 error on Render.com by initializing the SQLite database
 - Error feedback: users now see an alert if server save fails
 - Committed and pushed to origin/main
+
+---
+Task ID: 1
+Agent: Main
+Task: Estoque Goiás - persistência no servidor, Excel via API, import JSON por arquivo
+
+Work Log:
+- Analisou o HTML EstoqueGoias.html (1623 linhas) que usava IndexedDB (window.storage) para guardar dados localmente no navegador
+- Identificou 3 problemas: (1) mobile lento ao importar Excel por processar no cliente, (2) dados não sincronizam entre dispositivos, (3) import JSON exigia colar texto em textarea
+- Adicionou modelo Prisma `EstoqueGoias` com campos pecas/retiradas/pesquisas/logins (JSON strings)
+- Instalou pacote `xlsx` para processamento server-side de planilhas Excel
+- Criou 3 endpoints API:
+  - GET/POST /api/estoque-goias (carregar/salvar dados com upsert)
+  - POST /api/estoque-goias/import-excel (processa Excel no servidor, retorna pecas atualizadas)
+  - POST /api/estoque-goias/import-json (restaura backup completo por upload de arquivo)
+- Reescreveu o HTML: substituiu IndexedDB por chamadas API (apiGet/apiSave com debounce de 300ms)
+- Importação Excel agora envia arquivo ao servidor (não processa no cliente) — resolve lentidão no mobile
+- Importação JSON mudou de textarea para upload de arquivo .json
+- FOTO_BASE atualizado para GitHub raw: `https://raw.githubusercontent.com/Maxh8054/Plataforma-de-servi-os/main/estoque/fotos/`
+- Removido: IndexedDB wrapper, upload manual de fotos, handlePhotoBatch, setFoto
+- Testado: GET retorna dados, POST salva, import-excel processa 3 peças corretamente
+- Dados de teste limpos (reset para vazio) antes do push
+- Commit e push para GitHub (main branch)
+
+Stage Summary:
+- Dados do estoque agora ficam no banco de dados SQLite (visíveis em qualquer dispositivo/login)
+- Excel é processado no servidor — mobile não fica mais lento
+- JSON backup é importado por arquivo, não por texto colado
+- Fotos são vinculadas automaticamente pelo nome do arquivo na pasta GitHub
+- Push: 0b71d4b..4547a92 main -> main
