@@ -1565,7 +1565,13 @@ async function handleExcelFile(file){
       method: 'POST',
       body: fd,
     });
-    if (!res.ok) { toast('Erro ao processar planilha'); return; }
+    if (!res.ok) {
+      let errMsg = 'Erro ao processar planilha';
+      try { const errData = await res.json(); errMsg = errData.error || errMsg; } catch(ign){}
+      toast(errMsg);
+      console.error('Import Excel error:', res.status, errMsg);
+      return;
+    }
     const data = await res.json();
     S.pecas = data.pecas;
     if (_serverData) _serverData.pecas = data.pecas;
@@ -1574,7 +1580,7 @@ async function handleExcelFile(file){
     render();
   } catch(e) {
     console.error('Erro ao importar Excel:', e);
-    toast('Erro ao importar planilha');
+    toast('Erro de conexão ao importar planilha');
   }
 }
 
