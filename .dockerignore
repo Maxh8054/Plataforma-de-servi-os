@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+dev.log
+server.log
+start.sh
+db/*.db
+db/*.db-journal
+*.md
+.env*
+.vscode
+.idea
