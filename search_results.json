@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://render.com/docs/github",
+    "name": "Connect GitHub",
+    "snippet": "Connect your GitHub account to Render to start deploying apps and sites using any repo you have access to. Render automatically redeploys your project with ... Read more",
+    "host_name": "render.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/git/comments/1hj2l1d/deploying_private_repo_in_render",
+    "name": "Deploying private repo in render : r/git",
+    "snippet": "I have a private github respository and invited my friend as collaborator. Now is it possible for my friend to deploy this in render ?",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/apps/render",
+    "name": "GitHub Apps - Render",
+    "snippet": "Render is an intelligent cloud platform that orchestrates, scales, and heals infrastructure automatically. Build, deploy, and scale applications faster",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://curriculum.codeyourfuture.io/guides/deploying/render/connecting-github",
+    "name": "GitHub > Render - Deploying",
+    "snippet": "How to connect your GitHub to Render ; Render homepage Click SIGN IN button ; Sign into Render using GitHub Choose GitHub as your sign in method ; Authorise Render ... Read more",
+    "host_name": "curriculum.codeyourfuture.io",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/render-examples",
+    "name": "Render Examples",
+    "snippet": "9 hours ago — Examples and quick starts for deployments on https:// render .com … free AI coding router with official Docker image and persistent SQLite. ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "Aug 7, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://coding-boot-camp.github.io/full-stack/render/render-deployment-guide",
+    "name": "Render Deployment Guide | The Full-Stack Blog",
+    "snippet": "May 28, 2024 — The Render dashboard allows us to easily create an app and link an existing GitHub repository to it to deploy. Create a new Render app by ... Read more",
+    "host_name": "coding-boot-camp.github.io",
+    "rank": 5,
+    "date": "May 28, 2024",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to/artem_turlenko/using-rendercom-for-github-oauth-integration-f2m",
+    "name": "👨‍💻 Using Render.com for GitHub OAuth Integration",
+    "snippet": "Feb 11, 2025 — Sign Up/Log In to Render.com. · Click \"New Web Service\" and connect your GitHub. · Select your repository and configure: Environment: Node; Build ... Read more",
+    "host_name": "dev.to",
+    "rank": 6,
+    "date": "Feb 11, 2025",
+    "favicon": ""
+  }
+]

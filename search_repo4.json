@@ -1,0 +1,65 @@
+[
+  {
+    "url": "https://github.com/Maxh8054/Z-services-ai/blob/main/src/lib/auth.ts",
+    "name": "Z-services-ai/src/lib/auth.ts at main · Maxh8054/Z  - GitHub",
+    "snippet": "{ id: '8', name: 'Guilherme Rodrigues Gonçalves', email: 'guilherme-r@zaminebrasil.com', password: '2026' }, { id: '9', name: 'Wallysson Diego Santiago Santos', email: 'wallysson@zaminebrasil.com', password: '2026' }, { id: '10', name: 'Weslley Ferreira de Siqueira', email: 'weslley@zaminebrasil.com', password: '2026' },",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Plataforma-de-servi-os/tree/main",
+    "name": "GitHub - Maxh8054/Plataforma-de-servi-os",
+    "snippet": "Contribute to Maxh8054/Plataforma-de-servi-os development by creating an account on GitHub.",
+    "host_name": "github.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Z-services-ai/blob/main/src/lib/emailUtils.ts",
+    "name": "Z-services-ai/src/lib/emailUtils.ts at main · Maxh8054/Z",
+    "snippet": "'marcelo-p@zaminebrasil.com', 'jun-shibuya@zaminebrasil.com', 'weslley-f@zaminebrasil.com', 'emerson-a@zaminebrasil.com', 'guilherme-r@zaminebrasil.com', ], // Destinatários para email de Análise (apenas alguns)",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Plataforma-de-servi-os/blob/main/agent-ctx/1-full-stack-developer.md",
+    "name": "Plataforma-de-servi-os/agent-ctx/1-full-stack-developer.md at",
+    "snippet": "Created /src/scripts/seed-users.ts with all 24 users (22 original + 2 new: guilherme-s and fabricio-s), all with password \"2026\", max-r with admin role Ran seed script successfully - all 24 users seeded",
+    "host_name": "github.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Plataforma-de-servi-os/blob/main/tool-results/read_1783620382105_f70eb1c86e66.txt",
+    "name": "Plataforma-de-servi-os/tool-results/read_1783620382105",
+    "snippet": "62→ 62→ 'fabricio-s@zaminebrasil.com', 63→ 63→ 'fabricio-c@zaminebrasil.com', 64→ 64→ 'guilherme-r@zaminebrasil.com', 65→ 65→ 'max-r@zaminebrasil.com', // Max Henrique (desenvolvedor) 66→ 66→ 'wenderson-a@zaminebrasil.com', // Wenderson Augusto de Oliveira 67→ 67→ 'vinicius-m@zaminebrasil.com', 68→ 68→]; 69→ 69→",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Zservice/blob/main/index.html",
+    "name": "Zservice/index.html at main · Maxh8054/Zservice · GitHub",
+    "snippet": "Contribute to Maxh8054/Zservice development by creating an account on GitHub.",
+    "host_name": "github.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/Maxh8054/Plataforma-de-servi-os/tree/main/src",
+    "name": "Plataforma-de-servi-os/src at main · Maxh8054  - GitHub",
+    "snippet": "Contribute to Maxh8054/Plataforma-de-servi-os development by creating an account on GitHub.",
+    "host_name": "github.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  }
+]
