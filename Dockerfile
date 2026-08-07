@@ -33,13 +33,10 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY seed.js ./seed.js
 
-RUN mkdir -p /app/db && chown -R nextjs:nodejs /app/db
-
 USER nextjs
 
 EXPOSE 10000
 ENV PORT=10000
 ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:/app/db/custom.db"
 
 CMD ["sh", "-c", "npx prisma db push --skip-generate && node seed.js && node server.js"]
