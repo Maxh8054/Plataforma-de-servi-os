@@ -63,3 +63,18 @@ server.log
 
 # Start script (local only)
 start.sh
+
+# Search/debug artifacts
+search_results*.json
+search_repo*.json
+page_content.json
+screenshot*.png
+verify*.png
+original_app.png
+
+# Internal scripts
+/.zscripts/
+/db-backup/
+/agent-ctx/
+/tests/
+/worklog.md
