@@ -146,6 +146,7 @@ export default function LoginPage() {
   // Verificação de email no cadastro (código de 6 dígitos)
   const [regCode, setRegCode] = useState("");
   const [regCodeMsg, setRegCodeMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [regVerified, setRegVerified] = useState(false);
   const [resending, setResending] = useState(false);
 
   const login = useAuthStore((s) => s.login);
@@ -181,6 +182,7 @@ export default function LoginPage() {
         setRegMsg(null);
         setRegCode("");
         setRegCodeMsg(null);
+        setRegVerified(false);
         setStep({ phase: 'reg-code' });
       } else {
         setRegMsg({ type: "success", text: data.message || 'Solicitação enviada! Aguarde a aprovação do administrador.' });
@@ -210,6 +212,7 @@ export default function LoginPage() {
         setRegCodeMsg({ type: "error", text: data.error || 'Erro ao verificar o código.' });
       } else {
         setRegCodeMsg({ type: "success", text: data.message || 'Email verificado! Aguarde a aprovação do administrador.' });
+        setRegVerified(true);
         setRegCode("");
       }
     } catch {
@@ -431,6 +434,7 @@ export default function LoginPage() {
     setTwofToken("");
     setRegCode("");
     setRegCodeMsg(null);
+    setRegVerified(false);
   };
 
   const goToForgot = () => {
@@ -773,7 +777,7 @@ export default function LoginPage() {
                   <p className="text-white font-medium text-sm break-all">{maskEmail(regEmail)}</p>
                 </div>
 
-                {regCodeMsg?.type !== "success" && (
+                {!regVerified && (
                   <>
                     <div className="space-y-1.5">
                       <Label htmlFor="reg-code" className="text-white/60 text-xs font-medium">
@@ -834,6 +838,7 @@ export default function LoginPage() {
                           setStep({ phase: 'email' });
                           setRegCode("");
                           setRegCodeMsg(null);
+                          setRegVerified(false);
                         }}
                         className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
                       >
@@ -844,7 +849,7 @@ export default function LoginPage() {
                   </>
                 )}
 
-                {regCodeMsg?.type === "success" && (
+                {regVerified && (
                   <div className="text-center pt-1">
                     <button
                       type="button"
