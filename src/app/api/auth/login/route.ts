@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import { rateLimit, getClientIp, trackFailedLogin, isIpBlockedForBruteForce } from '@/lib/rate-limit';
 import { SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth';
 import { auditLog } from '@/lib/audit-log';
+import { twoFactorRequiredForRole, generateVerificationCode, generateChallengeToken, hashSecret, sendVerificationEmail } from '@/lib/email';
 
 const MAX_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;
@@ -76,9 +77,9 @@ export async function POST(request: Request) {
       if (newAttempts >= MAX_ATTEMPTS) {
         updateData.lockedUntil = new Date(Date.now() + LOCK_DURATION_MS);
         updateData.loginAttempts = 0;
-        auditLog({ action: 'user_locked', userId: user.id, userEmail: user.email, userName: user.name, ip });
+        auditLog({ action: 'user_locked', userId: user.id, userEmail: user.email, userName: user.name ?? undefined, ip });
       } else {
-        auditLog({ action: 'login_failed', userId: user.id, userEmail: user.email, userName: user.name, ip });
+        auditLog({ action: 'login_failed', userId: user.id, userEmail: user.email, userName: user.name ?? undefined, ip });
       }
       await db.user.update({ where: { id: user.id }, data: updateData });
 
@@ -86,6 +87,47 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Acesso temporariamente bloqueado.' }, { status: 429 });
       }
       return NextResponse.json({ error: 'Email ou senha incorretos' }, { status: 401 });
+    }
+
+    // ===== 2FA por email (TWO_FACTOR_MODE=admin|all) =====
+    // Senha correta não é sessão: emite um desafio de código de 6 dígitos.
+    if (twoFactorRequiredForRole(user.role)) {
+      // limpa desafios antigos do usuário (higiene)
+      await db.twoFactorChallenge.deleteMany({ where: { userId: user.id } });
+
+      const code = generateVerificationCode();
+      const challengeToken = generateChallengeToken();
+      await db.twoFactorChallenge.create({
+        data: {
+          userId: user.id,
+          tokenHash: hashSecret(challengeToken, 'challenge'),
+          codeHash: hashSecret(code, user.id),
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
+
+      const delivery = await sendVerificationEmail(user.email, code, 'login');
+      if (!delivery.sent && !delivery.simulated) {
+        auditLog({ action: 'twofactor_code_failed', userId: user.id, userEmail: user.email, ip, details: 'Falha ao enviar email de verificação' });
+        return NextResponse.json(
+          { error: 'Não foi possível enviar o código de verificação. Tente novamente em instantes.' },
+          { status: 502 }
+        );
+      }
+
+      auditLog({
+        action: 'twofactor_code_sent',
+        userId: user.id,
+        userEmail: user.email,
+        ip,
+        details: delivery.simulated ? 'MODO SIMULADO — configure RESEND_API_KEY ou BREVO_API_KEY' : undefined,
+      });
+
+      // 401 de propósito: ainda NÃO há sessão — o token de desafio não autentica nada
+      return NextResponse.json(
+        { twoFactorRequired: true, challengeToken, maskedEmail: user.email },
+        { status: 401 }
+      );
     }
 
     const sessionToken = crypto.randomUUID();
@@ -105,7 +147,7 @@ export async function POST(request: Request) {
       });
     }
 
-    auditLog({ action: 'login_success', userId: user.id, userEmail: user.email, userName: user.name, ip });
+    auditLog({ action: 'login_success', userId: user.id, userEmail: user.email, userName: user.name ?? undefined, ip });
 
     try {
       const cookieStore = await import('next/headers').then(m => m.cookies());

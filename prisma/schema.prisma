@@ -24,6 +24,21 @@ model User {
   updatedAt     DateTime                @updatedAt
   auditLogs         AuditLog[]
   passwordResetRequests PasswordResetRequest[]
+  twoFactorChallenges   TwoFactorChallenge[]
+}
+
+model TwoFactorChallenge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  codeHash  String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("two_factor_challenges")
 }
 
 model PasswordResetRequest {

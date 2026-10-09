@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { getSessionToken, requireAdmin, forbidden } from '@/lib/auth';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
 import { auditLog } from '@/lib/audit-log';
+import { emailProviderConfigured, generateVerificationCode, hashSecret, sendVerificationEmail } from '@/lib/email';
 
 const REQUEST_EXPIRY_DAYS = 7;
 const REGISTER_RATE_MAX = 5;
@@ -35,6 +36,13 @@ async function expireOldPendingRequests() {
   cutoff.setDate(cutoff.getDate() - REQUEST_EXPIRY_DAYS);
   await db.request.updateMany({
     where: { type: 'registration', status: 'pending', createdAt: { lt: cutoff } },
+    data: { status: 'expired' },
+  });
+  // solicitações aguardando verificação de email expiram em 1 dia
+  const unverifiedCutoff = new Date();
+  unverifiedCutoff.setDate(unverifiedCutoff.getDate() - 1);
+  await db.request.updateMany({
+    where: { type: 'registration', status: 'unverified', createdAt: { lt: unverifiedCutoff } },
     data: { status: 'expired' },
   });
 }
@@ -115,17 +123,73 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Já existe solicitação aguardando verificação do código? Reenvia por cima.
+    const existingUnverified = await db.request.findFirst({
+      where: { type: 'registration', email: normalizedEmail, status: 'unverified' },
+      orderBy: { createdAt: 'desc' },
+    });
+
     await expireOldPendingRequests();
 
+    const name = String(data.name).slice(0, 120);
+    const department = data.department ? String(data.department).slice(0, 80) : null;
+
+    // Com provedor de email configurado: exige código de verificação (prova de posse do email)
+    if (emailProviderConfigured()) {
+      const code = generateVerificationCode();
+      const payload = {
+        name,
+        department,
+        codeHash: hashSecret(code, normalizedEmail),
+        codeExpiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        codeAttempts: 0,
+      };
+
+      const delivery = await sendVerificationEmail(normalizedEmail, code, 'registration');
+      if (!delivery.sent && !delivery.simulated) {
+        return NextResponse.json(
+          { success: false, error: 'Não foi possível enviar o email de verificação. Tente novamente em instantes.' },
+          { status: 502 }
+        );
+      }
+
+      if (existingUnverified) {
+        await db.request.update({
+          where: { id: existingUnverified.id },
+          data: { data: JSON.stringify(payload) },
+        });
+      } else {
+        await db.request.create({
+          data: {
+            type: 'registration',
+            email: normalizedEmail,
+            data: JSON.stringify(payload),
+            status: 'unverified',
+          },
+        });
+      }
+
+      auditLog({
+        action: 'registration_code_sent',
+        userEmail: normalizedEmail,
+        ip,
+        details: delivery.simulated ? 'MODO SIMULADO — configure RESEND_API_KEY ou BREVO_API_KEY' : undefined,
+      });
+
+      return NextResponse.json({
+        success: true,
+        emailSent: true,
+        message: 'Enviamos um código de verificação para o seu email.',
+      });
+    }
+
+    // Sem provedor de email: fluxo direto para aprovação do admin
     // Apenas dados inofensivos são gravados — senha NUNCA vem daqui
     await db.request.create({
       data: {
         type: 'registration',
         email: normalizedEmail,
-        data: JSON.stringify({
-          name: String(data.name).slice(0, 120),
-          department: data.department ? String(data.department).slice(0, 80) : null,
-        }),
+        data: JSON.stringify({ name, department }),
         status: 'pending',
       },
     });
@@ -134,6 +198,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      emailSent: false,
       message: 'Solicitação enviada! Aguarde a aprovação do administrador.',
     });
   } catch {
