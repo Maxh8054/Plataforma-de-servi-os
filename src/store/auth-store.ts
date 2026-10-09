@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     set({
       user: json.user, token,
-      isAuthenticated: true, isAdmin: json.user.role === 'admin',
+      isAuthenticated: true, isAdmin: (json.user.role || '').toLowerCase() === 'admin',
       mustChangePassword: !!json.mustChangePassword,
       needsUpdate: hasUpdate,
     });
@@ -130,7 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const hasUpdate = await checkAppVersion();
 
-    set({ user, token: savedToken, isAuthenticated: true, isAdmin: user.role === 'admin', isLoading: false, needsUpdate: hasUpdate });
+    set({ user, token: savedToken, isAuthenticated: true, isAdmin: (user.role || '').toLowerCase() === 'admin', isLoading: false, needsUpdate: hasUpdate });
   },
 
   forgotPassword: async (email, newPassword) => {

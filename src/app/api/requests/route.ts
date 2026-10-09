@@ -1,42 +1,141 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { compare } from 'bcryptjs';
 import { createHash } from 'crypto';
 import { db } from '@/lib/db';
+import { getSessionToken, requireAdmin, forbidden } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { auditLog } from '@/lib/audit-log';
 
-const ADMIN_EMAIL = 'max-r@zaminebrasil.com';
+const REQUEST_EXPIRY_DAYS = 7;
+const REGISTER_RATE_MAX = 5;
+const REGISTER_RATE_WINDOW = 15 * 60 * 1000;
+const ALLOWED_DOMAIN = '@zaminebrasil.com';
 
-function hashPassword(password: string, email: string): string {
+function hashPasswordSha256(password: string, email: string): string {
   return createHash('sha256').update(`${password}:${email}`).digest('hex');
 }
 
-// POST - Create Request
+function isBcryptHash(hashedPassword: string): boolean {
+  return hashedPassword.startsWith('$2b$') || hashedPassword.startsWith('$2a$');
+}
+
+/** Verifica a senha do admin (suporta bcrypt e legado sha256) */
+async function verifyAdminPassword(
+  password: string,
+  email: string,
+  storedHash: string | null
+): Promise<boolean> {
+  if (!storedHash) return false;
+  if (isBcryptHash(storedHash)) return compare(password, storedHash);
+  return hashPasswordSha256(password, email) === storedHash;
+}
+
+async function expireOldPendingRequests() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - REQUEST_EXPIRY_DAYS);
+  await db.request.updateMany({
+    where: { type: 'registration', status: 'pending', createdAt: { lt: cutoff } },
+    data: { status: 'expired' },
+  });
+}
+
+// POST - Solicitação pública de cadastro (requer código de convite)
 export async function POST(request: NextRequest) {
   try {
-    const { type, email, data } = await request.json();
+    const ip = getClientIp(request);
 
-    if (!type || !email || !data) {
+    const rl = rateLimit(`register:${ip}`, REGISTER_RATE_MAX, REGISTER_RATE_WINDOW);
+    if (!rl.success) {
       return NextResponse.json(
-        { success: false, error: 'Campos obrigatórios não preenchidos' },
-        { status: 400 }
+        { success: false, error: 'Muitas tentativas. Aguarde alguns minutos.' },
+        { status: 429 }
       );
     }
 
-    if (!['registration', 'password_change'].includes(type)) {
+    const inviteCode = process.env.REGISTRATION_INVITE_CODE;
+    if (!inviteCode) {
+      return NextResponse.json(
+        { success: false, error: 'Cadastro temporariamente indisponível. Contate o administrador.' },
+        { status: 503 }
+      );
+    }
+
+    const { type, email, data, inviteCode: providedCode } = await request.json();
+
+    if (type !== 'registration') {
       return NextResponse.json(
         { success: false, error: 'Tipo de solicitação inválido' },
         { status: 400 }
       );
     }
 
+    if (!email || !data?.name || !providedCode) {
+      return NextResponse.json(
+        { success: false, error: 'Preencha nome, email e código de convite.' },
+        { status: 400 }
+      );
+    }
+
+    // Barreira 1: código de convite da empresa
+    if (String(providedCode).trim() !== inviteCode) {
+      auditLog({ action: 'registration_denied', userEmail: email, ip, details: 'Código de convite inválido' });
+      return NextResponse.json(
+        { success: false, error: 'Código de convite inválido.' },
+        { status: 403 }
+      );
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Barreira 2: domínio da empresa
+    if (!normalizedEmail.endsWith(ALLOWED_DOMAIN)) {
+      auditLog({ action: 'registration_denied', userEmail: normalizedEmail, ip, details: `Domínio não permitido` });
+      return NextResponse.json(
+        { success: false, error: `Apenas emails ${ALLOWED_DOMAIN} são aceitos.` },
+        { status: 403 }
+      );
+    }
+
+    // sem duplicidade: usuário já existe ou solicitação pendente
+    const existingUser = await db.user.findUnique({ where: { email: normalizedEmail } });
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, error: 'Este email já possui acesso à plataforma.' },
+        { status: 400 }
+      );
+    }
+
+    const existingPending = await db.request.findFirst({
+      where: { type: 'registration', email: normalizedEmail, status: 'pending' },
+    });
+    if (existingPending) {
+      return NextResponse.json(
+        { success: false, error: 'Já existe uma solicitação pendente para este email.' },
+        { status: 400 }
+      );
+    }
+
+    await expireOldPendingRequests();
+
+    // Apenas dados inofensivos são gravados — senha NUNCA vem daqui
     await db.request.create({
       data: {
-        type,
-        email: email.toLowerCase().trim(),
-        data: typeof data === 'string' ? data : JSON.stringify(data),
+        type: 'registration',
+        email: normalizedEmail,
+        data: JSON.stringify({
+          name: String(data.name).slice(0, 120),
+          department: data.department ? String(data.department).slice(0, 80) : null,
+        }),
         status: 'pending',
       },
     });
 
-    return NextResponse.json({ success: true });
+    auditLog({ action: 'registration_created', userEmail: normalizedEmail, ip, details: `Nome informado: ${String(data.name).slice(0, 60)}` });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Solicitação enviada! Aguarde a aprovação do administrador.',
+    });
   } catch {
     return NextResponse.json(
       { success: false, error: 'Erro ao criar solicitação' },
@@ -45,24 +144,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - List Requests (Admin Only)
+// GET - Listar solicitações (Admin - sessão real)
 export async function GET(request: NextRequest) {
-  try {
-    const adminEmail = request.nextUrl.searchParams.get('adminEmail');
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
 
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
-    }
+  try {
+    await expireOldPendingRequests();
 
     const status = request.nextUrl.searchParams.get('status');
-    const where = status ? { status } : {};
+    const where: Record<string, unknown> = { type: 'registration' };
+    if (status) where.status = status;
 
     const requests = await db.request.findMany({
       where,
       orderBy: { createdAt: 'desc' },
+      take: 100,
     });
 
     return NextResponse.json({ success: true, requests });
@@ -74,17 +172,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT - Approve/Reject Request
+// PUT - Aprovar/Rejeitar (Admin - sessão real + confirmação de senha)
 export async function PUT(request: NextRequest) {
-  try {
-    const { requestId, action, adminEmail } = await request.json();
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
 
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
-    }
+  try {
+    const ip = getClientIp(request);
+    const { requestId, action, adminPassword } = await request.json();
 
     if (!requestId || !action) {
       return NextResponse.json(
@@ -101,10 +197,17 @@ export async function PUT(request: NextRequest) {
     }
 
     const req = await db.request.findUnique({ where: { id: requestId } });
-    if (!req) {
+    if (!req || req.type !== 'registration') {
       return NextResponse.json(
         { success: false, error: 'Solicitação não encontrada' },
         { status: 404 }
+      );
+    }
+
+    if (req.status !== 'pending') {
+      return NextResponse.json(
+        { success: false, error: 'Esta solicitação já foi processada.' },
+        { status: 400 }
       );
     }
 
@@ -113,71 +216,88 @@ export async function PUT(request: NextRequest) {
         where: { id: requestId },
         data: { status: 'rejected' },
       });
-      return NextResponse.json({ success: true });
+      auditLog({
+        action: 'registration_rejected',
+        userId: admin.id,
+        userEmail: admin.email,
+        userName: admin.name ?? undefined,
+        ip,
+        details: `Rejeitou cadastro de ${req.email}`,
+      });
+      return NextResponse.json({ success: true, message: 'Solicitação rejeitada.' });
     }
 
-    // Approve
-    const requestData = JSON.parse(req.data);
-
-    if (req.type === 'registration') {
-      const existingUser = await db.user.findUnique({
-        where: { email: req.email },
-      });
-      if (existingUser) {
-        await db.request.update({
-          where: { id: requestId },
-          data: { status: 'rejected' },
-        });
-        return NextResponse.json({
-          success: false,
-          error: 'Email já cadastrado',
-        });
-      }
-
-      const hashedPassword = hashPassword(
-        requestData.password || '2026',
-        req.email
+    // === Aprovação: Barreira 3 — reconfirmar senha do admin (step-up) ===
+    if (!adminPassword) {
+      return NextResponse.json(
+        { success: false, error: 'Confirme sua senha de administrador para aprovar.' },
+        { status: 401 }
       );
-      await db.user.create({
-        data: {
-          email: req.email,
-          name: requestData.name || null,
-          password: hashedPassword,
-          role: requestData.role || 'user',
-          department: requestData.department || null,
-        },
-      });
-    } else if (req.type === 'password_change') {
-      const user = await db.user.findUnique({
-        where: { email: req.email },
-      });
-      if (!user) {
-        await db.request.update({
-          where: { id: requestId },
-          data: { status: 'rejected' },
-        });
-        return NextResponse.json({
-          success: false,
-          error: 'Usuário não encontrado',
-        });
-      }
-
-      const hashedPassword = hashPassword(
-        requestData.newPassword || '2026',
-        req.email
-      );
-      await db.user.update({
-        where: { email: req.email },
-        data: { password: hashedPassword },
-      });
     }
+
+    const adminFull = await db.user.findUnique({ where: { id: admin.id } });
+    const passwordOk = await verifyAdminPassword(adminPassword, admin.email, adminFull?.password ?? null);
+    if (!passwordOk) {
+      auditLog({
+        action: 'registration_approve_denied',
+        userId: admin.id,
+        userEmail: admin.email,
+        ip,
+        details: 'Senha de confirmação incorreta ao aprovar cadastro',
+      });
+      return NextResponse.json(
+        { success: false, error: 'Senha incorreta. Aprovação negada.' },
+        { status: 403 }
+      );
+    }
+
+    const existingUser = await db.user.findUnique({ where: { email: req.email } });
+    if (existingUser) {
+      await db.request.update({
+        where: { id: requestId },
+        data: { status: 'rejected' },
+      });
+      return NextResponse.json(
+        { success: false, error: 'Email já cadastrado' },
+        { status: 400 }
+      );
+    }
+
+    const requestData = JSON.parse(req.data || '{}');
+
+    // Conta criada SEM senha e em modo primeiro acesso:
+    // a própria pessoa define a senha (fluxo validado + bcrypt).
+    // Self-registration NUNCA cria admin, ignore qualquer role no payload.
+    await db.user.create({
+      data: {
+        email: req.email,
+        name: requestData.name || null,
+        department: requestData.department || null,
+        role: 'user',
+        password: null,
+        isFirstAccess: true,
+        isActive: true,
+      },
+    });
 
     await db.request.update({
       where: { id: requestId },
       data: { status: 'approved' },
     });
 
-    return NextResponse.json({ success: true });
+    auditLog({
+      action: 'registration_approved',
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name ?? undefined,
+      ip,
+      details: `Aprovou cadastro de ${req.email}`,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Cadastro aprovado! ${req.email} já pode definir a senha no primeiro acesso.`,
+    });
   } catch {
     return NextResponse.json(
       { success: false, error: 'Erro ao processar solicitação' },

@@ -7,6 +7,8 @@ import ZabFlowModal from "@/components/zab-flow-modal";
 import BrazilMap from "@/components/brazil-map";
 import LoginPage from "@/components/LoginPage";
 import AdminPasswordPanel from "@/components/admin-password-panel";
+import AdminRequestsPanel from "@/components/admin-requests-panel";
+import AuditPanel from "@/components/audit-panel";
 import ForceChangePassword from "@/components/force-change-password";
 import UpdateScreen from "@/components/update-screen";
 import { useAuthStore, authFetch } from "@/store/auth-store";
@@ -240,6 +242,9 @@ export default function Home() {
   const { isAuthenticated, user: authUser, isLoading: authLoading, logout, isAdmin, mustChangePassword, needsUpdate } = useAuthStore();
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [showRequestsPanel, setShowRequestsPanel] = useState(false);
+  const [pendingRegistrationsCount, setPendingRegistrationsCount] = useState(0);
+  const [showAuditPanel, setShowAuditPanel] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [selectedState, setSelectedState] = useState<StateType>(null);
@@ -324,6 +329,25 @@ export default function Home() {
     };
     fetchCount();
     const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, [isAdmin, isAuthenticated]);
+
+  // Poll pending registration requests for admin badge
+  useEffect(() => {
+    if (!isAdmin || !isAuthenticated) return;
+    const fetchRegCount = async () => {
+      try {
+        const res = await authFetch('/api/requests?status=pending');
+        if (res.ok) {
+          const data = await res.json();
+          setPendingRegistrationsCount(data.requests?.length || 0);
+        }
+      } catch {
+        // silently fail
+      }
+    };
+    fetchRegCount();
+    const interval = setInterval(fetchRegCount, 15000);
     return () => clearInterval(interval);
   }, [isAdmin, isAuthenticated]);
 
@@ -710,6 +734,29 @@ export default function Home() {
               <img src="/images/zamine-logo.png" alt="Zamine" className="h-6 sm:h-10 w-auto object-contain" />
               <div className="flex items-center gap-2 sm:gap-4">
                 <span className="text-xs text-gray-400 hidden sm:block">{authUser?.email?.split('@')[0]}</span>
+                {isAdmin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowRequestsPanel(true); }}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 relative"
+                  >
+                    <span className="material-icons text-sm">how_to_reg</span>
+                    <span className="hidden sm:inline">Cadastros</span>
+                    {pendingRegistrationsCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center min-w-[18px] min-h-[18px] animate-pulse">
+                        {pendingRegistrationsCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowAuditPanel(true); }}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1"
+                  >
+                    <span className="material-icons text-sm">history</span>
+                    <span className="hidden sm:inline">Auditoria</span>
+                  </button>
+                )}
                 {isAdmin && (
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowAdminPanel(true); }}
@@ -1854,6 +1901,19 @@ export default function Home() {
           // Refresh count immediately
           authFetch('/api/auth/password-requests').then(r => r.ok && r.json().then(d => setPendingRequestsCount(d.pending?.length || 0))).catch(() => {});
         }} />
+      )}
+
+      {/* Admin Registration Requests Panel */}
+      {showRequestsPanel && isAdmin && (
+        <AdminRequestsPanel onClose={() => {
+          setShowRequestsPanel(false);
+          authFetch('/api/requests?status=pending').then(r => r.ok && r.json().then(d => setPendingRegistrationsCount(d.requests?.length || 0))).catch(() => {});
+        }} />
+      )}
+
+      {/* Audit Panel */}
+      {showAuditPanel && isAdmin && (
+        <AuditPanel onClose={() => setShowAuditPanel(false)} />
       )}
     </div>
   );
