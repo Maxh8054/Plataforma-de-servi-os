@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { rateLimit, getClientIp } from '@/lib/rate-limit';
+import { emailProviderConfigured } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     const normalizedEmail = email.toLowerCase().trim();
     const user = await db.user.findUnique({
       where: { email: normalizedEmail },
-      select: { id: true, name: true, email: true, role: true, isFirstAccess: true, isActive: true, lockedUntil: true },
+      select: { id: true, name: true, email: true, role: true, isFirstAccess: true, isActive: true, lockedUntil: true, password: true },
     });
 
     if (!user) {
@@ -36,6 +37,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       exists: true,
       isFirstAccess: user.isFirstAccess,
+      // Conta sem senha (cadastro aprovado ou senha resetada) exige código de email
+      requiresCode: user.isFirstAccess && !user.password && emailProviderConfigured(),
       name: user.name,
     });
   } catch (error) {

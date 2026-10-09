@@ -26,7 +26,7 @@ interface UserRow {
   updatedAt: string;
 }
 
-type PanelMode = 'list' | 'create' | 'edit';
+type PanelMode = 'list' | 'create' | 'edit' | 'reset-all';
 
 const inputCls =
   'w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 transition-colors';
@@ -86,6 +86,18 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
   const [confirmDeactivateId, setConfirmDeactivateId] = useState<string | null>(null);
   const [toggleBusyId, setToggleBusyId] = useState<string | null>(null);
   const [toggleError, setToggleError] = useState('');
+
+  // ===== reset de senha individual (volta ao primeiro acesso com código por email) =====
+  const [resetting, setResetting] = useState<UserRow | null>(null);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetError, setResetError] = useState('');
+
+  // ===== reset total =====
+  const [resetAllConfirm, setResetAllConfirm] = useState('');
+  const [resetAllPassword, setResetAllPassword] = useState('');
+  const [resetAllBusy, setResetAllBusy] = useState(false);
+  const [resetAllError, setResetAllError] = useState('');
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -165,8 +177,8 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
       setCreateError('Informe um email válido.');
       return;
     }
-    if (createForm.password.length < 8) {
-      setCreateError('A senha deve ter pelo menos 8 caracteres.');
+    if (createForm.password && createForm.password.length < 8) {
+      setCreateError('A senha inicial deve ter pelo menos 8 caracteres.');
       return;
     }
     setCreateBusy(true);
@@ -176,7 +188,7 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          password: createForm.password,
+          password: createForm.password || undefined,
           name: createForm.name.trim() || undefined,
           department: createForm.department.trim() || undefined,
           role: createForm.role,
@@ -184,7 +196,9 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        flash(`Usuário ${email} criado.`);
+        flash(data.emailSent === false
+          ? `Usuário ${email} criado, mas o email com o código falhou — use "Resetar senha" para reenviar.`
+          : `Usuário ${email} criado.`);
         setCreateForm({ email: '', name: '', department: '', role: 'user', password: '' });
         setMode('list');
         await fetchUsers();
@@ -247,6 +261,76 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
       setEditError('Erro de conexão ao atualizar usuário.');
     }
     setEditBusy(false);
+  }
+
+  // ===== reset individual =====
+  function openReset(u: UserRow) {
+    setResetting(u);
+    setResetPassword('');
+    setResetError('');
+  }
+
+  async function handleResetOne() {
+    if (!resetting) return;
+    if (!resetPassword) {
+      setResetError('Digite a sua senha de administrador.');
+      return;
+    }
+    setResetBusy(true);
+    try {
+      const res = await authFetch('/api/users/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'user', userId: resetting.id, adminPassword: resetPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        flash(`Senha de ${resetting.email} resetada. Um código foi enviado por email para o usuário definir a nova senha.`);
+        setResetting(null);
+        await fetchUsers();
+      } else {
+        setResetError(data.error || 'Erro ao resetar senha.');
+      }
+    } catch {
+      setResetError('Erro de conexão ao resetar senha.');
+    }
+    setResetBusy(false);
+  }
+
+  // ===== reset total =====
+  async function handleResetAll() {
+    if (resetAllConfirm.trim().toUpperCase() !== 'RESETAR') {
+      setResetAllError('Digite RESETAR para confirmar.');
+      return;
+    }
+    if (!resetAllPassword) {
+      setResetAllError('Digite a sua senha de administrador.');
+      return;
+    }
+    setResetAllBusy(true);
+    try {
+      const res = await authFetch('/api/users/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: 'all', adminPassword: resetAllPassword, confirmText: resetAllConfirm.trim().toUpperCase() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const failed = Array.isArray(data.failed) && data.failed.length > 0
+          ? ` Falha no email de: ${data.failed.join(', ')} — use o reset individual para essas contas.`
+          : '';
+        flash(`${data.resetCount} conta(s) voltaram ao primeiro acesso. Cada usuário ativo recebeu um código por email.${failed}`);
+        setMode('list');
+        setResetAllConfirm('');
+        setResetAllPassword('');
+        await fetchUsers();
+      } else {
+        setResetAllError(data.error || 'Erro ao resetar senhas.');
+      }
+    } catch {
+      setResetAllError('Erro de conexão ao resetar senhas.');
+    }
+    setResetAllBusy(false);
   }
 
   // ===== excluir =====
@@ -346,10 +430,16 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
                   aria-label="Buscar usuários"
                 />
               </div>
-              <button onClick={() => { setMode('create'); setCreateError(''); }} className={primaryBtnCls}>
-                <span className="material-icons text-sm align-middle mr-1">person_add</span>
-                Novo usuário
-              </button>
+              <div className="flex gap-2 shrink-0">
+                <button onClick={() => { setMode('reset-all'); setResetAllError(''); }} className="border border-red-500/40 hover:bg-red-500/10 text-red-400 text-sm font-medium rounded-lg px-4 py-2 transition-colors">
+                  <span className="material-icons text-sm align-middle mr-1">lock_reset</span>
+                  Resetar todas
+                </button>
+                <button onClick={() => { setMode('create'); setCreateError(''); }} className={primaryBtnCls}>
+                  <span className="material-icons text-sm align-middle mr-1">person_add</span>
+                  Novo usuário
+                </button>
+              </div>
             </div>
 
             <div className="overflow-y-auto p-4 sm:p-5 space-y-3">
@@ -419,6 +509,14 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
                             </button>
                           )}
                           <button
+                            onClick={() => openReset(u)}
+                            disabled={!!me && u.id === me.id}
+                            className="bg-sky-600/80 hover:bg-sky-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1"
+                            title={me && u.id === me.id ? 'Você não pode resetar a própria senha por aqui' : 'Resetar senha: o usuário define a nova com código por email'}
+                          >
+                            <span className="material-icons text-sm">lock_reset</span> Resetar senha
+                          </button>
+                          <button
                             onClick={() => openDelete(u)}
                             disabled={blocked}
                             className="bg-red-600/90 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs rounded-lg px-3 py-1.5 transition-colors flex items-center gap-1"
@@ -447,6 +545,38 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
                               onClick={() => setConfirmDeactivateId(null)}
                               className={secondaryBtnCls}
                             >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Confirmação de reset de senha (volta ao primeiro acesso com código por email) */}
+                      {resetting?.id === u.id && (
+                        <div className="mt-3 bg-sky-500/10 border border-sky-500/30 rounded-lg p-3 space-y-2">
+                          <p className="text-sky-300 text-xs">
+                            A senha atual será <strong>removida</strong> e a sessão do usuário derrubada. Ele volta ao estado de
+                            <strong> primeiro acesso</strong> e define a nova senha com um <strong>código enviado por email</strong>.
+                            Digite a sua senha de admin para confirmar.
+                          </p>
+                          <input
+                            type="password"
+                            value={resetPassword}
+                            onChange={(e) => setResetPassword(e.target.value)}
+                            placeholder="Sua senha de administrador"
+                            className={inputCls}
+                            autoComplete="current-password"
+                          />
+                          {resetError && <p className="text-red-400 text-xs">{resetError}</p>}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleResetOne}
+                              disabled={resetBusy}
+                              className="bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white text-xs font-medium rounded-lg px-3 py-1.5 transition-colors"
+                            >
+                              {resetBusy ? 'Resetando…' : 'Resetar senha'}
+                            </button>
+                            <button onClick={() => setResetting(null)} className={secondaryBtnCls}>
                               Cancelar
                             </button>
                           </div>
@@ -555,17 +685,18 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
                 </select>
               </div>
               <div className="sm:col-span-2">
-                <label className="text-gray-400 text-xs block mb-1">Senha temporária (mín. 8 caracteres) *</label>
+                <label className="text-gray-400 text-xs block mb-1">Senha inicial (opcional, mín. 8 caracteres)</label>
                 <input
                   type="text"
                   value={createForm.password}
                   onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  placeholder="Senha inicial do usuário"
+                  placeholder="Deixe vazio para o usuário definir por email (recomendado)"
                   className={inputCls}
                   autoComplete="off"
                 />
                 <p className="text-gray-600 text-[11px] mt-1">
-                  Compartilhe por canal seguro. Recomende que o usuário troque a senha no primeiro acesso.
+                  Vazio (recomendado): a conta nasce em primeiro acesso e o usuário define a senha com um código enviado por email.
+                  Preenchida: a conta já nasce pronta para login com essa senha.
                 </p>
               </div>
             </div>
@@ -636,7 +767,7 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
                   className={inputCls}
                   autoComplete="new-password"
                 />
-                <p className="text-gray-600 text-[11px] mt-1">Trocar a senha derruba as sessões abertas do usuário.</p>
+                <p className="text-gray-600 text-[11px] mt-1">Se preencher: a senha é trocada, a conta é marcada como configurada e as sessões abertas são derrubadas.</p>
               </div>
             </div>
             {editError && (
@@ -646,6 +777,58 @@ export default function AdminUsersPanel({ onClose }: { onClose: () => void }) {
             )}
             <button onClick={handleEditSave} disabled={editBusy} className={primaryBtnCls}>
               {editBusy ? 'Salvando…' : 'Salvar alterações'}
+            </button>
+          </div>
+        )}
+        {/* Modo RESETAR TODAS */}
+        {mode === 'reset-all' && (
+          <div className="overflow-y-auto p-4 sm:p-5 space-y-3">
+            <button
+              onClick={() => { setMode('list'); setResetAllError(''); }}
+              className="text-gray-400 hover:text-white text-xs flex items-center gap-1 transition-colors"
+            >
+              <span className="material-icons text-sm">arrow_back</span> Voltar para a lista
+            </button>
+            <h3 className="text-white text-sm font-semibold">Resetar todas as senhas</h3>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+              <p className="text-red-300 text-xs">
+                <strong>Reset total.</strong> TODAS as contas (exceto a sua) voltam ao estado de primeiro acesso: senha removida,
+                sessões derrubadas e um código enviado por email para cada usuário ativo definir a nova senha. Quem não tiver
+                acesso ao email da conta não conseguirá voltar a entrar.
+              </p>
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1">Digite RESETAR para confirmar *</label>
+              <input
+                value={resetAllConfirm}
+                onChange={(e) => setResetAllConfirm(e.target.value)}
+                placeholder="RESETAR"
+                className={inputCls}
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-xs block mb-1">Sua senha de administrador *</label>
+              <input
+                type="password"
+                value={resetAllPassword}
+                onChange={(e) => setResetAllPassword(e.target.value)}
+                placeholder="Confirme com a sua senha"
+                className={inputCls}
+                autoComplete="current-password"
+              />
+            </div>
+            {resetAllError && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg px-3 py-2">
+                {resetAllError}
+              </div>
+            )}
+            <button
+              onClick={handleResetAll}
+              disabled={resetAllBusy}
+              className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              {resetAllBusy ? 'Resetando todas as senhas…' : 'Resetar todas as senhas'}
             </button>
           </div>
         )}

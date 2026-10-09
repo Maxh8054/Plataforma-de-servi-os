@@ -4,6 +4,13 @@ import { db } from '@/lib/db';
 import { getSessionToken, requireAdmin, forbidden, isAdminRole } from '@/lib/auth';
 import { getClientIp } from '@/lib/rate-limit';
 import { auditLog } from '@/lib/audit-log';
+import {
+  emailProviderConfigured,
+  generateChallengeToken,
+  generateVerificationCode,
+  hashSecret,
+  sendVerificationEmail,
+} from '@/lib/email';
 
 /**
  * Gestão de usuários —Somente admin (requireAdmin em todos os métodos).
@@ -79,14 +86,26 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password, name, role, department } = await request.json();
 
-    if (!email || !password) {
+    if (!email) {
       return NextResponse.json(
-        { success: false, error: 'Email e senha são obrigatórios' },
+        { success: false, error: 'Email é obrigatório' },
         { status: 400 }
       );
     }
 
-    if (typeof password !== 'string' || password.length < 8) {
+    const emailConfigured = emailProviderConfigured();
+    const hasPassword = typeof password === 'string' && password.length > 0;
+
+    // Sem senha informada, o usuário define a própria senha via código de email —
+    // se não há provedor de email, a senha inicial passa a ser obrigatória.
+    if (!hasPassword && !emailConfigured) {
+      return NextResponse.json(
+        { success: false, error: 'Configure o envio de email (ex.: BREVO_API_KEY) ou informe uma senha inicial' },
+        { status: 400 }
+      );
+    }
+
+    if (hasPassword && password.length < 8) {
       return NextResponse.json(
         { success: false, error: 'A senha deve ter pelo menos 8 caracteres' },
         { status: 400 }
@@ -104,7 +123,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = hasPassword ? await hash(password, 10) : null;
     const user = await db.user.create({
       data: {
         email: normalizedEmail,
@@ -112,8 +131,27 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         role: role === 'ADMIN' || role === 'admin' ? 'admin' : 'user',
         department: department || null,
+        // Com senha: conta pronta para login. Sem senha: primeiro acesso com código de email.
+        isFirstAccess: !hasPassword,
       },
     });
+
+    // Sem senha inicial → envia o código que permite definir a senha com segurança
+    let emailSent: boolean | undefined;
+    if (!hasPassword) {
+      const code = generateVerificationCode();
+      await db.twoFactorChallenge.deleteMany({ where: { userId: user.id } });
+      await db.twoFactorChallenge.create({
+        data: {
+          userId: user.id,
+          tokenHash: hashSecret(generateChallengeToken(), 'challenge'),
+          codeHash: hashSecret(code, user.id),
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
+      const delivery = await sendVerificationEmail(user.email, code, 'password-reset');
+      emailSent = delivery.sent || delivery.simulated;
+    }
 
     auditLog({
       action: 'user_created',
@@ -121,7 +159,7 @@ export async function POST(request: NextRequest) {
       userEmail: admin.email,
       userName: admin.name ?? undefined,
       ip: getClientIp(request),
-      details: `Criou usuário ${normalizedEmail} (role: ${user.role})`,
+      details: `Criou usuário ${normalizedEmail} (role: ${user.role}${hasPassword ? ', com senha inicial' : ', primeiro acesso por email'})`,
     });
 
     return NextResponse.json({
@@ -132,6 +170,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
       },
+      emailSent,
     });
   } catch (err) {
     console.error('[users] POST falhou:', err);
@@ -185,6 +224,8 @@ export async function PUT(request: NextRequest) {
     if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
     if (updates.password !== undefined) {
       updateData.password = await hash(updates.password, 10);
+      // senha definida pelo admin → conta configurada (sem tela de primeiro acesso)
+      updateData.isFirstAccess = false;
       // senha trocada manualmente invalida sessões abertas
       updateData.sessionToken = null;
       updateData.tokenExpiresAt = null;

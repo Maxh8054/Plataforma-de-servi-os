@@ -38,6 +38,9 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   user_created: { label: 'Usuário criado', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
   user_updated: { label: 'Usuário atualizado', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
   user_deleted: { label: 'Usuário excluído', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  user_password_reset: { label: 'Senha resetada pelo admin', color: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
+  users_mass_password_reset: { label: 'Reset total de senhas', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  first_access_code_resent: { label: 'Código de 1º acesso reenviado', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
 };
 
 const PAGE_SIZE = 50;

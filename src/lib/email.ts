@@ -107,9 +107,11 @@ export function hashSecret(secret: string, salt: string): string {
   return createHash('sha256').update(`${secret}:${salt}`).digest('hex');
 }
 
-function renderCodeEmail(code: string, purpose: 'registration' | 'login'): string {
+function renderCodeEmail(code: string, purpose: 'registration' | 'login' | 'password-reset'): string {
   const context = purpose === 'registration'
     ? 'sua solicitação de acesso à <strong>Plataforma Zamine</strong>'
+    : purpose === 'password-reset'
+    ? 'definir a senha da sua conta na <strong>Plataforma Zamine</strong>'
     : 'o seu login na <strong>Plataforma Zamine</strong>';
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;background:#f4f4f5;padding:32px">
@@ -136,11 +138,13 @@ function renderCodeEmail(code: string, purpose: 'registration' | 'login'): strin
 export async function sendVerificationEmail(
   to: string,
   code: string,
-  purpose: 'registration' | 'login'
+  purpose: 'registration' | 'login' | 'password-reset'
 ): Promise<{ sent: boolean; simulated: boolean; error?: string }> {
   const subject =
     purpose === 'registration'
       ? 'Código de verificação — Solicitação de acesso'
+      : purpose === 'password-reset'
+      ? 'Código para definir sua senha — Plataforma Zamine'
       : 'Código de verificação — Login';
   const html = renderCodeEmail(code, purpose);
   const from = process.env.EMAIL_FROM || 'Zamine Plataforma <onboarding@resend.dev>';

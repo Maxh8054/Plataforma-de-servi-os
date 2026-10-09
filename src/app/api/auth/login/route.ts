@@ -5,7 +5,7 @@ import { createHash } from 'crypto';
 import { rateLimit, getClientIp, trackFailedLogin, isIpBlockedForBruteForce } from '@/lib/rate-limit';
 import { SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/auth';
 import { auditLog } from '@/lib/audit-log';
-import { twoFactorRequiredForRole, generateVerificationCode, generateChallengeToken, hashSecret, sendVerificationEmail } from '@/lib/email';
+import { twoFactorRequiredForRole, generateVerificationCode, generateChallengeToken, hashSecret, sendVerificationEmail, emailProviderConfigured } from '@/lib/email';
 
 const MAX_ATTEMPTS = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;
@@ -65,7 +65,10 @@ export async function POST(request: Request) {
 
     // First access - user has no password yet
     if (user.isFirstAccess || !user.password) {
-      return NextResponse.json({ error: 'first_access', isFirstAccess: true }, { status: 401 });
+      return NextResponse.json(
+        { error: 'first_access', isFirstAccess: true, requiresCode: !user.password && emailProviderConfigured() },
+        { status: 401 }
+      );
     }
 
     const isValid = await verifyPassword(password, normalizedEmail, user.password);

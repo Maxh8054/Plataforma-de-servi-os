@@ -10,7 +10,7 @@ interface AuthState {
   isAdmin: boolean;
   mustChangePassword: boolean;
   needsUpdate: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; locked?: boolean; isFirstAccess?: boolean; twoFactorRequired?: boolean; challengeToken?: string; maskedEmail?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; locked?: boolean; isFirstAccess?: boolean; requiresCode?: boolean; twoFactorRequired?: boolean; challengeToken?: string; maskedEmail?: string }>;
   completeTwoFactor: (challengeToken: string, code: string) => Promise<{ success: boolean; error?: string; expired?: boolean }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -98,6 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: json.error,
         locked: json.locked,
         isFirstAccess: json.isFirstAccess,
+        requiresCode: json.requiresCode,
         twoFactorRequired: json.twoFactorRequired,
         challengeToken: json.challengeToken,
         maskedEmail: json.maskedEmail,

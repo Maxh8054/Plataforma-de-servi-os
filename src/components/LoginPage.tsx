@@ -88,6 +88,7 @@ function maskEmail(value: string): string {
 interface EmailCheckResult {
   exists: boolean;
   isFirstAccess?: boolean;
+  requiresCode?: boolean;
   name?: string;
   disabled?: boolean;
   locked?: boolean;
@@ -96,7 +97,7 @@ interface EmailCheckResult {
 type LoginStep =
   | { phase: 'email' }
   | { phase: 'password'; isFirstAccess: false; userName: string }
-  | { phase: 'first-access'; userName: string }
+  | { phase: 'first-access'; userName: string; requiresCode: boolean }
   | { phase: 'twofactor' }
   | { phase: 'reg-code' };
 
@@ -122,6 +123,10 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [firstAccessSuccess, setFirstAccessSuccess] = useState(false);
+  // Código de email para definir a senha (conta sem senha: cadastro aprovado ou senha resetada)
+  const [faCode, setFaCode] = useState("");
+  const [faResendBusy, setFaResendBusy] = useState(false);
+  const [faResendMsg, setFaResendMsg] = useState("");
 
   // Forgot password fields
   const [forgotNewPassword, setForgotNewPassword] = useState("");
@@ -257,7 +262,9 @@ export default function LoginPage() {
       } else if (!data.exists) {
         setEmailError("Email nao cadastrado no sistema.");
       } else if (data.isFirstAccess) {
-        setStep({ phase: 'first-access', userName: data.name || '' });
+        setFaCode("");
+        setFaResendMsg("");
+        setStep({ phase: 'first-access', userName: data.name || '', requiresCode: !!data.requiresCode });
       } else {
         setStep({ phase: 'password', isFirstAccess: false, userName: data.name || '' });
       }
@@ -283,11 +290,31 @@ export default function LoginPage() {
         setStep({ phase: 'twofactor' });
       } else if (result.isFirstAccess) {
         // Server says it's first access - switch to first access step
-        setStep({ phase: 'first-access', userName: '' });
+        setFaCode("");
+        setFaResendMsg("");
+        setStep({ phase: 'first-access', userName: '', requiresCode: !!result.requiresCode });
       } else {
         setLoginError(result.error || "Erro ao fazer login");
       }
     }
+  };
+
+  // Reenviar código de primeiro acesso
+  const handleResendFaCode = async () => {
+    setFaResendBusy(true);
+    setFaResendMsg("");
+    try {
+      const res = await fetch('/api/auth/first-access/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json();
+      setFaResendMsg(res.ok ? (json.message || 'Código reenviado.') : (json.error || 'Erro ao reenviar código.'));
+    } catch {
+      setFaResendMsg('Erro ao reenviar código.');
+    }
+    setFaResendBusy(false);
   };
 
   // Step 2b: First access - set password
@@ -305,7 +332,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/first-access', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: newPassword }),
+        body: JSON.stringify({ email, password: newPassword, ...(step.phase === 'first-access' && step.requiresCode ? { code: faCode } : {}) }),
       });
       const json = await res.json();
 
@@ -322,6 +349,8 @@ export default function LoginPage() {
         setFirstAccessSuccess(false);
         setNewPassword("");
         setConfirmPassword("");
+        setFaCode("");
+        setFaResendMsg("");
         setPassword("");
         setLoginError("");
       }, 2000);
@@ -1062,7 +1091,11 @@ export default function LoginPage() {
                     {/* Info banner */}
                     <div className="flex items-start gap-2.5 p-3 rounded-xl text-sm bg-blue-500/10 border border-blue-500/20 text-blue-300">
                       <UserPlus className="w-4 h-4 mt-0.5 shrink-0" />
-                      <span className="leading-snug">Primeiro acesso! Defina sua senha para entrar no sistema. Nao precisa de aprovacao.</span>
+                      <span className="leading-snug">
+                        {step.phase === 'first-access' && step.requiresCode
+                          ? 'Enviamos um código de 6 dígitos para o seu email. Digite-o abaixo para definir sua senha com segurança.'
+                          : 'Primeiro acesso! Defina sua senha para entrar no sistema. Nao precisa de aprovacao.'}
+                      </span>
                     </div>
 
                     {/* Email read-only */}
@@ -1073,6 +1106,38 @@ export default function LoginPage() {
                         <span className="text-white/60 text-sm truncate">{email}</span>
                       </div>
                     </div>
+
+                    {/* Código de email (conta sem senha: cadastro aprovado ou senha resetada) */}
+                    {step.phase === 'first-access' && step.requiresCode && (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="fa-code" className="text-white/60 text-xs font-medium">
+                          Código enviado por email
+                        </Label>
+                        <Input
+                          id="fa-code"
+                          inputMode="numeric"
+                          maxLength={6}
+                          placeholder="000000"
+                          value={faCode}
+                          onChange={(e) => { setFaCode(e.target.value.replace(/\D/g, '')); setLoginError(""); }}
+                          required
+                          autoComplete="one-time-code"
+                          className="h-11 bg-white/10 border-white/10 text-white text-lg tracking-[0.5em] text-center placeholder:text-white/20 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                        />
+                        <div className="flex items-center justify-between">
+                          <p className="text-white/40 text-[11px]">Válido por 10 min · confira o spam</p>
+                          <button
+                            type="button"
+                            onClick={handleResendFaCode}
+                            disabled={faResendBusy}
+                            className="text-[11px] text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50"
+                          >
+                            {faResendBusy ? 'Reenviando…' : 'Reenviar código'}
+                          </button>
+                        </div>
+                        {faResendMsg && <p className="text-white/50 text-[11px]">{faResendMsg}</p>}
+                      </div>
+                    )}
 
                     <div className="space-y-1.5">
                       <Label htmlFor="new-password" className="text-white/60 text-xs font-medium">
@@ -1129,7 +1194,7 @@ export default function LoginPage() {
 
                     <Button
                       type="submit"
-                      disabled={loading || !pwdScore?.valid || newPassword !== confirmPassword}
+                      disabled={loading || !pwdScore?.valid || newPassword !== confirmPassword || (step.phase === 'first-access' && step.requiresCode && faCode.length !== 6)}
                       className="w-full bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-semibold h-11 transition-all rounded-xl shadow-lg shadow-orange-600/30"
                     >
                       {loading ? (
