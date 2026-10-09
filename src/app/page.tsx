@@ -1899,7 +1899,7 @@ export default function Home() {
         <AdminPasswordPanel adminEmail={authUser.email} onClose={() => {
           setShowAdminPanel(false);
           // Refresh count immediately
-          authFetch('/api/auth/password-requests').then(r => r.ok && r.json().then(d => setPendingRequestsCount(d.pending?.length || 0))).catch(() => {});
+          authFetch('/api/auth/password-requests').then((r) => { if (r.ok) r.json().then((d) => setPendingRequestsCount(d.pending?.length || 0)); }).catch(() => {});
         }} />
       )}
 
@@ -1907,7 +1907,7 @@ export default function Home() {
       {showRequestsPanel && isAdmin && (
         <AdminRequestsPanel onClose={() => {
           setShowRequestsPanel(false);
-          authFetch('/api/requests?status=pending').then(r => r.ok && r.json().then(d => setPendingRegistrationsCount(d.requests?.length || 0))).catch(() => {});
+          authFetch('/api/requests?status=pending').then((r) => { if (r.ok) r.json().then((d) => setPendingRegistrationsCount(d.requests?.length || 0)); }).catch(() => {});
         }} />
       )}
 
