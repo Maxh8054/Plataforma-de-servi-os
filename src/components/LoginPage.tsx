@@ -265,6 +265,11 @@ export default function LoginPage() {
         setFaCode("");
         setFaResendMsg("");
         setStep({ phase: 'first-access', userName: data.name || '', requiresCode: !!data.requiresCode });
+        // Envia o código automaticamente ao entrar na tela (antes, o código só
+        // saía quando o usuário clicava em "Reenviar" — parecia que nada chegava)
+        if (data.requiresCode) {
+          void handleResendFaCode({ auto: true });
+        }
       } else {
         setStep({ phase: 'password', isFirstAccess: false, userName: data.name || '' });
       }
@@ -293,15 +298,18 @@ export default function LoginPage() {
         setFaCode("");
         setFaResendMsg("");
         setStep({ phase: 'first-access', userName: '', requiresCode: !!result.requiresCode });
+        if (result.requiresCode) {
+          void handleResendFaCode({ auto: true });
+        }
       } else {
         setLoginError(result.error || "Erro ao fazer login");
       }
     }
   };
 
-  // Reenviar código de primeiro acesso
-  const handleResendFaCode = async () => {
-    setFaResendBusy(true);
+  // Reenviar código de primeiro acesso (ou envio inicial automático ao abrir a tela)
+  const handleResendFaCode = async (opts?: { auto?: boolean }) => {
+    if (!opts?.auto) setFaResendBusy(true);
     setFaResendMsg("");
     try {
       const res = await fetch('/api/auth/first-access/resend', {
@@ -310,11 +318,19 @@ export default function LoginPage() {
         body: JSON.stringify({ email }),
       });
       const json = await res.json();
-      setFaResendMsg(res.ok ? (json.message || 'Código reenviado.') : (json.error || 'Erro ao reenviar código.'));
+      if (res.ok) {
+        setFaResendMsg(
+          opts?.auto
+            ? 'Código enviado para o seu email — confira também o spam. Ele expira em 10 minutos.'
+            : json.message || 'Código reenviado.'
+        );
+      } else {
+        setFaResendMsg(json.error || 'Erro ao enviar o código. Tente novamente.');
+      }
     } catch {
-      setFaResendMsg('Erro ao reenviar código.');
+      setFaResendMsg('Erro ao enviar o código. Tente novamente.');
     }
-    setFaResendBusy(false);
+    if (!opts?.auto) setFaResendBusy(false);
   };
 
   // Step 2b: First access - set password
@@ -1128,7 +1144,7 @@ export default function LoginPage() {
                           <p className="text-white/40 text-[11px]">Válido por 10 min · confira o spam</p>
                           <button
                             type="button"
-                            onClick={handleResendFaCode}
+                            onClick={() => handleResendFaCode()}
                             disabled={faResendBusy}
                             className="text-[11px] text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50"
                           >

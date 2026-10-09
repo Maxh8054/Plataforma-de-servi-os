@@ -11,12 +11,13 @@ import {
 } from '@/lib/email';
 
 /**
- * POST /api/auth/first-access/resend — Reenvia o código de primeiro acesso.
+ * POST /api/auth/first-access/resend — Envia/reenvia o código de primeiro acesso.
+ * Chamado automaticamente ao abrir a tela de primeiro acesso e pelo botão reenviar.
  * Resposta genérica de propósito (não revela se a conta existe/está configurada).
- * Rate limit: 3 por 10min por IP.
+ * Rate limit: 5 por 10min por IP.
  */
 
-const RESEND_RATE_MAX = 3;
+const RESEND_RATE_MAX = 5;
 const RESEND_RATE_WINDOW = 10 * 60 * 1000;
 const CODE_TTL_MS = 10 * 60 * 1000;
 
@@ -54,6 +55,22 @@ export async function POST(request: Request) {
     });
 
     const delivery = await sendVerificationEmail(user.email, code, 'password-reset');
+    if (!delivery.sent && !delivery.simulated) {
+      // Falha explícita: usuário fica sabendo que deve tentar de novo em vez de
+      // esperar um email que nunca vai chegar.
+      auditLog({
+        action: 'first_access_code_resent',
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.name ?? undefined,
+        ip,
+        details: `Falha no envio do email (${delivery.error ?? 'desconhecida'})`,
+      });
+      return NextResponse.json(
+        { error: 'Não foi possível enviar o email agora. Tente novamente em instantes.' },
+        { status: 502 }
+      );
+    }
 
     auditLog({
       action: 'first_access_code_resent',
@@ -61,7 +78,6 @@ export async function POST(request: Request) {
       userEmail: user.email,
       userName: user.name ?? undefined,
       ip,
-      details: delivery.sent ? undefined : 'Falha no envio do email',
     });
 
     return NextResponse.json({ success: true, message: GENERIC_MESSAGE, emailSent: delivery.sent });
