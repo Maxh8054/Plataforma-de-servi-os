@@ -46,9 +46,14 @@ export async function validateSession(token: string | null) {
   return user;
 }
 
+/** Role de admin aceita em qualquer formato de caixa ('admin', 'ADMIN', 'Admin') */
+export function isAdminRole(role: string | null | undefined): boolean {
+  return (role ?? '').toLowerCase() === 'admin';
+}
+
 export async function requireAdmin(token: string | null) {
   const user = await validateSession(token);
-  if (!user || user.role !== 'admin') return null;
+  if (!user || !isAdminRole(user.role)) return null;
   return user;
 }
 

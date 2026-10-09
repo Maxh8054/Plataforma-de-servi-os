@@ -116,6 +116,13 @@ export default function LoginPage() {
   const [forgotNewPassword, setForgotNewPassword] = useState("");
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
+  // Solicitação de acesso (self-registration com código de convite)
+  const [registerMode, setRegisterMode] = useState(false);
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regInvite, setRegInvite] = useState("");
+  const [regMsg, setRegMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const login = useAuthStore((s) => s.login);
   const forgotPassword = useAuthStore((s) => s.forgotPassword);
 
@@ -123,6 +130,37 @@ export default function LoginPage() {
   const forgotPwdScore = forgotNewPassword ? validatePasswordClient(forgotNewPassword) : null;
 
   const version = typeof window !== 'undefined' ? (window as any).__APP_VERSION : '';
+
+  // Solicitação de acesso (novo cadastro)
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegMsg(null);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'registration',
+          email: regEmail,
+          data: { name: regName },
+          inviteCode: regInvite,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRegMsg({ type: "error", text: data.error || 'Erro ao enviar solicitação.' });
+      } else {
+        setRegMsg({ type: "success", text: 'Solicitação enviada! Aguarde a aprovação do administrador.' });
+        setRegName("");
+        setRegEmail("");
+        setRegInvite("");
+      }
+    } catch {
+      setRegMsg({ type: "error", text: 'Erro de conexão. Tente novamente.' });
+    }
+    setLoading(false);
+  };
 
   // Step 1: Check email
   const handleCheckEmail = async (e: React.FormEvent) => {
@@ -430,7 +468,7 @@ export default function LoginPage() {
               Bem-vindo
             </h1>
             <p className="text-white/70 text-xs sm:text-sm mt-1.5 drop-shadow">
-              {step.phase === 'email' && 'Insira seu email para continuar'}
+              {step.phase === 'email' && (registerMode ? 'Solicitar acesso à plataforma' : 'Insira seu email para continuar')}
               {step.phase === 'password' && `Ola, ${step.userName || ''}`}
               {step.phase === 'first-access' && 'Primeiro acesso - Defina sua senha'}
               {forgotMode !== 'none' && 'Recuperacao de senha'}
@@ -454,7 +492,115 @@ export default function LoginPage() {
             }}
           >
             {/* ============ STEP 1: EMAIL ============ */}
-            {step.phase === 'email' && forgotMode === 'none' && (
+            {step.phase === 'email' && forgotMode === 'none' && registerMode && (
+              <form onSubmit={handleRegister} className="space-y-4">
+                {regMsg && (
+                  <div className={`flex items-start gap-2.5 p-3 rounded-xl text-sm ${
+                    regMsg.type === "success"
+                      ? "bg-green-500/15 border border-green-500/25 text-green-300"
+                      : "bg-red-500/15 border border-red-500/25 text-red-300"
+                  }`}>
+                    {regMsg.type === "success" ? (
+                      <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                    ) : (
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    )}
+                    <span className="leading-snug">{regMsg.text}</span>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-name" className="text-white/60 text-xs font-medium">
+                    Nome completo
+                  </Label>
+                  <div className="relative">
+                    <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <Input
+                      id="reg-name"
+                      type="text"
+                      placeholder="Seu nome"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      required
+                      maxLength={120}
+                      className="pl-9 pr-3 h-11 bg-white/10 border-white/10 text-white text-sm placeholder:text-white/30 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-email" className="text-white/60 text-xs font-medium">
+                    Email corporativo
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <Input
+                      id="reg-email"
+                      type="email"
+                      placeholder="seu@zaminebrasil.com"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      className="pl-9 pr-3 h-11 bg-white/10 border-white/10 text-white text-sm placeholder:text-white/30 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-invite" className="text-white/60 text-xs font-medium">
+                    Código de convite da empresa
+                  </Label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <Input
+                      id="reg-invite"
+                      type="text"
+                      placeholder="Código fornecido pelo gestor"
+                      value={regInvite}
+                      onChange={(e) => setRegInvite(e.target.value)}
+                      required
+                      className="pl-9 pr-3 h-11 bg-white/10 border-white/10 text-white text-sm placeholder:text-white/30 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !regName || !regEmail || !regInvite}
+                  className="w-full bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-semibold h-11 transition-all rounded-xl shadow-lg shadow-orange-600/30"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Enviando...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Send className="w-4 h-4" />
+                      Enviar solicitação
+                    </div>
+                  )}
+                </Button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegisterMode(false);
+                      setRegMsg(null);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Voltar ao login
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ============ STEP 1: EMAIL ============ */}
+            {step.phase === 'email' && forgotMode === 'none' && !registerMode && (
               <form onSubmit={handleCheckEmail} className="space-y-4">
                 {emailError && (
                   <div className="flex items-start gap-2.5 p-3 rounded-xl text-sm bg-red-500/15 border border-red-500/25 text-red-300">
@@ -500,10 +646,21 @@ export default function LoginPage() {
                     </div>
                   )}
                 </Button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRegisterMode(true);
+                      setRegMsg(null);
+                    }}
+                    className="text-xs text-white/40 hover:text-orange-400 transition-colors"
+                  >
+                    Não tem acesso? <span className="font-semibold underline underline-offset-2">Solicitar cadastro</span>
+                  </button>
+                </div>
               </form>
             )}
-
-            {/* ============ STEP 2a: PASSWORD LOGIN ============ */}
             {step.phase === 'password' && forgotMode === 'none' && (
               <form onSubmit={handleLogin} className="space-y-4">
                 {loginError && (

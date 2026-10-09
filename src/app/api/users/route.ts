@@ -1,25 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'crypto';
+import { hash } from 'bcryptjs';
 import { db } from '@/lib/db';
+import { getSessionToken, requireAdmin, forbidden } from '@/lib/auth';
+import { getClientIp } from '@/lib/rate-limit';
+import { auditLog } from '@/lib/audit-log';
 
-const ADMIN_EMAIL = 'max-r@zaminebrasil.com';
-
-function hashPassword(password: string, email: string): string {
-  return createHash('sha256').update(`${password}:${email}`).digest('hex');
-}
-
-// GET - List Users (Admin Only)
+// GET - List Users (Admin Only - sessão real)
 export async function GET(request: NextRequest) {
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
+
   try {
-    const adminEmail = request.nextUrl.searchParams.get('adminEmail');
-
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
-    }
-
     const users = await db.user.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
@@ -29,6 +21,7 @@ export async function GET(request: NextRequest) {
         role: true,
         department: true,
         isActive: true,
+        isFirstAccess: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -43,18 +36,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create User (Admin Only)
+// POST - Create User (Admin Only - sessão real)
 export async function POST(request: NextRequest) {
-  try {
-    const { email, password, name, role, department, adminEmail } =
-      await request.json();
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
 
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
-    }
+  try {
+    const { email, password, name, role, department } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -74,15 +63,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const hashedPassword = hashPassword(password, normalizedEmail);
+    const hashedPassword = await hash(password, 10);
     const user = await db.user.create({
       data: {
         email: normalizedEmail,
         name: name || null,
         password: hashedPassword,
-        role: role || 'user',
+        role: role === 'ADMIN' || role === 'admin' ? 'admin' : 'user',
         department: department || null,
       },
+    });
+
+    auditLog({
+      action: 'user_created',
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name ?? undefined,
+      ip: getClientIp(request),
+      details: `Criou usuário ${normalizedEmail} (role: ${user.role})`,
     });
 
     return NextResponse.json({
@@ -102,17 +100,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update User (Admin Only)
+// PUT - Update User (Admin Only - sessão real)
 export async function PUT(request: NextRequest) {
-  try {
-    const { userId, updates, adminEmail } = await request.json();
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
 
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
-    }
+  try {
+    const { userId, updates } = await request.json();
 
     if (!userId || !updates) {
       return NextResponse.json(
@@ -123,20 +118,33 @@ export async function PUT(request: NextRequest) {
 
     const updateData: Record<string, unknown> = {};
     if (updates.name !== undefined) updateData.name = updates.name;
-    if (updates.role !== undefined) updateData.role = updates.role;
+    if (updates.role !== undefined)
+      updateData.role =
+        updates.role === 'ADMIN' || updates.role === 'admin'
+          ? 'admin'
+          : 'user';
     if (updates.department !== undefined)
       updateData.department = updates.department;
     if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
     if (updates.password !== undefined) {
-      const user = await db.user.findUnique({ where: { id: userId } });
-      if (user) {
-        updateData.password = hashPassword(updates.password, user.email);
-      }
+      updateData.password = await hash(updates.password, 10);
+      // senha trocada manualmente invalida sessões abertas
+      updateData.sessionToken = null;
+      updateData.tokenExpiresAt = null;
     }
 
     await db.user.update({
       where: { id: userId },
       data: updateData,
+    });
+
+    auditLog({
+      action: 'user_updated',
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name ?? undefined,
+      ip: getClientIp(request),
+      details: `Atualizou usuário ${userId} (campos: ${Object.keys(updateData).join(', ')})`,
     });
 
     return NextResponse.json({ success: true });
@@ -148,26 +156,20 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete User (Admin Only)
+// DELETE - Delete User (Admin Only - sessão real)
 export async function DELETE(request: NextRequest) {
+  const token = await getSessionToken(request);
+  const admin = await requireAdmin(token);
+  if (!admin) return forbidden('Acesso negado');
+
   try {
     let userId: string | undefined;
-    let adminEmail: string | undefined;
 
     try {
       const body = await request.json();
       userId = body.userId;
-      adminEmail = body.adminEmail;
     } catch {
       userId = request.nextUrl.searchParams.get('userId') || undefined;
-      adminEmail = request.nextUrl.searchParams.get('adminEmail') || undefined;
-    }
-
-    if (!adminEmail || adminEmail.toLowerCase().trim() !== ADMIN_EMAIL) {
-      return NextResponse.json(
-        { success: false, error: 'Acesso negado' },
-        { status: 403 }
-      );
     }
 
     if (!userId) {
@@ -177,7 +179,31 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    if (userId === admin.id) {
+      return NextResponse.json(
+        { success: false, error: 'Você não pode excluir a si mesmo' },
+        { status: 400 }
+      );
+    }
+
+    const target = await db.user.findUnique({ where: { id: userId } });
+    if (!target) {
+      return NextResponse.json(
+        { success: false, error: 'Usuário não encontrado' },
+        { status: 404 }
+      );
+    }
+
     await db.user.delete({ where: { id: userId } });
+
+    auditLog({
+      action: 'user_deleted',
+      userId: admin.id,
+      userEmail: admin.email,
+      userName: admin.name ?? undefined,
+      ip: getClientIp(request),
+      details: `Excluiu usuário ${target.email}`,
+    });
 
     return NextResponse.json({ success: true });
   } catch {
