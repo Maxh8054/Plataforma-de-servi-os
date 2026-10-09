@@ -49,9 +49,9 @@ interface EquipmentFilters {
 // Admin password change requests are approved via /api/auth/password-requests
 
 // Links externos
-const COMERCIAL_URL = 'https://zaminebrasil.sharepoint.com/_layouts/15/sharepoint.aspx';
+// const COMERCIAL_URL = 'https://zaminebrasil.sharepoint.com/_layouts/15/sharepoint.aspx'; // oculto a pedido
 const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERVIOS-LUNDIN/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSERVIOS%2DLUNDIN%2FShared%20Documents%2FSERVI%C3%87OS%2FLiteraturas%20t%C3%A9cnicas&viewid=c13d8cad%2Da802%2D45ff%2D9ca9%2De5760b0f6790';
-const SHAREPOINT_SERVICOS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERVIOS-LUNDIN/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSERVIOS%2DLUNDIN%2FShared%20Documents%2FSERVI%C3%87OS&viewid=c13d8cad%2Da802%2D45ff%2D9ca9%2De5760b0f6790';
+// const SHAREPOINT_SERVICOS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERVIOS-LUNDIN/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSERVIOS%2DLUNDIN%2FShared%20Documents%2FSERVI%C3%87OS&viewid=c13d8cad%2Da802%2D45ff%2D9ca9%2De5760b0f6790'; // oculto a pedido
 
 // Services Data
 const servicesData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
@@ -62,9 +62,6 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/2XMhgQQ8OX?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
@@ -73,68 +70,46 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'mg-araxa': [
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'mg-usiminas': [
     { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/sZd7OFBV_z?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
     { title: 'KPI Performance', description: 'Indicadores de performance', icon: 'bar_chart', url: 'https://app.powerbi.com/groups/me/reports/c7418b4c-5fac-48e6-93a1-95bd016b01cf/ac80ea5024926a98a1bb?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&experience=power-bi&bookmarkGuid=ab8e8389-926e-460f-b63e-b522c2e6e482' },
     { title: 'Escala de Turno', description: 'Gerenciamento de escalas', icon: 'schedule', url: '#escala' },
-    { title: 'Oportunidades de Venda', description: 'Planilha de oportunidades - Goiás', icon: 'trending_up', url: 'https://planilha-oportunidade.onrender.com/' },
-    { title: 'Estoque', description: 'Gestão de estoque - Goiás', icon: 'inventory', url: '/html/EstoqueGoias.html' }
+    // { title: 'Estoque', description: 'Gestão de estoque - Goiás', icon: 'inventory', url: '/html/EstoqueGoias.html' } // oculto a pedido
   ],
   'pa': [
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'ba': [
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'sc': [
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ma': [
     { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
-    { title: 'Comercial', description: 'Acesse o sistema comercial', icon: 'store', url: COMERCIAL_URL },
-    { title: 'Frota Hitachi Brasil', description: 'Escavadeiras e caminhões em operação', icon: 'precision_manufacturing', url: '/html/FrotaHitachi.html' },
-    { title: 'Sharepoint Serviços', description: 'Documentos e arquivos de serviços', icon: 'folder_shared', url: SHAREPOINT_SERVICOS_URL },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' }
