@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
         action: 'registration_code_sent',
         userEmail: normalizedEmail,
         ip,
-        details: delivery.simulated ? 'MODO SIMULADO — configure RESEND_API_KEY ou BREVO_API_KEY' : undefined,
+        details: delivery.simulated ? 'MODO SIMULADO — configure RESEND_API_KEY, BREVO_API_KEY ou SMTP (Gmail)' : undefined,
       });
 
       return NextResponse.json({

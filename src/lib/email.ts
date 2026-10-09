@@ -4,23 +4,69 @@
  * Provedores suportados (por prioridade):
  *  1. Resend  — variável RESEND_API_KEY
  *  2. Brevo   — variável BREVO_API_KEY
- *  3. Sem provedor → MODO SIMULADO: o código aparece apenas nos logs
+ *  3. SMTP genérico — SMTP_HOST + SMTP_PORT + SMTP_USER + SMTP_PASS
+ *     (ex.: Gmail grátis com "senha de app" — smtp.gmail.com:465)
+ *  4. Sem provedor → MODO SIMULADO: o código aparece apenas nos logs
  *     do servidor (Render Dashboard → Logs). Útil para testes.
  *
  * Variáveis opcionais:
  *  - EMAIL_FROM: remetente, ex.: "Zamine Plataforma <no-reply@zaminebrasil.com>"
- *    (padrão: onboarding@resend.dev — só entrega para o dono da conta Resend)
+ *    No SMTP, se o domínio do EMAIL_FROM não for o da conta SMTP, usa a conta
+ *    como remetente (Gmail reescreveria de qualquer forma).
  *  - TWO_FACTOR_MODE: 'off' (padrão) | 'admin' | 'all'
  */
 
 import { createHash, randomInt, randomBytes } from 'crypto';
+import nodemailer from 'nodemailer';
 
 const RESEND_URL = 'https://api.resend.com/emails';
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
 
 /** Indica se há provedor de email configurado */
 export function emailProviderConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY || process.env.BREVO_API_KEY);
+  return Boolean(
+    process.env.RESEND_API_KEY ||
+    process.env.BREVO_API_KEY ||
+    (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+  );
+}
+
+function smtpConfigured(): boolean {
+  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+async function sendViaSmtp(to: string, subject: string, html: string): Promise<{ sent: boolean; error?: string }> {
+  const host = process.env.SMTP_HOST as string;
+  const port = Number(process.env.SMTP_PORT || '465');
+  const user = process.env.SMTP_USER as string;
+  const pass = process.env.SMTP_PASS as string;
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+
+    let from = process.env.EMAIL_FROM || `Zamine Plataforma <${user}>`;
+    const fromEmail = from.replace(/^.*</, '').replace(/>.*$/, '').trim();
+    const userDomain = user.split('@').pop()?.toLowerCase();
+    const fromDomain = fromEmail.split('@').pop()?.toLowerCase();
+    if (userDomain && fromDomain && fromDomain !== userDomain) {
+      // Gmail e a maioria dos provedores reescrevem/recusam remetente de outro domínio
+      console.warn(
+        `[email] SMTP: EMAIL_FROM (${fromEmail}) não é do domínio da conta SMTP (${user}) — usando a conta como remetente`
+      );
+      from = `Zamine Plataforma <${user}>`;
+    }
+
+    await transporter.sendMail({ from, to, subject, html });
+    return { sent: true };
+  } catch (err) {
+    console.error('[email] SMTP falhou:', err instanceof Error ? err.message : err);
+    return { sent: false, error: 'smtp' };
+  }
 }
 
 /** Deve exigir 2FA no login para este papel? */
@@ -124,6 +170,12 @@ export async function sendVerificationEmail(
       console.error('[email] erro de rede no Brevo:', err);
       return { sent: false, simulated: false, error: 'brevo:network' };
     }
+  }
+
+  if (smtpConfigured()) {
+    const smtpResult = await sendViaSmtp(to, subject, html);
+    if (smtpResult.sent) return { sent: true, simulated: false };
+    return { sent: false, simulated: false, error: smtpResult.error };
   }
 
   // ===== MODO SIMULADO =====
