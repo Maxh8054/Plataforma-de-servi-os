@@ -1,9 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { hash } from 'bcryptjs';
+import { hash, compare } from 'bcryptjs';
 import { db } from '@/lib/db';
-import { getSessionToken, requireAdmin, forbidden } from '@/lib/auth';
+import { getSessionToken, requireAdmin, forbidden, isAdminRole } from '@/lib/auth';
 import { getClientIp } from '@/lib/rate-limit';
 import { auditLog } from '@/lib/audit-log';
+
+/**
+ * Gestão de usuários —Somente admin (requireAdmin em todos os métodos).
+ *
+ * Travas de segurança:
+ *  - Nunca permite desativar/rebaixar/excluir o ÚLTIMO admin ativo (evita lockout total)
+ *  - Nunca permite que um admin remova o próprio acesso (desativar/rebaixar) nem a autoexclusão
+ *  - Desativar um usuário derruba a sessão aberta na hora (sessionToken = null)
+ *  - Exclusão exige STEP-UP: senha do próprio admin (protege contra sessão sequestrada)
+ *  - Exclusão desvincula os logs de auditoria (preserva histórico) e limpa registros dependentes
+ *  - Toda operação grava em audit_logs (quem, IP, o quê)
+ */
+
+/** Quantos admins ATIVOS existem, excluindo um usuário da contagem */
+function countOtherActiveAdmins(excludeUserId: string) {
+  return db.user.count({
+    where: { role: 'admin', isActive: true, id: { not: excludeUserId } },
+  });
+}
+
+/** O alvo é o único admin ativo da plataforma? */
+async function isLastActiveAdmin(target: { id: string; role: string; isActive: boolean }): Promise<boolean> {
+  if (!isAdminRole(target.role) || !target.isActive) return false;
+  return (await countOtherActiveAdmins(target.id)) === 0;
+}
+
+/** Step-up: confirma a senha do próprio admin antes de ação destrutiva */
+async function verifyAdminPassword(adminId: string, adminPassword: unknown): Promise<boolean> {
+  if (typeof adminPassword !== 'string' || adminPassword.length === 0) return false;
+  const admin = await db.user.findUnique({ where: { id: adminId }, select: { password: true } });
+  if (!admin?.password) return false;
+  return compare(adminPassword, admin.password);
+}
 
 // GET - List Users (Admin Only - sessão real)
 export async function GET(request: NextRequest) {
@@ -28,7 +61,8 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, users });
-  } catch {
+  } catch (err) {
+    console.error('[users] GET falhou:', err);
     return NextResponse.json(
       { success: false, error: 'Erro ao buscar usuários' },
       { status: 500 }
@@ -48,6 +82,13 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: 'Email e senha são obrigatórios' },
+        { status: 400 }
+      );
+    }
+
+    if (typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json(
+        { success: false, error: 'A senha deve ter pelo menos 8 caracteres' },
         { status: 400 }
       );
     }
@@ -92,7 +133,8 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error('[users] POST falhou:', err);
     return NextResponse.json(
       { success: false, error: 'Erro ao criar usuário' },
       { status: 500 }
@@ -116,6 +158,21 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const target = await db.user.findUnique({ where: { id: userId } });
+    if (!target) {
+      return NextResponse.json(
+        { success: false, error: 'Usuário não encontrado' },
+        { status: 404 }
+      );
+    }
+
+    if (updates.password !== undefined && (typeof updates.password !== 'string' || updates.password.length < 8)) {
+      return NextResponse.json(
+        { success: false, error: 'A senha deve ter pelo menos 8 caracteres' },
+        { status: 400 }
+      );
+    }
+
     const updateData: Record<string, unknown> = {};
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.role !== undefined)
@@ -133,6 +190,40 @@ export async function PUT(request: NextRequest) {
       updateData.tokenExpiresAt = null;
     }
 
+    // ===== TRAVA 1: admin não remove o próprio acesso =====
+    const isSelf = target.id === admin.id;
+    const selfDemote =
+      isSelf &&
+      updates.role !== undefined &&
+      !isAdminRole(updateData.role as string) &&
+      isAdminRole(target.role);
+    const selfDeactivate = isSelf && updates.isActive === false;
+    if (selfDemote || selfDeactivate) {
+      return NextResponse.json(
+        { success: false, error: 'Você não pode remover seu próprio acesso — peça a outro administrador' },
+        { status: 400 }
+      );
+    }
+
+    // ===== TRAVA 2: nunca remover o último admin ativo =====
+    const demoteTarget =
+      updates.role !== undefined &&
+      !isAdminRole(updateData.role as string) &&
+      isAdminRole(target.role);
+    const deactivateTarget = updates.isActive === false && target.isActive;
+    if ((demoteTarget || deactivateTarget) && (await isLastActiveAdmin(target))) {
+      return NextResponse.json(
+        { success: false, error: 'Não é possível remover o último administrador ativo' },
+        { status: 400 }
+      );
+    }
+
+    // ===== TRAVA 3: desativar derruba a sessão aberta na hora =====
+    if (updates.isActive === false) {
+      updateData.sessionToken = null;
+      updateData.tokenExpiresAt = null;
+    }
+
     await db.user.update({
       where: { id: userId },
       data: updateData,
@@ -144,11 +235,14 @@ export async function PUT(request: NextRequest) {
       userEmail: admin.email,
       userName: admin.name ?? undefined,
       ip: getClientIp(request),
-      details: `Atualizou usuário ${userId} (campos: ${Object.keys(updateData).join(', ')})`,
+      details: `Atualizou usuário ${target.email} (campos: ${Object.keys(updateData)
+        .map((k) => (k === 'password' ? 'senha' : k))
+        .join(', ')})`,
     });
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error('[users] PUT falhou:', err);
     return NextResponse.json(
       { success: false, error: 'Erro ao atualizar usuário' },
       { status: 500 }
@@ -156,7 +250,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete User (Admin Only - sessão real)
+// DELETE - Delete User (Admin Only - sessão real + senha do admin)
 export async function DELETE(request: NextRequest) {
   const token = await getSessionToken(request);
   const admin = await requireAdmin(token);
@@ -164,10 +258,12 @@ export async function DELETE(request: NextRequest) {
 
   try {
     let userId: string | undefined;
+    let adminPassword: unknown;
 
     try {
       const body = await request.json();
       userId = body.userId;
+      adminPassword = body.adminPassword;
     } catch {
       userId = request.nextUrl.searchParams.get('userId') || undefined;
     }
@@ -194,7 +290,33 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await db.user.delete({ where: { id: userId } });
+    // ===== TRAVA: nunca excluir o último admin ativo =====
+    if (await isLastActiveAdmin(target)) {
+      return NextResponse.json(
+        { success: false, error: 'Não é possível excluir o último administrador ativo' },
+        { status: 400 }
+      );
+    }
+
+    // ===== STEP-UP: confirma a senha do próprio admin (proteção contra sessão sequestrada) =====
+    const okPassword = await verifyAdminPassword(admin.id, adminPassword);
+    if (!okPassword) {
+      return NextResponse.json(
+        { success: false, error: 'Senha do administrador incorreta' },
+        { status: 401 }
+      );
+    }
+
+    // Desvincula o histórico de auditoria (preserva o registro, evita erro de FK)
+    await db.auditLog.updateMany({
+      where: { userId: target.id },
+      data: { userId: null },
+    });
+    // Limpa registros dependentes (two_factor_challenges tem cascade, explícito por clareza)
+    await db.passwordResetRequest.deleteMany({ where: { userId: target.id } });
+    await db.twoFactorChallenge.deleteMany({ where: { userId: target.id } });
+
+    await db.user.delete({ where: { id: target.id } });
 
     auditLog({
       action: 'user_deleted',
@@ -206,7 +328,8 @@ export async function DELETE(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (err) {
+    console.error('[users] DELETE falhou:', err);
     return NextResponse.json(
       { success: false, error: 'Erro ao excluir usuário' },
       { status: 500 }

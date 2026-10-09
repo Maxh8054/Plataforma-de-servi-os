@@ -9,6 +9,7 @@ import LoginPage from "@/components/LoginPage";
 import AdminPasswordPanel from "@/components/admin-password-panel";
 import AdminRequestsPanel from "@/components/admin-requests-panel";
 import AuditPanel from "@/components/audit-panel";
+import AdminUsersPanel from "@/components/admin-users-panel";
 import ForceChangePassword from "@/components/force-change-password";
 import UpdateScreen from "@/components/update-screen";
 import { useAuthStore, authFetch } from "@/store/auth-store";
@@ -220,6 +221,7 @@ export default function Home() {
   const [showRequestsPanel, setShowRequestsPanel] = useState(false);
   const [pendingRegistrationsCount, setPendingRegistrationsCount] = useState(0);
   const [showAuditPanel, setShowAuditPanel] = useState(false);
+  const [showUsersPanel, setShowUsersPanel] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [selectedState, setSelectedState] = useState<StateType>(null);
@@ -744,6 +746,15 @@ export default function Home() {
                         {pendingRequestsCount}
                       </span>
                     )}
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowUsersPanel(true); }}
+                    className="bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1"
+                  >
+                    <span className="material-icons text-sm">manage_accounts</span>
+                    <span className="hidden sm:inline">Usuários</span>
                   </button>
                 )}
                 <button 
@@ -1889,6 +1900,11 @@ export default function Home() {
       {/* Audit Panel */}
       {showAuditPanel && isAdmin && (
         <AuditPanel onClose={() => setShowAuditPanel(false)} />
+      )}
+
+      {/* Users Panel — gestão de usuários (somente admin) */}
+      {showUsersPanel && isAdmin && (
+        <AdminUsersPanel onClose={() => setShowUsersPanel(false)} />
       )}
     </div>
   );

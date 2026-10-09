@@ -4,7 +4,7 @@
  * A cada deploy, incremente esse número.
  * O Service Worker usa essa versão para invalidar o cache antigo.
  */
-export const APP_VERSION = 7;
+export const APP_VERSION = 8;
 
 /** Data/hora do último deploy (preenchido manualmente) */
 export const DEPLOY_DATE = "09/10/2026";
