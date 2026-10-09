@@ -76,6 +76,15 @@ const RULE_TESTS = [
 ];
 
 // Login step types
+/** Mascara o email para exibição: ma****@zaminebrasil.com */
+function maskEmail(value: string): string {
+  const atIndex = value.indexOf('@');
+  if (atIndex <= 0) return value;
+  const local = value.slice(0, atIndex);
+  const domain = value.slice(atIndex);
+  return `${local.slice(0, 2)}${'•'.repeat(Math.max(local.length - 2, 3))}${domain}`;
+}
+
 interface EmailCheckResult {
   exists: boolean;
   isFirstAccess?: boolean;
@@ -87,7 +96,9 @@ interface EmailCheckResult {
 type LoginStep =
   | { phase: 'email' }
   | { phase: 'password'; isFirstAccess: false; userName: string }
-  | { phase: 'first-access'; userName: string };
+  | { phase: 'first-access'; userName: string }
+  | { phase: 'twofactor' }
+  | { phase: 'reg-code' };
 
 type ForgotMode = 'none' | 'forgot' | 'forgot-success' | 'forgot-pending';
 
@@ -123,7 +134,17 @@ export default function LoginPage() {
   const [regInvite, setRegInvite] = useState("");
   const [regMsg, setRegMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
+  // 2FA no login (código por email)
+  const [twofToken, setTwofToken] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+
+  // Verificação de email no cadastro (código de 6 dígitos)
+  const [regCode, setRegCode] = useState("");
+  const [regCodeMsg, setRegCodeMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [resending, setResending] = useState(false);
+
   const login = useAuthStore((s) => s.login);
+  const completeTwoFactor = useAuthStore((s) => s.completeTwoFactor);
   const forgotPassword = useAuthStore((s) => s.forgotPassword);
 
   const pwdScore = newPassword ? validatePasswordClient(newPassword) : null;
@@ -150,8 +171,14 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setRegMsg({ type: "error", text: data.error || 'Erro ao enviar solicitação.' });
+      } else if (data.emailSent) {
+        // Provedor de email configurado → verificar código recebido
+        setRegMsg(null);
+        setRegCode("");
+        setRegCodeMsg(null);
+        setStep({ phase: 'reg-code' });
       } else {
-        setRegMsg({ type: "success", text: 'Solicitação enviada! Aguarde a aprovação do administrador.' });
+        setRegMsg({ type: "success", text: data.message || 'Solicitação enviada! Aguarde a aprovação do administrador.' });
         setRegName("");
         setRegEmail("");
         setRegInvite("");
@@ -160,6 +187,52 @@ export default function LoginPage() {
       setRegMsg({ type: "error", text: 'Erro de conexão. Tente novamente.' });
     }
     setLoading(false);
+  };
+
+  // Verificação do código de email no cadastro
+  const handleVerifyRegCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setRegCodeMsg(null);
+    try {
+      const res = await fetch('/api/requests/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: regEmail, code: regCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRegCodeMsg({ type: "error", text: data.error || 'Erro ao verificar o código.' });
+      } else {
+        setRegCodeMsg({ type: "success", text: data.message || 'Email verificado! Aguarde a aprovação do administrador.' });
+        setRegCode("");
+      }
+    } catch {
+      setRegCodeMsg({ type: "error", text: 'Erro de conexão. Tente novamente.' });
+    }
+    setLoading(false);
+  };
+
+  // Reenvio do código de verificação do cadastro
+  const handleResendCode = async () => {
+    setResending(true);
+    setRegCodeMsg(null);
+    try {
+      const res = await fetch('/api/requests/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: regEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setRegCodeMsg({ type: "error", text: data.error || 'Erro ao reenviar o código.' });
+      } else {
+        setRegCodeMsg({ type: "success", text: data.message || 'Novo código enviado para o seu email.' });
+      }
+    } catch {
+      setRegCodeMsg({ type: "error", text: 'Erro de conexão. Tente novamente.' });
+    }
+    setResending(false);
   };
 
   // Step 1: Check email
@@ -202,7 +275,13 @@ export default function LoginPage() {
     const result = await login(email, password);
     setLoading(false);
     if (!result.success) {
-      if (result.isFirstAccess) {
+      if (result.twoFactorRequired && result.challengeToken) {
+        // Senha correta — agora falta o código enviado por email
+        setTwofToken(result.challengeToken);
+        setTwoFactorCode("");
+        setLoginError("");
+        setStep({ phase: 'twofactor' });
+      } else if (result.isFirstAccess) {
         // Server says it's first access - switch to first access step
         setStep({ phase: 'first-access', userName: '' });
       } else {
@@ -274,6 +353,24 @@ export default function LoginPage() {
     setForgotNewPassword("");
   };
 
+  // Segunda etapa do login: código enviado por email
+  const handleTwoFactor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setLoginError("");
+    const result = await completeTwoFactor(twofToken, twoFactorCode);
+    setLoading(false);
+    if (!result.success) {
+      if (result.expired) {
+        goBackToEmail();
+        setEmailError(result.error || 'Código expirado. Faça login novamente.');
+      } else {
+        setLoginError(result.error || 'Erro ao verificar o código.');
+      }
+    }
+    // sucesso: o store autentica e a plataforma aparece
+  };
+
   const goBackToEmail = () => {
     setStep({ phase: 'email' });
     setPassword("");
@@ -285,6 +382,10 @@ export default function LoginPage() {
     setForgotMessage(null);
     setForgotMode('none');
     setForgotNewPassword("");
+    setTwoFactorCode("");
+    setTwofToken("");
+    setRegCode("");
+    setRegCodeMsg(null);
   };
 
   const goToForgot = () => {
@@ -471,6 +572,8 @@ export default function LoginPage() {
               {step.phase === 'email' && (registerMode ? 'Solicitar acesso à plataforma' : 'Insira seu email para continuar')}
               {step.phase === 'password' && `Ola, ${step.userName || ''}`}
               {step.phase === 'first-access' && 'Primeiro acesso - Defina sua senha'}
+              {step.phase === 'twofactor' && 'Verificação em duas etapas'}
+              {step.phase === 'reg-code' && 'Confirme seu email'}
               {forgotMode !== 'none' && 'Recuperacao de senha'}
             </p>
             <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/15 border border-orange-500/30">
@@ -596,6 +699,118 @@ export default function LoginPage() {
                     Voltar ao login
                   </button>
                 </div>
+              </form>
+            )}
+
+            {/* ============ REGISTRO: CÓDIGO DE VERIFICAÇÃO ============ */}
+            {step.phase === 'reg-code' && (
+              <form onSubmit={handleVerifyRegCode} className="space-y-4">
+                {regCodeMsg && (
+                  <div className={`flex items-start gap-2.5 p-3 rounded-xl text-sm ${
+                    regCodeMsg.type === "success"
+                      ? "bg-green-500/15 border border-green-500/25 text-green-300"
+                      : "bg-red-500/15 border border-red-500/25 text-red-300"
+                  }`}>
+                    {regCodeMsg.type === "success" ? (
+                      <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                    ) : (
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    )}
+                    <span className="leading-snug">{regCodeMsg.text}</span>
+                  </div>
+                )}
+
+                <div className="text-center space-y-1.5 pb-1">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-orange-500/15 border border-orange-500/25 flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <p className="text-white/70 text-sm">Enviamos um código de 6 dígitos para</p>
+                  <p className="text-white font-medium text-sm break-all">{maskEmail(regEmail)}</p>
+                </div>
+
+                {regCodeMsg?.type !== "success" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="reg-code" className="text-white/60 text-xs font-medium">
+                        Código de verificação
+                      </Label>
+                      <div className="relative">
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                        <Input
+                          id="reg-code"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          placeholder="000000"
+                          value={regCode}
+                          onChange={(e) => setRegCode(e.target.value.replace(/\D/g, ''))}
+                          required
+                          autoFocus
+                          className="pl-9 pr-3 h-11 bg-white/10 border-white/10 text-white text-lg text-center tracking-[0.4em] placeholder:text-white/25 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={loading || regCode.length !== 6}
+                      className="w-full bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-semibold h-11 transition-all rounded-xl shadow-lg shadow-orange-600/30"
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Verificando...
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Verificar código
+                        </div>
+                      )}
+                    </Button>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <button
+                        type="button"
+                        onClick={handleResendCode}
+                        disabled={resending}
+                        className="flex items-center gap-1 text-xs text-orange-400/80 hover:text-orange-300 transition-colors disabled:opacity-50"
+                      >
+                        {resending ? (
+                          <Clock className="w-3.5 h-3.5 animate-pulse" />
+                        ) : (
+                          <Send className="w-3.5 h-3.5" />
+                        )}
+                        Reenviar código
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep({ phase: 'email' });
+                          setRegCode("");
+                          setRegCodeMsg(null);
+                        }}
+                        className="flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        Voltar
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {regCodeMsg?.type === "success" && (
+                  <div className="text-center pt-1">
+                    <button
+                      type="button"
+                      onClick={goBackToEmail}
+                      className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      Voltar ao login
+                    </button>
+                  </div>
+                )}
               </form>
             )}
 
@@ -749,6 +964,76 @@ export default function LoginPage() {
                     className="text-xs text-orange-400/80 hover:text-orange-300 transition-colors"
                   >
                     Esqueceu a senha?
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ============ STEP 2c: TWO FACTOR (CÓDIGO POR EMAIL) ============ */}
+            {step.phase === 'twofactor' && forgotMode === 'none' && (
+              <form onSubmit={handleTwoFactor} className="space-y-4">
+                {loginError && (
+                  <div className="flex items-start gap-2.5 p-3 rounded-xl text-sm bg-red-500/15 border border-red-500/25 text-red-300">
+                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span className="leading-snug">{loginError}</span>
+                  </div>
+                )}
+
+                <div className="text-center space-y-1.5 pb-1">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-orange-500/15 border border-orange-500/25 flex items-center justify-center">
+                    <ShieldAlert className="w-6 h-6 text-orange-400" />
+                  </div>
+                  <p className="text-white/70 text-sm">Enviamos um código de 6 dígitos para</p>
+                  <p className="text-white font-medium text-sm break-all">{maskEmail(email)}</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="twofactor-code" className="text-white/60 text-xs font-medium">
+                    Código de verificação
+                  </Label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 w-4 h-4" />
+                    <Input
+                      id="twofactor-code"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      required
+                      autoFocus
+                      className="pl-9 pr-3 h-11 bg-white/10 border-white/10 text-white text-lg text-center tracking-[0.4em] placeholder:text-white/25 focus:border-orange-500/60 focus:ring-orange-500/20 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || twoFactorCode.length !== 6}
+                  className="w-full bg-orange-600 hover:bg-orange-500 active:bg-orange-700 text-white font-semibold h-11 transition-all rounded-xl shadow-lg shadow-orange-600/30"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Verificando...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <LogIn className="w-4 h-4" />
+                      Verificar e entrar
+                    </div>
+                  )}
+                </Button>
+
+                <div className="text-center pt-1">
+                  <button
+                    type="button"
+                    onClick={goBackToEmail}
+                    className="inline-flex items-center gap-1 text-xs text-white/40 hover:text-white/60 transition-colors"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Voltar ao login
                   </button>
                 </div>
               </form>

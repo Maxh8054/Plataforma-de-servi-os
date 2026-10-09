@@ -10,7 +10,8 @@ interface AuthState {
   isAdmin: boolean;
   mustChangePassword: boolean;
   needsUpdate: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; locked?: boolean; isFirstAccess?: boolean }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; locked?: boolean; isFirstAccess?: boolean; twoFactorRequired?: boolean; challengeToken?: string; maskedEmail?: string }>;
+  completeTwoFactor: (challengeToken: string, code: string) => Promise<{ success: boolean; error?: string; expired?: boolean }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   forgotPassword: (email: string, newPassword: string) => Promise<{ success: boolean; error?: string; message?: string; alreadyRequested?: boolean; requested?: boolean }>;
@@ -91,7 +92,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       credentials: 'same-origin',
     });
     const json = await res.json();
-    if (!res.ok) return { success: false, error: json.error, locked: json.locked, isFirstAccess: json.isFirstAccess };
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json.error,
+        locked: json.locked,
+        isFirstAccess: json.isFirstAccess,
+        twoFactorRequired: json.twoFactorRequired,
+        challengeToken: json.challengeToken,
+        maskedEmail: json.maskedEmail,
+      };
+    }
     const token = json.token || null;
     persistToken(token);
 
@@ -100,6 +111,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({
       user: json.user, token,
       isAuthenticated: true, isAdmin: (json.user.role || '').toLowerCase() === 'admin',
+      mustChangePassword: !!json.mustChangePassword,
+      needsUpdate: hasUpdate,
+    });
+    return { success: true };
+  },
+
+  completeTwoFactor: async (challengeToken, code) => {
+    const res = await fetch('/api/auth/2fa/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challengeToken, code }),
+      credentials: 'same-origin',
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      return { success: false, error: json.error, expired: json.expired };
+    }
+    const token = json.token || null;
+    persistToken(token);
+
+    const hasUpdate = await checkAppVersion();
+
+    set({
+      user: json.user,
+      token,
+      isAuthenticated: true,
+      isAdmin: (json.user.role || '').toLowerCase() === 'admin',
       mustChangePassword: !!json.mustChangePassword,
       needsUpdate: hasUpdate,
     });
