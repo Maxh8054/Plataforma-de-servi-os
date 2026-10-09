@@ -59,12 +59,13 @@ interface PersonInfo {
 
 // Person assignments matching dataReport_Escala_Turno_Lundin:
 // A = Weslley Siqueira, B = Higor Ataides, C = Marcos Paulo, D = Marcelo
+// (E/Guilherme removido da escala a pedido — mantém o tipo PersonKey com 'E'
+// para compatibilidade com dados antigos, mas não é mais exibido nem normalizado)
 const PEOPLE: PersonInfo[] = [
   { key: 'A', name: 'Weslley Siqueira', photo: '/escala/Weslley.jpeg' },
   { key: 'B', name: 'Higor Ataides', photo: '/escala/Higor ataides.jpeg' },
   { key: 'C', name: 'Marcos Paulo', photo: '/escala/Marcos Paulo.jpeg' },
   { key: 'D', name: 'Marcelo', photo: '/escala/Marcelo.jpeg' },
-  { key: 'E', name: 'Guilherme', photo: '/escala/guilherme.png' },
 ];
 
 const PERSON_FULL_NAMES: Record<PersonKey, string> = {
@@ -274,8 +275,8 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
       const res = await fetch('/api/escala');
       if (res.ok) {
         const jsonData = await res.json();
-        // Ensure all person keys exist (A-E) even if DB data is missing them
-        const keys: PersonKey[] = ['A', 'B', 'C', 'D', 'E'];
+        // Ensure all person keys exist (A-D) even if DB data is missing them
+        const keys: PersonKey[] = ['A', 'B', 'C', 'D'];
         const normalized: EscalaData = { atestados: {} as any, spots: {} as any, adms: {} as any, eventos: {} as any };
         for (const k of keys) {
           normalized.atestados[k] = jsonData.atestados?.[k] || [];
@@ -1216,7 +1217,7 @@ Isso vai SUBSTITUIR todas as marcações atuais.
 Arquivo: ${file.name}`);
       if (!confirmed) return;
       // Ensure all person keys exist
-      const keys: PersonKey[] = ['A', 'B', 'C', 'D', 'E'];
+      const keys: PersonKey[] = ['A', 'B', 'C', 'D'];
       const newData: EscalaData = { atestados: {} as any, spots: {} as any, adms: {} as any, eventos: {} as any };
       for (const k of keys) {
         newData.atestados[k] = imported.atestados[k] || [];

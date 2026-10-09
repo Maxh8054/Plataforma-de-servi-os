@@ -13,6 +13,7 @@ import AdminUsersPanel from "@/components/admin-users-panel";
 import ForceChangePassword from "@/components/force-change-password";
 import UpdateScreen from "@/components/update-screen";
 import { useAuthStore, authFetch } from "@/store/auth-store";
+import { trackView, sendHeartbeat } from "@/lib/activity";
 
 // Types
 type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | null;
@@ -327,6 +328,32 @@ export default function Home() {
     const interval = setInterval(fetchRegCount, 15000);
     return () => clearInterval(interval);
   }, [isAdmin, isAuthenticated]);
+
+  // Heartbeat de presença — mantém o usuário "online" enquanto a plataforma está aberta
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 60_000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Rastreio de navegação — registra na auditoria qual tela/aba o usuário acessou
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let view = '';
+    if (showUsersPanel) view = 'Painel de Usuários';
+    else if (showAuditPanel) view = 'Logs de Auditoria';
+    else if (showRequestsPanel) view = 'Solicitações de Cadastro';
+    else if (showAdminPanel) view = 'Painel de Senhas';
+    else if (showZabFlowModal) view = 'ZabFlow';
+    else if (showEscalaModal) view = 'Escala Lundin';
+    else if (showEquipmentModal) view = 'Equipamentos';
+    else if (showEpiAuditModal) view = 'Auditoria EPI';
+    else if (showSecurityContent) view = 'Segurança';
+    else if (activeModal === 'services') view = 'Serviços';
+    else if (selectedState) view = `Mapa — ${selectedState.toUpperCase()}`;
+    if (view) trackView(view);
+  }, [isAuthenticated, selectedState, activeModal, showAdminPanel, showRequestsPanel, showAuditPanel, showUsersPanel, showEquipmentModal, showEpiAuditModal, showEscalaModal, showZabFlowModal, showSecurityContent]);
 
   const handleLogout = async () => {
     await logout();

@@ -22,6 +22,10 @@ export async function GET(request: NextRequest) {
     if (action) {
       where.action = action;
     }
+    // ?suspicious=1 → apenas eventos estranhos (severity warning/critical)
+    if (sp.get('suspicious') === '1') {
+      where.severity = { not: 'info' };
+    }
 
     const logs = await db.auditLog.findMany({
       where,
@@ -35,6 +39,7 @@ export async function GET(request: NextRequest) {
         userName: true,
         ip: true,
         details: true,
+        severity: true,
         createdAt: true,
       },
     });

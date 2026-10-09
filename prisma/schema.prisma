@@ -20,6 +20,7 @@ model User {
   lockedUntil   DateTime?
   sessionToken  String?                 @unique
   tokenExpiresAt DateTime?
+  lastSeenAt    DateTime?               @map("lastSeenAt")
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
   auditLogs         AuditLog[]
@@ -63,9 +64,11 @@ model AuditLog {
   userName  String?
   ip        String?
   details   String?
+  severity  String   @default("info")
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
 
+  @@index([severity])
   @@map("audit_logs")
 }
 
