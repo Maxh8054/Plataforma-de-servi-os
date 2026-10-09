@@ -2,10 +2,15 @@
  * Envio de emails de verificação (código OTP de 6 dígitos).
  *
  * Provedores suportados (por prioridade):
- *  1. Resend  — variável RESEND_API_KEY
- *  2. Brevo   — variável BREVO_API_KEY
+ *  1. Resend  — variável RESEND_API_KEY (exige domínio verificado no DNS)
+ *  2. Brevo   — variável BREVO_API_KEY  ← RECOMENDADO: grátis (300/dia),
+ *             NÃO exige domínio próprio e vai por HTTPS (porta 443),
+ *             imune a bloqueios de SMTP em nuvem.
  *  3. SMTP genérico — SMTP_HOST + SMTP_PORT + SMTP_USER + SMTP_PASS
- *     (ex.: Gmail grátis com "senha de app" — smtp.gmail.com:465)
+ *     (senha de app). ATENÇÃO: contas pessoais Outlook.com/Hotmail
+ *     normalmente RECUSAM autenticação (535 5.7.3) ou nem abrem conexão
+ *     (timeout) quando o envio vem de servidores em nuvem (Render).
+ *     Gmail com senha de app costuma funcionar (smtp.gmail.com:465).
  *  4. Sem provedor → MODO SIMULADO: o código aparece apenas nos logs
  *     do servidor (Render Dashboard → Logs). Útil para testes.
  *
@@ -47,6 +52,11 @@ async function sendViaSmtp(to: string, subject: string, html: string): Promise<{
       port,
       secure: port === 465,
       auth: { user, pass },
+      // Timeouts curtos: se o servidor não responder, falha rápido em vez
+      // de deixar o usuário esperando ~1 minuto no login.
+      connectionTimeout: 10_000, // conexão TCP
+      greetingTimeout: 10_000,   // banner SMTP após conectar
+      socketTimeout: 15_000,     // respostas durante a sessão
     });
 
     let from = process.env.EMAIL_FROM || `Zamine Plataforma <${user}>`;
@@ -64,7 +74,11 @@ async function sendViaSmtp(to: string, subject: string, html: string): Promise<{
     await transporter.sendMail({ from, to, subject, html });
     return { sent: true };
   } catch (err) {
-    console.error('[email] SMTP falhou:', err instanceof Error ? err.message : err);
+    const e = err as Error & { code?: string; command?: string };
+    console.error(
+      `[email] SMTP falhou (${host}:${port}) — code=${e.code ?? '?'} command=${e.command ?? '-'}: ${e.message}`
+    );
+    console.error('[email] Dica: contas pessoais Outlook/Hotmail costumam bloquear SMTP de nuvem (Render). Prefira BREVO_API_KEY (grátis, sem domínio, via HTTPS).');
     return { sent: false, error: 'smtp' };
   }
 }
@@ -180,7 +194,7 @@ export async function sendVerificationEmail(
 
   // ===== MODO SIMULADO =====
   console.log(`\n========================================`);
-  console.log(`[EMAIL SIMULADO] (configure RESEND_API_KEY para envio real)`);
+  console.log(`[EMAIL SIMULADO] (configure BREVO_API_KEY para envio real — grátis, sem domínio, 300/dia)`);
   console.log(`  Para: ${to}`);
   console.log(`  Assunto: ${subject}`);
   console.log(`  Código: ${code}`);

@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         userId: user.id,
         userEmail: user.email,
         ip,
-        details: delivery.simulated ? 'MODO SIMULADO — configure RESEND_API_KEY, BREVO_API_KEY ou SMTP (Gmail)' : undefined,
+        details: delivery.simulated ? 'MODO SIMULADO — configure BREVO_API_KEY (grátis, sem domínio), RESEND_API_KEY ou SMTP' : undefined,
       });
 
       // 401 de propósito: ainda NÃO há sessão — o token de desafio não autentica nada
