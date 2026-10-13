@@ -67,3 +67,15 @@ Data: 13/10/2026
 - Amapá ('ap') habilitado de ponta a ponta (mapa clicável + serviços + segurança com apps reais)
 - Testado com agent-browser: salvamento com validação (risco+foto), persistência e histórico interno OK
 - v13 (cache-bust); commit 5d03b4e na main
+
+---
+Task ID: 9 (v14)
+Data: 13/10/2026
+
+## Apps de Segurança no banco central + Amapá clicável
+
+- Inspection + EpiAudit no PostgreSQL (db push aditivo); APIs com permissões (leitura/criação p/ todos, edição/exclusão autor-ou-admin, clear-all só admin)
+- inspectoes/EPIs HTML: localStorage virou cache offline; sync com /api/inspections e /api/epi-audits; autor gravado e exibido; pill de sincronização; senha fixa '123' removida das exclusões
+- Tudo auditado (audit_logs): created/updated/deleted + negações (warning) e clear-all (critical); labels no painel admin
+- Mapa: pointer-events-none no header + preserveAspectRatio meet + hit-area extra → AP clicável
+- E2E contra banco real OK (POST/PUT/DELETE/401/UI); v14; commit e0c2c4f
