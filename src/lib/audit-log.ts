@@ -18,6 +18,14 @@ const SEVERITY_BY_ACTION: Record<string, AuditSeverity> = {
   seed_exported: 'warning',
   user_password_reset: 'warning',
   first_access_code_resent: 'warning',
+  // apps de segurança (inspeções / EPIs): exclusões são destrutivas
+  inspection_deleted: 'warning',
+  inspection_update_denied: 'warning',
+  inspection_delete_denied: 'warning',
+  epi_audit_deleted: 'warning',
+  epi_audit_delete_denied: 'warning',
+  epi_audits_clear_denied: 'critical',
+  epi_audits_all_cleared: 'critical',
   // critical: segurança comprometida / ação destrutiva
   brute_force_blocked: 'critical',
   user_locked: 'critical',

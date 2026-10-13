@@ -743,10 +743,10 @@ export default function Home() {
               <BrazilMap onStateClick={handleMarkerClick} />
             )}
 
-            {/* Header */}
-            <div className="absolute top-0 left-0 w-full px-2 py-1.5 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-30 flex justify-between items-center">
-              <img src="/images/zamine-logo.png" alt="Zamine" className="h-6 sm:h-10 w-auto object-contain" />
-              <div className="flex items-center gap-2 sm:gap-4">
+            {/* Header (pointer-events-none deixa clicar nos estados embaixo dele; botões reativam) */}
+            <div className="absolute top-0 left-0 w-full px-2 py-1.5 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-30 flex justify-between items-center pointer-events-none">
+              <img src="/images/zamine-logo.png" alt="Zamine" className="h-6 sm:h-10 w-auto object-contain pointer-events-auto" />
+              <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto">
                 <span className="text-xs text-gray-400 hidden sm:block">{authUser?.email?.split('@')[0]}</span>
                 {isAdmin && (
                   <button

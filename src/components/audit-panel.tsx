@@ -53,6 +53,17 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   first_access_code_resent: { label: 'Código de 1º acesso reenviado', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
   view_open: { label: 'Acessou tela', color: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
   logout: { label: 'Logout', color: 'bg-gray-500/15 text-gray-400 border-gray-500/30' },
+  // Apps de segurança (Inspeções / Auditoria de EPIs)
+  inspection_created: { label: 'Inspeção criada', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+  inspection_updated: { label: 'Inspeção atualizada', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
+  inspection_deleted: { label: 'Inspeção excluída', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  inspection_update_denied: { label: 'Edição de inspeção negada', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  inspection_delete_denied: { label: 'Exclusão de inspeção negada', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  epi_audit_created: { label: 'Auditoria EPI registrada', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
+  epi_audit_deleted: { label: 'Auditoria EPI excluída', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  epi_audit_delete_denied: { label: 'Exclusão de auditoria EPI negada', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  epi_audits_clear_denied: { label: 'Limpeza total EPI negada', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  epi_audits_all_cleared: { label: 'Histórico EPI apagado', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
   seed_exported: { label: 'Dados exportados', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
   seed_imported: { label: 'Dados importados', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
 };

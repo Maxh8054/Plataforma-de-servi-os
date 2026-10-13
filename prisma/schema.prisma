@@ -237,3 +237,54 @@ model EstoqueGoias {
 
   @@map("estoque_goias")
 }
+
+// ==========================================
+// Inspeções de Segurança (app /html/inspecoes-seguranca.html)
+// Público: qualquer usuário autenticado lê e cria; editar/excluir exige autor ou admin
+// ==========================================
+
+model Inspection {
+  id                   Int      @id @default(autoincrement())
+  areaName             String   @map("areaName")
+  inspectionDate       String   @map("inspectionDate")
+  deadlineDate         String   @map("deadlineDate")
+  location             String?
+  riskLevel            String   @default("low") @map("riskLevel") // low | medium | high
+  observations         String?
+  status               String   @default("pending") // pending | in-progress | completed
+  completionPercentage Int      @default(0) @map("completionPercentage")
+  checklistData        Json?    @map("checklistData")
+  photos               Json?    // [{ src, description, riskLevel, resolved, resolutionText, ... }]
+  areaPhoto            String?  @map("areaPhoto")
+  authorId             String?  @map("authorId")
+  authorName           String?  @map("authorName")
+  authorEmail          String?  @map("authorEmail")
+  createdAt            DateTime @default(now()) @map("createdAt")
+  updatedAt            DateTime @updatedAt @map("updatedAt")
+
+  @@index([createdAt])
+  @@map("inspections")
+}
+
+// ==========================================
+// Auditorias de EPIs (app /html/auditoria-epis.html)
+// ==========================================
+
+model EpiAudit {
+  id          Int      @id @default(autoincrement())
+  data        String   // data da auditoria (string yyyy-mm-dd do formulário)
+  responsavel String
+  funcao      String?
+  colaborador String   @map("colaborador")
+  area        String
+  observacoes String?
+  epis        Json?    // [{ tipo, nomes, condicao, substituicao, higienizado }]
+  authorId    String?  @map("authorId")
+  authorName  String?  @map("authorName")
+  authorEmail String?  @map("authorEmail")
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+
+  @@index([createdAt])
+  @@map("epi_audits")
+}

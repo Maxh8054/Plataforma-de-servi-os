@@ -191,7 +191,7 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
           viewBox="0 0 1080 1080"
           className="w-full h-full"
           style={{ filter: "drop-shadow(0 0 30px rgba(244, 114, 22, 0.06))", minWidth: '100%', minHeight: '100%' }}
-          preserveAspectRatio="xMidYMid slice"
+          preserveAspectRatio="xMidYMid meet"
         >
           <defs>
             {/* Glow filter for highlighted states */}
@@ -256,6 +256,23 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
                       }
                     }}
                   />
+                  {/* Área de toque extra (invisível) para estados pequenos como AP */}
+                  {isClickable && (
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke="transparent"
+                      strokeWidth={9}
+                      transform={`translate(${px}, ${py})`}
+                      style={{ pointerEvents: "stroke", cursor: "pointer" }}
+                      onMouseEnter={() => setHoveredState(uf)}
+                      onMouseLeave={handleMouseLeave}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStateClick(uf);
+                      }}
+                    />
+                  )}
                 </g>
               );
             })}

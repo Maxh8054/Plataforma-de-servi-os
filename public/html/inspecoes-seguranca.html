@@ -1535,6 +1535,7 @@
 <button class="btn btn-secondary" onclick="document.getElementById('inspecoesHistoryCard').scrollIntoView({behavior:'smooth'})">
     📋 Histórico
     </button>
+    <span id="syncStatusPill" style="align-self: center; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: rgba(245,158,11,0.15); color: #f59e0b; white-space: nowrap;">◌ Conectando ao banco...</span>
 </div>
         </div>
     </header>
@@ -3418,6 +3419,93 @@
         // Sistema de backup automático
         let backupInterval;
         const BACKUP_INTERVAL = 30000; // 30 segundos
+
+        // ==================== INTEGRAÇÃO COM O BANCO (API) ====================
+        // As inspeções agora vivem no banco central da plataforma (visíveis para todos).
+        // O localStorage vira apenas CACHE para o app continuar abrindo offline.
+        function authHeaders(extra) {
+            const h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+            try {
+                const token = localStorage.getItem('zamine_token');
+                if (token) h['x-zamine-token'] = token;
+            } catch (e) {}
+            return h;
+        }
+        function setSyncStatus(state) {
+            const el = document.getElementById('syncStatusPill');
+            if (!el) return;
+            if (state === 'ok') {
+                el.textContent = '\u25cf Sincronizado com o banco';
+                el.style.background = 'rgba(16,185,129,0.15)';
+                el.style.color = '#10b981';
+            } else if (state === 'syncing') {
+                el.textContent = '\u25cb Sincronizando...';
+                el.style.background = 'rgba(245,158,11,0.15)';
+                el.style.color = '#f59e0b';
+            } else {
+                el.textContent = '\u25cf Offline \u2014 cache local';
+                el.style.background = 'rgba(239,68,68,0.15)';
+                el.style.color = '#ef4444';
+            }
+        }
+        function toPayload(insp) {
+            return {
+                areaName: insp.areaName,
+                date: insp.date,
+                deadlineDate: insp.deadlineDate,
+                location: insp.location || '',
+                riskLevel: insp.riskLevel || 'low',
+                observations: insp.observations || '',
+                photos: insp.photos || [],
+                checklistData: insp.checklistData || {},
+                areaPhoto: insp.areaPhoto || null
+            };
+        }
+        async function apiCreateInspection(inspection) {
+            const res = await fetch('/api/inspections', { method: 'POST', headers: authHeaders(), body: JSON.stringify(toPayload(inspection)) });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw Object.assign(new Error(data.error || ('Erro ' + res.status)), { status: res.status });
+            return data.inspection;
+        }
+        async function apiUpdateInspection(inspection) {
+            const res = await fetch('/api/inspections', { method: 'PUT', headers: authHeaders(), body: JSON.stringify(Object.assign({ id: inspection.id }, toPayload(inspection))) });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw Object.assign(new Error(data.error || ('Erro ' + res.status)), { status: res.status });
+            return data.inspection;
+        }
+        async function apiDeleteInspection(id) {
+            const res = await fetch('/api/inspections', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ id: id }) });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw Object.assign(new Error(data.error || ('Erro ' + res.status)), { status: res.status });
+            return data;
+        }
+        async function fetchInspectionsFromServer() {
+            setSyncStatus('syncing');
+            const res = await fetch('/api/inspections', { headers: authHeaders() });
+            if (res.status === 401) {
+                setSyncStatus('offline');
+                throw new Error('Sessão expirada — volte à plataforma e entre novamente.');
+            }
+            if (!res.ok) throw new Error('Servidor respondeu ' + res.status);
+            const data = await res.json();
+            setSyncStatus('ok');
+            return data.inspections || [];
+        }
+        async function loadInspectionsFromServer() {
+            try {
+                const serverList = await fetchInspectionsFromServer();
+                inspections = serverList;
+                try { localStorage.setItem('inspections', JSON.stringify(inspections)); } catch (e) {}
+                renderInspections();
+                updateStats();
+                console.log('Inspeções carregadas do banco central:', inspections.length);
+            } catch (error) {
+                console.warn('Sem conexão com o servidor — usando cache local:', error.message);
+                setSyncStatus('offline');
+                showToast('Sem conexão com o servidor — mostrando dados salvos neste dispositivo.', 'error');
+            }
+        }
+        // ======================================================================
         
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
@@ -3483,6 +3571,7 @@
             
             renderInspections();
             updateStats();
+            loadInspectionsFromServer();
             setupEventListeners();
             renderPhotoGallery();
             applyChecklistStateToDOM();
@@ -3814,7 +3903,7 @@ function exportFormJSON(event) {
     }
     
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         try {
             const content = e.target.result;
             const data = JSON.parse(content);
@@ -3840,11 +3929,31 @@ function exportFormJSON(event) {
                     }
                 }
                 
+                // Adiciona ao histórico local e sincroniza cada inspeção com o banco
                 inspections.push(...inspectionsToImport);
-                localStorage.setItem('inspections', JSON.stringify(inspections));
                 renderInspections();
                 updateStats();
-                showToast(`${inspectionsToImport.length} inspeções foram adicionadas ao histórico!`, 'success');
+                showToast(`${inspectionsToImport.length} inspeções adicionadas — sincronizando com o banco...`, 'success');
+                let synced = 0, failed = 0;
+                for (const insp of inspectionsToImport) {
+                    try {
+                        const saved = await apiCreateInspection(insp);
+                        const idx = inspections.findIndex(i => i.id === insp.id);
+                        if (idx !== -1) inspections[idx] = saved;
+                        synced++;
+                    } catch (err) {
+                        failed++;
+                        console.warn('Inspeção não sincronizada:', insp.areaName, err.message);
+                    }
+                }
+                try { localStorage.setItem('inspections', JSON.stringify(inspections)); } catch (e) {}
+                renderInspections();
+                updateStats();
+                if (failed > 0) {
+                    showToast(`${synced} sincronizadas; ${failed} ficaram só neste dispositivo (confira fotos/dados)`, 'error');
+                } else if (synced > 0) {
+                    showToast(`${synced} inspeções sincronizadas com o banco!`, 'success');
+                }
                 event.target.value = '';
                 return; // Termina a execução aqui
             }
@@ -4135,18 +4244,31 @@ function saveInspection(e) {
         
         inspections.unshift(inspection);
         
-        // SALVA A INSPEÇÃO - ESTA É A CHAMADA PERMITIDA
-        if (saveInspections()) {
-            showToast('Inspeção salva com sucesso!', 'success');
-            resetForm();
+        // CACHE local (offline) + sincronização com o banco central
+        saveInspections();
+        resetForm();
+        renderInspections();
+        updateStats();
+        showToast('Inspeção salva — sincronizando com o banco...', 'success');
+        localStorage.setItem('inspections_last_update', new Date().toISOString());
+        document.querySelector('.history-container').classList.add('success-animation');
+        setTimeout(() => {
+            document.querySelector('.history-container').classList.remove('success-animation');
+        }, 500);
+        
+        apiCreateInspection(inspection).then((saved) => {
+            const idx = inspections.findIndex(i => i.id === inspection.id);
+            if (idx !== -1) inspections[idx] = saved;
+            try { localStorage.setItem('inspections', JSON.stringify(inspections)); } catch (e) {}
             renderInspections();
             updateStats();
-            localStorage.setItem('inspections_last_update', new Date().toISOString());
-            document.querySelector('.history-container').classList.add('success-animation');
-            setTimeout(() => {
-                document.querySelector('.history-container').classList.remove('success-animation');
-            }, 500);
-        }
+            setSyncStatus('ok');
+            showToast('Inspeção sincronizada com o banco — visível para todos!', 'success');
+        }).catch((err) => {
+            console.error('Falha ao sincronizar inspeção:', err);
+            setSyncStatus('offline');
+            showToast('Salva neste dispositivo, mas NÃO foi ao banco: ' + err.message, 'error');
+        });
     }
 }
         function calculateInspectionStatus(photos) {
@@ -4811,6 +4933,10 @@ function savePhotoRisk() {
                                             <span class="history-detail-value">${inspection.location || 'Não informado'}</span>
                                         </div>
                                         <div class="history-detail">
+                                            <span class="history-detail-label">Registrado por:</span>
+                                            <span class="history-detail-value">${inspection.authorName || 'importado/legado'}</span>
+                                        </div>
+                                        <div class="history-detail">
                                             <span class="history-detail-label">Fotos:</span>
                                             <span class="history-detail-value">${inspection.photos ? inspection.photos.length : 0}</span>
                                         </div>
@@ -5274,20 +5400,45 @@ function savePhotoRisk() {
             };
             
             if (saveInspections()) {
-                showToast('Inspeção atualizada com sucesso!', 'success');
+                showToast('Inspeção atualizada — sincronizando com o banco...', 'success');
                 resetForm();
                 renderInspections();
                 updateStats();
+                const updated = inspections[inspectionIndex];
+                apiUpdateInspection(updated).then((saved) => {
+                    const idx = inspections.findIndex(i => i.id === updated.id);
+                    if (idx !== -1) inspections[idx] = saved;
+                    try { localStorage.setItem('inspections', JSON.stringify(inspections)); } catch (e) {}
+                    renderInspections();
+                    updateStats();
+                    setSyncStatus('ok');
+                    showToast('Alterações sincronizadas com o banco!', 'success');
+                }).catch((err) => {
+                    console.error('Falha ao sincronizar atualização:', err);
+                    setSyncStatus('offline');
+                    showToast('Atualizada localmente, mas NÃO foi ao banco: ' + err.message, 'error');
+                });
             }
         }
         
-        function deleteInspection(id) {
-            if (confirm('Tem certeza que deseja excluir esta inspeção? Esta ação não pode ser desfeita.')) {
-                inspections = inspections.filter(i => i.id !== id);
-                saveInspections();
-                renderInspections();
-                updateStats();
-                showToast('Inspeção excluída com sucesso!', 'success');
+        async function deleteInspection(id) {
+            if (!confirm('Tem certeza que deseja excluir esta inspeção? A exclusão é registrada na auditoria e não pode ser desfeita.')) return;
+            inspections = inspections.filter(i => i.id !== id);
+            saveInspections();
+            renderInspections();
+            updateStats();
+            try {
+                await apiDeleteInspection(id);
+                showToast('Inspeção excluída do banco com sucesso!', 'success');
+            } catch (err) {
+                console.error('Falha ao excluir no servidor:', err);
+                setSyncStatus('offline');
+                if (err.status === 403) {
+                    showToast('Somente o autor da inspeção ou um admin pode excluí-la.', 'error');
+                } else {
+                    showToast('Excluída deste dispositivo, mas o servidor não confirmou: ' + err.message, 'error');
+                }
+                loadInspectionsFromServer();
             }
         }
         

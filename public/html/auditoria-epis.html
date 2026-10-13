@@ -486,7 +486,38 @@
             });
         });
         
-        document.getElementById('epiForm').addEventListener('submit', function(e) {
+        // ==================== INTEGRAÇÃO COM O BANCO (API) ====================
+        // As auditorias agora vivem no banco central da plataforma (visíveis para todos).
+        // O localStorage vira apenas CACHE para o app continuar abrindo offline.
+        let epiAudits = [];
+        function authHeaders(extra) {
+            const h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+            try {
+                const token = localStorage.getItem('zamine_token');
+                if (token) h['x-zamine-token'] = token;
+            } catch (e) {}
+            return h;
+        }
+        function cacheEpiAudits() {
+            try { localStorage.setItem('epiAudits', JSON.stringify(epiAudits)); } catch (e) {}
+        }
+        async function loadEpiAudits() {
+            try {
+                const res = await fetch('/api/epi-audits', { headers: authHeaders() });
+                if (!res.ok) throw new Error('Servidor respondeu ' + res.status);
+                const data = await res.json();
+                epiAudits = data.audits || [];
+                cacheEpiAudits();
+            } catch (err) {
+                console.warn('Sem conexão — usando cache local:', err.message);
+                epiAudits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+                setTimeout(() => alert('Sem conexão com o servidor — exibindo registros salvos neste dispositivo.'), 300);
+            }
+            updateAuditDisplay();
+        }
+        // =====================================================================
+
+        document.getElementById('epiForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Get form data
@@ -517,19 +548,25 @@
                 });
             });
 
-            // Save to localStorage
-            const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
-            audits.push(formData);
-            localStorage.setItem('epiAudits', JSON.stringify(audits));
-
-            // Update audit display
-            updateAuditDisplay();
-
-            alert('Formulário enviado com sucesso!');
+            // Envia ao banco central (autor fica gravado e vira log de auditoria)
+            try {
+                const res = await fetch('/api/epi-audits', { method: 'POST', headers: authHeaders(), body: JSON.stringify(formData) });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || ('Erro ' + res.status));
+                if (data.audit) {
+                    epiAudits.unshift(data.audit);
+                    cacheEpiAudits();
+                }
+                updateAuditDisplay();
+                alert('Formulário enviado com sucesso! Registro salvo no banco e visível para todos.');
+                e.target.reset();
+            } catch (err) {
+                alert('Erro ao enviar: ' + err.message);
+            }
         });
 
         function updateAuditDisplay() {
-            const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+            const audits = epiAudits;
             const container = document.getElementById('auditoriaContainer');
             container.innerHTML = '';
 
@@ -687,10 +724,11 @@
                 header.className = 'flex justify-between items-center mb-3 pb-2 border-b';
                 header.innerHTML = `
                     <div class="flex items-center">
-                        <input type="checkbox" class="mr-3 audit-checkbox" data-id="${index}">
+                        <input type="checkbox" class="mr-3 audit-checkbox" data-id="${audit.id}">
                         <div>
                             <span class="font-medium">${new Date(audit.data).toLocaleDateString('pt-BR')}</span>
                             <span class="text-sm text-gray-500 ml-2">Responsável: ${audit.responsavel}</span>
+                            ${audit.authorName ? `<span class="text-xs text-gray-400 ml-2">| Registrado por: ${audit.authorName}</span>` : ''}
                         </div>
                     </div>
                     <div class="flex items-center space-x-2">
@@ -748,34 +786,27 @@
             });
 
             // Handle delete selected button
-            document.getElementById('deleteSelected').addEventListener('click', function() {
-                const password = prompt('Digite a senha para excluir os registros selecionados:');
-                if (password === '123') {
-                    const checkboxes = document.querySelectorAll('.audit-checkbox:checked');
-                    if (checkboxes.length === 0) {
-                        alert('Selecione pelo menos um registro para excluir!');
-                        return;
-                    }
+            document.getElementById('deleteSelected').addEventListener('click', async function() {
+                const checkboxes = document.querySelectorAll('.audit-checkbox:checked');
+                if (checkboxes.length === 0) {
+                    alert('Selecione pelo menos um registro para excluir!');
+                    return;
+                }
+                if (!confirm('Excluir ' + checkboxes.length + ' registro(s)? A exclusão é registrada na auditoria.')) return;
 
-                    const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
-                    
-                    // Get indexes of selected audits to delete
-                    const indexesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id))
-                        .sort((a, b) => b - a); // Sort descending to avoid index shifting issues
-
-                    // Remove from localStorage
-                    indexesToDelete.forEach(index => {
-                        if (index !== -1) {
-                            audits.splice(index, 1);
-                        }
-                    });
-
-                    localStorage.setItem('epiAudits', JSON.stringify(audits));
+                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+                try {
+                    const res = await fetch('/api/epi-audits', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ ids: ids }) });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.error || ('Erro ' + res.status));
+                    const deletedIds = new Set(data.deletedIds || ids);
+                    epiAudits = epiAudits.filter(a => !deletedIds.has(a.id));
+                    cacheEpiAudits();
                     updateAuditDisplay();
                     modal.classList.add('hidden');
-                    alert('Registros selecionados excluídos com sucesso!');
-                } else if (password !== null) {
-                    alert('Senha incorreta!');
+                    alert('Registros excluídos com sucesso!');
+                } catch (err) {
+                    alert('Erro ao excluir: ' + err.message);
                 }
             });
 
@@ -924,40 +955,45 @@
         }
 
         // Handle single audit deletion
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', async function(e) {
             if (e.target.closest('.delete-audit-btn')) {
                 const btn = e.target.closest('.delete-audit-btn');
-                const password = prompt('Digite a senha para excluir:');
                 
-                if (password === '123') {
-                    const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
-                    const auditIndex = parseInt(btn.dataset.id);
-                    
-                    if (auditIndex !== -1) {
-                        audits.splice(auditIndex, 1);
-                        localStorage.setItem('epiAudits', JSON.stringify(audits));
+                if (confirm('Excluir esta auditoria? A exclusão é registrada na auditoria da plataforma.')) {
+                    const auditId = parseInt(btn.dataset.id);
+                    try {
+                        const res = await fetch('/api/epi-audits', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ ids: [auditId] }) });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.error || ('Erro ' + res.status));
+                        epiAudits = epiAudits.filter(a => a.id !== auditId);
+                        cacheEpiAudits();
                         updateAuditDisplay();
                         document.getElementById('auditModal').classList.add('hidden');
                         alert('Auditoria excluída com sucesso!');
+                    } catch (err) {
+                        alert('Erro ao excluir: ' + err.message);
                     }
-                } else if (password !== null) {
-                    alert('Senha incorreta!');
                 }
             }
         });
 
         // Initialize audit display and modal
-        updateAuditDisplay();
+        loadEpiAudits();
 
         // Clear history button
-        document.getElementById('clearHistory').addEventListener('click', function() {
-            const password = prompt('Digite a senha para limpar todo o histórico:');
-            if (password === '123') {
-                localStorage.removeItem('epiAudits');
+        document.getElementById('clearHistory').addEventListener('click', async function() {
+            if (!confirm('ATENÇÃO: isto apaga TODO o histórico de auditorias de EPIs do banco, para todos os usuários. Continuar?')) return;
+            if (!confirm('Tem certeza absoluta? Esta ação é crítica e ficará registrada na auditoria.')) return;
+            try {
+                const res = await fetch('/api/epi-audits', { method: 'DELETE', headers: authHeaders(), body: JSON.stringify({ all: true }) });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.error || ('Erro ' + res.status));
+                epiAudits = [];
+                cacheEpiAudits();
                 updateAuditDisplay();
                 alert('Histórico limpo com sucesso!');
-            } else if (password !== null) {
-                alert('Senha incorreta!');
+            } catch (err) {
+                alert('Erro ao limpar histórico: ' + err.message);
             }
         });
         
