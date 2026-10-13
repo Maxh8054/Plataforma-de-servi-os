@@ -79,3 +79,29 @@ Data: 13/10/2026
 - Tudo auditado (audit_logs): created/updated/deleted + negações (warning) e clear-all (critical); labels no painel admin
 - Mapa: pointer-events-none no header + preserveAspectRatio meet + hit-area extra → AP clicável
 - E2E contra banco real OK (POST/PUT/DELETE/401/UI); v14; commit e0c2c4f
+
+---
+Task ID: 10 (v15)
+Data: 13/10/2026
+
+## Z-Services AI (Criar Relatórios) integrado NATIVAMENTE na plataforma
+
+- Repo github.com/Maxh8054/Z-services-ai clonado e analisado: Next.js 16 completo (11 rotas API, NextAuth JWT, 5 stores Zustand, pptx/xlsx/powerpoint, colaboração por polling /api/collaboration com SharedSession no DB)
+- Fusão real (não iframe) via Route Groups: src/app/(platform)/* (SPA original intacta) + src/app/(reports)/* com relatorios/page.tsx, relatorios/report/[id], relatorios/share/[id] e globals.css próprio (html/fonts/metadata originais do Z-Services AI preservados)
+- APIs copiadas preservando caminhos originais (sem rewrites): /api/history(+import), /api/share, /api/collaboration, /api/translate(+content), /api/spell-check, /api/verify-password, /api/setup
+- Única colisão (/api/auth) resolvida: NextAuth montado em /api/reports/auth/[...nextauth] + SessionProvider basePath="/api/reports/auth" (suportado nativamente no next-auth 4.24)
+- lib/auth.ts → lib/reports-auth.ts (renomeado por colisão); componentes custom em src/components/reports/* (LoginPage/Providers colidiam com a plataforma); db.ts e utils.ts descartados (idênticos); ui/shadcn reutilizada da plataforma
+- Prisma: models ReportHistory + SharedSession adicionados ao PostgreSQL da plataforma (relação com User) — fim do SQLite efêmero do Render
+- package.json: + file-saver/@types/file-saver (única dep nova; pptxgenjs/jszip/xlsx/uuid/mdxeditor já existiam)
+- page.tsx: 9 URLs 'https://z-services-ai.onrender.com/' → '/relatorios'; novo branch no modal: url.startsWith('/') → button com navegação NA MESMA ABA (window.location.href)
+- v15 (cache-bust)
+
+Testes:
+- E2E agent-browser completo: login plataforma (2 etapas) → mapa MG → Serviços → R&D → Criar Relatórios → MESMA ABA /relatorios → tela original Z-Services AI → login NextAuth (max-r/2026) → app principal 100% original (Relatório Técnico, TAG, fotos, MACHINE DOWN) → 0 erros de console
+- Login NextAuth validado por curl: POST /api/reports/auth/callback/credentials → cookie JWT + user criado na tabela User da plataforma (cuid)
+- 11 rotas API compiladas e respondendo (200/401/405/400 conforme esperado); collaboration join consultou SharedSession no DB
+- lint: apenas react-hooks/set-state-in-effect (regra nova v6) em código copiado 1:1 de produção — build do Render não roda lint
+
+Pendências para o Render (usuário):
+- Recomendado adicionar envs no serviço da plataforma: NEXTAUTH_URL=https://<dominio> e NEXTAUTH_SECRET (fallback inseguro existe; afeta links de colaboração/compartilhamento)
+- O serviço antigo z-services-ai.onrender.com pode ser suspenso (histórico já estava desabilitado lá; nada a migrar)

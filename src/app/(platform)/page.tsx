@@ -65,7 +65,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/2XMhgQQ8OX?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
     { title: 'KPI Performance', description: 'Indicadores de performance', icon: 'bar_chart', url: 'https://app.powerbi.com/groups/me/reports/c7418b4c-5fac-48e6-93a1-95bd016b01cf/ac80ea5024926a98a1bb?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&experience=power-bi&bookmarkGuid=ab8e8389-926e-460f-b63e-b522c2e6e482' },
@@ -73,19 +73,19 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg-araxa': [
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'mg-usiminas': [
     { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/sZd7OFBV_z?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
     { title: 'KPI Performance', description: 'Indicadores de performance', icon: 'bar_chart', url: 'https://app.powerbi.com/groups/me/reports/c7418b4c-5fac-48e6-93a1-95bd016b01cf/ac80ea5024926a98a1bb?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&experience=power-bi&bookmarkGuid=ab8e8389-926e-460f-b63e-b522c2e6e482' },
@@ -95,31 +95,31 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'pa': [
     { title: 'Segurança', description: 'Opções de segurança - Pará', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'ba': [
     { title: 'Segurança', description: 'Opções de segurança - Bahia', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'sc': [
     { title: 'Segurança', description: 'Opções de segurança - Santa Catarina', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: 'https://gestorza.onrender.com/' }
   ],
   'ma': [
     { title: 'Segurança', description: 'Opções de segurança - Maranhão', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' }
   ],
   'ap': [
     { title: 'Segurança', description: 'Opções de segurança - Amapá', icon: 'shield', url: '#' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
-    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
   ]
 };
 
@@ -1136,6 +1136,20 @@ export default function Home() {
                             setEpiAuditStateName(stateNames[modalState || ''] || undefined);
                             setShowEpiAuditModal(true);
                           }}
+                          className="bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-xl p-3 sm:p-5 flex items-center gap-2.5 transition-colors group text-left w-full min-h-[48px] sm:min-h-[56px]"
+                        >
+                          <span className="material-icons text-orange-500 text-xl sm:text-2xl">{item.icon}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-white group-hover:text-orange-400 transition-colors text-xs sm:text-base">{item.title}</p>
+                            <p className="text-gray-400 text-[10px] sm:text-sm truncate">{item.description}</p>
+                          </div>
+                          <span className="material-icons text-gray-500 group-hover:text-orange-500 transition-colors shrink-0">arrow_forward</span>
+                        </button>
+                      ) : item.url.startsWith('/') ? (
+                        /* URL interna (ex.: /relatorios — Criar Relatórios integrado) → navega na mesma aba */
+                        <button
+                          key={index}
+                          onClick={() => { window.location.href = item.url; }}
                           className="bg-gray-700 hover:bg-gray-600 active:bg-gray-500 rounded-xl p-3 sm:p-5 flex items-center gap-2.5 transition-colors group text-left w-full min-h-[48px] sm:min-h-[56px]"
                         >
                           <span className="material-icons text-orange-500 text-xl sm:text-2xl">{item.icon}</span>

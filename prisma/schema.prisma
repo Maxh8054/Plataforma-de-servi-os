@@ -26,6 +26,8 @@ model User {
   auditLogs         AuditLog[]
   passwordResetRequests PasswordResetRequest[]
   twoFactorChallenges   TwoFactorChallenge[]
+  reportHistories   ReportHistory[]
+  sharedSessions    SharedSession[]
 }
 
 model TwoFactorChallenge {
@@ -287,4 +289,51 @@ model EpiAudit {
 
   @@index([createdAt])
   @@map("epi_audits")
+}
+
+// ==========================================
+// Z-Services AI — Criar Relatórios (app /relatorios)
+// Autenticação própria (NextAuth JWT) reutilizando a tabela User;
+// histórico e sessões de colaboração agora no PostgreSQL da plataforma
+// (antes: SQLite efêmero no Render, perdido a cada deploy)
+// ==========================================
+
+model ReportHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  userName    String
+  reportType  String
+  tag         String
+  cliente     String?
+  descricao   String?
+  conclusao   String?
+  executantes String?
+  machineDown Boolean  @default(false) @map("machineDown")
+  data        String   // JSON do relatório (string)
+  finalizedAt DateTime @default(now()) @map("finalizedAt")
+  createdAt   DateTime @default(now()) @map("createdAt")
+  updatedAt   DateTime @updatedAt @map("updatedAt")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("report_histories")
+}
+
+model SharedSession {
+  id             String   @id @default(cuid())
+  sessionId      String   @unique @map("sessionId")
+  creatorId      String
+  creatorName    String
+  reportType     String
+  permission     String
+  data           String   // JSON da sessão compartilhada (string)
+  expiresAt      DateTime @map("expiresAt")
+  savedToHistory Boolean  @default(false) @map("savedToHistory")
+  historyId      String?  @map("historyId")
+  createdAt      DateTime @default(now()) @map("createdAt")
+  updatedAt      DateTime @updatedAt @map("updatedAt")
+  creator        User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+  @@map("shared_sessions")
 }
