@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Autoria de EPIs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .epi-item {
+            transition: all 0.3s ease;
+        }
+        .epi-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .substituicao-observacao {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Botão Voltar para Home -->
+    <a href="/" style="position: fixed; top: 20px; left: 20px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar para Home</a> class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Auditoria Section -->
+        <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i data-feather="archive" class="mr-2"></i> Auditoria EPIs
+                </h2>
+                <button id="clearHistory" class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200">
+                    <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Limpar Histórico
+                </button>
+            </div>
+            <div id="auditoriaContainer" class="space-y-4">
+                <!-- Months will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Modal for Audit Details -->
+        <div id="auditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-gray-800" id="modalTitle"></h3>
+                        <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                            <i data-feather="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div id="modalContent" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-md overflow-hidden p-6 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    <i data-feather="clipboard" class="mr-2"></i> Formulário de EPIs
+                </h1>
+                <div class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Versão 1.0
+                </div>
+            </div>
+
+            <form id="epiForm" class="space-y-6">
+                <!-- Informações Básicas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="data" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                        <input type="date" id="data" name="data" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="responsavel" class="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
+                        <input type="text" id="responsavel" name="responsavel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Nome do responsável">
+                    </div>
+                    <div>
+                        <label for="funcao" class="block text-sm font-medium text-gray-700 mb-1">Função</label>
+                        <input type="text" id="funcao" name="funcao" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Cargo/função">
+                    </div>
+                    <div>
+                        <label for="colaborador" class="block text-sm font-medium text-gray-700 mb-1">Colaborador</label>
+                        <input type="text" id="colaborador" name="colaborador" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Nome do colaborador">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label for="area" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                        <input type="text" id="area" name="area" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Área de atuação">
+                    </div>
+                </div>
+
+                <!-- Lista de EPIs -->
+                <div class="space-y-4">
+                    <h2 class="text-lg font-semibold text-gray-800 border-b pb-2">
+                        <i data-feather="shield" class="mr-2"></i> Equipamentos de Proteção Individual
+                    </h2>
+
+                    <!-- Ouvido -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="headphones" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção Auditiva (Ouvido)</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_ouvido_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                        <option value="Protetor Auricular">Protetor Auricular</option>
+                                        <option value="Abafador de Ruído">Abafador de Ruído</option>
+                                        <option value="Plug Descartável">Plug </option>
+                                    </optgroup>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_ouvido_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_ouvido_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_ouvido_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Cabeça -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="user" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção para Cabeça</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_cabeca_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Capacete">Capacete</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_cabeca_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_cabeca_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_cabeca_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Olhos -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="eye" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção para Olhos</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_olhos_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Óculos de Proteção">Óculos de Proteção</option>
+                                    <option value="Viseira">Viseira</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_olhos_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_olhos_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_olhos_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Sistema Respiratório -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="wind" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção Respiratória</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_respiratorio_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Respirador">Máscara</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_respiratorio_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_respiratorio_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_respiratorio_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Mãos -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="hand" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção para Mãos</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_maos_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Luvas de Borracha">Luvas de Borracha</option>
+                                    <option value="Luvas de Latex">Luvas de Latex</option>
+                                    <option value="Luvas de vaqueta">Luvas de vaqueta</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_maos_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_maos_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_maos_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Proteção Facial -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="smile" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção Facial</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_facial_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Protetor Facial">Protetor Facial</option>
+                                    <option value="Máscara Facial">Máscara Facial</option>
+                                    <option value="Viseira Completa">Viseira Completa</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_facial_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_facial_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_facial_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Pé/Pernas -->
+                    <div class="epi-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i data-feather="activity" class="text-blue-600 mr-3"></i>
+                                <span class="font-medium text-gray-800">Proteção para Pé/Pernas</span>
+                            </div>
+                            <div class="relative ml-4">
+                                <select name="epi_pe_nome[]" class="appearance-none px-4 py-2 pr-8 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" multiple>
+                                    <option value="">Selecione os EPIs</option>
+                                    <option value="Botas de Segurança">Botas de Segurança</option>
+                                    <option value="Perneiras">Perneiras</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i data-feather="chevron-down" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_pe_condicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Boas condições</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_pe_substituicao" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Substituição</span>
+                                    </label>
+                                </div>
+                                <div>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="epi_pe_higienizado" class="rounded text-blue-600">
+                                        <span class="ml-2 text-sm text-gray-700">Higienizado</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="button" class="finalizar-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 text-sm">
+                                Finalizar
+                            </button>
+                        </div>
+                        <div class="historico mt-2 hidden">
+                            <!-- Histórico será inserido aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo de Observações -->
+                <div>
+                    <label for="observacoes" class="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+                    <textarea id="observacoes" name="observacoes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Adicione quaisquer observações relevantes..."></textarea>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Cancelar
+                    </button>
+                    <button type="button" id="exportExcel" class="px-6 py-2 border border-transparent rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i data-feather="download" class="mr-2"></i> Exportar Excel
+                    </button>
+                    <button type="submit" class="px-6 py-2 border border-transparent rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i data-feather="save" class="mr-2"></i> Salvar Formulário
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        feather.replace();
+        
+        // Atualiza os selects para mostrar o número de itens selecionados
+        document.querySelectorAll('select[name$="_nome[]"]').forEach(select => {
+            select.addEventListener('change', function() {
+                const selectedCount = this.selectedOptions.length;
+                const defaultOption = this.querySelector('option[value=""]');
+                
+                if (selectedCount > 0 && defaultOption) {
+                    defaultOption.textContent = `${selectedCount} item(s) selecionado(s)`;
+                } else if (defaultOption) {
+                    defaultOption.textContent = 'Selecione os EPIs';
+                }
+                
+                // Mantém o comportamento do campo "Outro"
+                if (Array.from(this.selectedOptions).some(opt => opt.value === 'Outro')) {
+                    if (!this.nextElementSibling || !this.nextElementSibling.matches('input.other-input')) {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'other-input mt-2 w-full px-3 py-1 border border-gray-300 rounded text-sm';
+                        input.placeholder = 'Especifique outro EPI';
+                        this.parentNode.parentNode.insertBefore(input, this.parentNode.nextSibling);
+                    }
+                } else {
+                    const otherInput = this.parentNode.nextElementSibling;
+                    if (otherInput && otherInput.matches('input.other-input')) {
+                        otherInput.remove();
+                    }
+                }
+            });
+        });
+        
+        document.getElementById('epiForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                data: document.getElementById('data').value,
+                responsavel: document.getElementById('responsavel').value,
+                funcao: document.getElementById('funcao').value,
+                colaborador: document.getElementById('colaborador').value,
+                area: document.getElementById('area').value,
+                observacoes: document.getElementById('observacoes').value,
+                epis: []
+            };
+
+            // Collect EPIs data
+            document.querySelectorAll('.epi-item').forEach(epiItem => {
+                const epiType = epiItem.querySelector('span.font-medium').textContent;
+                const epiNames = Array.from(epiItem.querySelector('select').selectedOptions).map(opt => opt.value).join(', ');
+                const condicao = epiItem.querySelector('input[name*="_condicao"]').checked;
+                const substituicao = epiItem.querySelector('input[name*="_substituicao"]').checked;
+                const higienizado = epiItem.querySelector('input[name*="_higienizado"]').checked;
+                
+                formData.epis.push({
+                    tipo: epiType,
+                    nomes: epiNames,
+                    condicao,
+                    substituicao,
+                    higienizado
+                });
+            });
+
+            // Save to localStorage
+            const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+            audits.push(formData);
+            localStorage.setItem('epiAudits', JSON.stringify(audits));
+
+            // Update audit display
+            updateAuditDisplay();
+
+            alert('Formulário enviado com sucesso!');
+        });
+
+        function updateAuditDisplay() {
+            const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+            const container = document.getElementById('auditoriaContainer');
+            container.innerHTML = '';
+
+            // Group by month
+            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const grouped = audits.reduce((acc, audit) => {
+                const date = new Date(audit.data);
+                const month = monthNames[date.getMonth()];
+                
+                if (!acc[month]) {
+                    acc[month] = [];
+                }
+                acc[month].push(audit);
+                return acc;
+            }, {});
+
+            // Display by month
+            for (const [month, monthAudits] of Object.entries(grouped)) {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month-section mb-6';
+                
+                const monthHeader = document.createElement('div');
+                monthHeader.className = 'flex items-center justify-between cursor-pointer p-3 bg-gray-100 rounded-lg';
+                monthHeader.innerHTML = `
+                    <h3 class="text-lg font-semibold text-gray-800">Auditoria EPIs - ${month}</h3>
+                    <i data-feather="chevron-down" class="text-gray-500 transition-transform duration-200"></i>
+                `;
+                
+                const monthContent = document.createElement('div');
+                monthContent.className = 'hidden mt-2 space-y-2 pl-4';
+                
+                // Group audits by collaborator
+                const collaboratorMap = monthAudits.reduce((map, audit) => {
+                    if (!map[audit.colaborador]) {
+                        map[audit.colaborador] = [];
+                    }
+                    map[audit.colaborador].push(audit);
+                    return map;
+                }, {});
+
+                for (const [collaborator, collaboratorAudits] of Object.entries(collaboratorMap)) {
+                    const collaboratorDiv = document.createElement('div');
+                    collaboratorDiv.className = 'collaborator-item cursor-pointer p-2 hover:bg-gray-50 rounded';
+                    collaboratorDiv.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-medium">${collaborator}</span>
+                            <span class="text-xs text-gray-500">${collaboratorAudits.length} registro(s)</span>
+                        </div>
+                    `;
+                    
+                    collaboratorDiv.addEventListener('click', () => {
+                        showAuditDetails(collaboratorAudits, `${collaborator} - ${month}`);
+                    });
+                    
+                    monthContent.appendChild(collaboratorDiv);
+                }
+                
+                monthHeader.addEventListener('click', () => {
+                    monthContent.classList.toggle('hidden');
+                    const icon = monthHeader.querySelector('i');
+                    icon.classList.toggle('rotate-180');
+                });
+                
+                monthDiv.appendChild(monthHeader);
+                monthDiv.appendChild(monthContent);
+                container.appendChild(monthDiv);
+            }
+            
+            feather.replace();
+        }
+
+        function showAuditDetails(audits, title) {
+            // Store the current month and collaborator for deletion reference
+            const [collaborator, month] = title.split(' - ');
+            const modal = document.getElementById('auditModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalTitle.textContent = title;
+            modalContent.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <div class="text-sm text-gray-600">Selecione os registros que deseja excluir</div>
+                    <div class="flex space-x-2">
+                        <button id="printSelected" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200">
+                            <i data-feather="printer" class="w-4 h-4 mr-1"></i> Imprimir Selecionados
+                        </button>
+                        <button id="deleteSelected" class="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200">
+                            <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Excluir Selecionados
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Calculate statistics for chart
+            let goodConditionCount = 0;
+            let needsReplacementCount = 0;
+            let totalEpis = 0;
+
+            audits.forEach(audit => {
+                audit.epis.forEach(epi => {
+                    totalEpis++;
+                    if (epi.substituicao) {
+                        needsReplacementCount++;
+                    } else if (epi.condicao && epi.higienizado) {
+                        goodConditionCount++;
+                    }
+                });
+            });
+
+            // Add chart to modal
+            modalContent.innerHTML += `
+                <div class="bg-white p-4 rounded-lg shadow mb-6">
+                    <h4 class="font-medium mb-2">Estatísticas dos EPIs</h4>
+                    <div class="flex items-center justify-center h-40">
+                        <canvas id="epiChart" width="300" height="150"></canvas>
+                    </div>
+                    <div class="flex justify-center space-x-4 mt-2 text-xs">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-green-500 rounded-full mr-1"></span> Boas condições (${Math.round(goodConditionCount/totalEpis*100)}%)
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 bg-red-500 rounded-full mr-1"></span> Substituir (${Math.round(needsReplacementCount/totalEpis*100)}%)
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Initialize chart
+            const ctx = document.getElementById('epiChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Boas condições', 'Substituir'],
+                    datasets: [{
+                        data: [goodConditionCount, needsReplacementCount],
+                        backgroundColor: ['#10B981', '#EF4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            audits.forEach((audit, index) => {
+                const auditDiv = document.createElement('div');
+                auditDiv.className = 'bg-gray-50 p-4 rounded-lg mb-4';
+                
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center mb-3 pb-2 border-b';
+                header.innerHTML = `
+                    <div class="flex items-center">
+                        <input type="checkbox" class="mr-3 audit-checkbox" data-id="${index}">
+                        <div>
+                            <span class="font-medium">${new Date(audit.data).toLocaleDateString('pt-BR')}</span>
+                            <span class="text-sm text-gray-500 ml-2">Responsável: ${audit.responsavel}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">${audit.funcao}</span>
+                    </div>
+                `;
+                
+                const areaDiv = document.createElement('div');
+                areaDiv.className = 'text-sm mb-3';
+                areaDiv.innerHTML = `<span class="font-medium">Área:</span> ${audit.area}`;
+                
+                const epiList = document.createElement('div');
+                epiList.className = 'space-y-3';
+                
+                audit.epis.forEach(epi => {
+                    const epiDiv = document.createElement('div');
+                    epiDiv.className = 'text-sm p-3 bg-white rounded border';
+                    
+                    let status = [];
+                    if (epi.condicao) status.push('Boas condições');
+                    if (epi.higienizado) status.push('Higienizado');
+                    if (epi.substituicao) status.push('Substituição');
+                    
+                    epiDiv.innerHTML = `
+                        <div class="font-medium">${epi.tipo}</div>
+                        <div class="text-gray-700">${epi.nomes}</div>
+                        <div class="mt-1 text-xs">
+                            ${status.map(s => `<span class="inline-block bg-gray-100 rounded px-2 py-1 mr-1">${s}</span>`).join('')}
+                        </div>
+                    `;
+                    
+                    epiList.appendChild(epiDiv);
+                });
+                
+                if (audit.observacoes) {
+                    const obsDiv = document.createElement('div');
+                    obsDiv.className = 'mt-3 text-sm';
+                    obsDiv.innerHTML = `
+                        <div class="font-medium">Observações:</div>
+                        <div class="bg-yellow-50 p-2 rounded mt-1">${audit.observacoes}</div>
+                    `;
+                    auditDiv.appendChild(obsDiv);
+                }
+                
+                auditDiv.appendChild(header);
+                auditDiv.appendChild(areaDiv);
+                auditDiv.appendChild(epiList);
+                modalContent.appendChild(auditDiv);
+            });
+            
+            modal.classList.remove('hidden');
+            
+            document.getElementById('closeModal').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            // Handle delete selected button
+            document.getElementById('deleteSelected').addEventListener('click', function() {
+                const password = prompt('Digite a senha para excluir os registros selecionados:');
+                if (password === '123') {
+                    const checkboxes = document.querySelectorAll('.audit-checkbox:checked');
+                    if (checkboxes.length === 0) {
+                        alert('Selecione pelo menos um registro para excluir!');
+                        return;
+                    }
+
+                    const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+                    
+                    // Get indexes of selected audits to delete
+                    const indexesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id))
+                        .sort((a, b) => b - a); // Sort descending to avoid index shifting issues
+
+                    // Remove from localStorage
+                    indexesToDelete.forEach(index => {
+                        if (index !== -1) {
+                            audits.splice(index, 1);
+                        }
+                    });
+
+                    localStorage.setItem('epiAudits', JSON.stringify(audits));
+                    updateAuditDisplay();
+                    modal.classList.add('hidden');
+                    alert('Registros selecionados excluídos com sucesso!');
+                } else if (password !== null) {
+                    alert('Senha incorreta!');
+                }
+            });
+
+            // Handle print selected button
+            document.getElementById('printSelected').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.audit-checkbox:checked');
+                if (checkboxes.length === 0) {
+                    alert('Selecione pelo menos um registro para imprimir!');
+                    return;
+                }
+
+                const printContent = document.createElement('div');
+                printContent.innerHTML = `
+                    <style>
+                        @page { size: A4; margin: 1cm; }
+                        body { font-family: 'Inter', sans-serif; padding: 0; color: #333; font-size: 12px; }
+                        .header { text-align: center; margin-bottom: 15px; }
+                        .header h1 { font-size: 20px; font-weight: 600; margin-bottom: 5px; }
+                        .header .subtitle { font-size: 12px; color: #666; }
+                        .audit-item { margin-bottom: 15px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; page-break-inside: avoid; }
+                        .audit-header { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+                        .audit-date { font-weight: 600; color: #111827; font-size: 12px; }
+                        .audit-responsible { font-size: 11px; color: #6b7280; }
+                        .audit-function { background: #f3f4f6; color: #374151; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+                        .epi-item { margin-bottom: 10px; padding: 8px; background: #f9fafb; border-radius: 4px; }
+                        .epi-title { font-weight: 600; margin-bottom: 5px; font-size: 11px; }
+                        .epi-status { margin-top: 6px; }
+                        .status-tag { display: inline-block; background: #e5e7eb; border-radius: 4px; padding: 2px 6px; font-size: 10px; margin-right: 4px; }
+                        .status-tag.good { background: #d1fae5; color: #065f46; }
+                        .status-tag.replace { background: #fee2e2; color: #b91c1c; }
+                        .status-tag.clean { background: #dbeafe; color: #1e40af; }
+                        .chart-stats { font-size: 10px; text-align: center; margin-top: 8px; }
+                        .observations { margin-top: 10px; padding: 8px; background: #fffbeb; border-radius: 4px; font-size: 11px; }
+                        .chart-container { margin: 20px 0; text-align: center; }
+                        .chart-container img { max-width: 350px; height: auto; }
+                        .signature { margin-top: 25px; text-align: right; }
+                        .signature-line { display: inline-block; width: 200px; border-top: 1px solid #111827; padding-top: 5px; text-align: center; font-size: 11px; }
+                        .footer { margin-top: 25px; font-size: 10px; color: #9ca3af; text-align: center; }
+                    </style>
+                    <div class="header">
+                        <h1>Relatório de Auditoria de EPIs</h1>
+                        <div class="subtitle">${new Date().toLocaleDateString('pt-BR')}</div>
+                    </div>
+                `;
+
+                // Add chart image to print content
+                const chartCanvas = document.getElementById('epiChart');
+                const chartImage = chartCanvas.toDataURL('image/png');
+                printContent.innerHTML += `
+                    <div class="chart-container">
+                        <h3 style="font-size: 10px; margin-bottom: 5px;">Resumo das Condições dos EPIs</h3>
+                        <img src="${chartImage}">
+                        <div class="chart-stats">
+                            Total EPIs: ${totalEpis} | 
+                            Boas condições: ${goodConditionCount} (${Math.round(goodConditionCount/totalEpis*100)}%) | 
+                            Substituir: ${needsReplacementCount} (${Math.round(needsReplacementCount/totalEpis*100)}%)
+                        </div>
+                    </div>
+                `;
+
+                checkboxes.forEach((checkbox, index) => {
+                    const auditDiv = checkbox.closest('.bg-gray-50');
+                    const clone = auditDiv.cloneNode(true);
+                    clone.querySelector('input[type="checkbox"]')?.remove();
+                    
+                    // Improve the layout for printing
+                    const auditDate = clone.querySelector('.font-medium').textContent;
+                    const auditResponsible = clone.querySelector('.text-gray-500').textContent.replace('Responsável: ', '');
+                    const auditFunction = clone.querySelector('.bg-blue-100').textContent;
+                    
+                    const epiItems = Array.from(clone.querySelectorAll('.bg-white')).map(item => {
+                        const title = item.querySelector('.font-medium').textContent;
+                        const names = item.querySelector('.text-gray-700').textContent;
+                        const statusTags = Array.from(item.querySelectorAll('.bg-gray-100')).map(tag => {
+                            const text = tag.textContent;
+                            let className = '';
+                            if (text.includes('Boas condições')) className = 'good';
+                            if (text.includes('Substituição')) className = 'replace';
+                            if (text.includes('Higienizado')) className = 'clean';
+                            return `<span class="status-tag ${className}">${text}</span>`;
+                        }).join('');
+                        
+                        return `
+                            <div class="epi-item">
+                                <div class="epi-title">${title}</div>
+                                <div>${names}</div>
+                                <div class="epi-status">${statusTags}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    const observations = clone.querySelector('.bg-yellow-50')?.textContent || '';
+                    
+                    clone.innerHTML = `
+                        <div class="audit-item">
+                            <div class="audit-header">
+                                <div>
+                                    <div class="audit-date">${auditDate}</div>
+                                    <div class="audit-responsible">Responsável: ${auditResponsible}</div>
+                                </div>
+                                <div class="audit-function">${auditFunction}</div>
+                            </div>
+                            <div class="audit-area">
+                                <strong>Área:</strong> ${auditDiv.querySelector('.text-sm span').nextSibling.textContent.trim()}
+                            </div>
+                            <div class="epis-list">
+                                ${epiItems}
+                            </div>
+                            ${observations ? `
+                            <div class="observations">
+                                <strong>Observações:</strong> ${observations}
+                            </div>
+                            ` : ''}
+                            <div class="signature">
+                                <div class="signature-line">Assinatura do Responsável</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    printContent.appendChild(clone);
+                    
+                    // Add page break after every 2 items except last
+                    if (index % 2 === 1 && index !== checkboxes.length - 1) {
+                        const pageBreak = document.createElement('div');
+                        pageBreak.className = 'page-break';
+                        printContent.appendChild(pageBreak);
+                    }
+                });
+                
+                // Add footer
+                printContent.innerHTML += `
+                    <div class="footer">
+                        Relatório gerado em ${new Date().toLocaleString('pt-BR')} | Sistema de Auditoria de EPIs
+                    </div>
+                `;
+
+                const printWindow = window.open('', '', 'width=800,height=600');
+                printWindow.document.write(printContent.innerHTML);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            });
+        }
+
+        // Handle single audit deletion
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-audit-btn')) {
+                const btn = e.target.closest('.delete-audit-btn');
+                const password = prompt('Digite a senha para excluir:');
+                
+                if (password === '123') {
+                    const audits = JSON.parse(localStorage.getItem('epiAudits') || '[]');
+                    const auditIndex = parseInt(btn.dataset.id);
+                    
+                    if (auditIndex !== -1) {
+                        audits.splice(auditIndex, 1);
+                        localStorage.setItem('epiAudits', JSON.stringify(audits));
+                        updateAuditDisplay();
+                        document.getElementById('auditModal').classList.add('hidden');
+                        alert('Auditoria excluída com sucesso!');
+                    }
+                } else if (password !== null) {
+                    alert('Senha incorreta!');
+                }
+            }
+        });
+
+        // Initialize audit display and modal
+        updateAuditDisplay();
+
+        // Clear history button
+        document.getElementById('clearHistory').addEventListener('click', function() {
+            const password = prompt('Digite a senha para limpar todo o histórico:');
+            if (password === '123') {
+                localStorage.removeItem('epiAudits');
+                updateAuditDisplay();
+                alert('Histórico limpo com sucesso!');
+            } else if (password !== null) {
+                alert('Senha incorreta!');
+            }
+        });
+        
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('auditModal').classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('auditModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('auditModal')) {
+                document.getElementById('auditModal').classList.add('hidden');
+            }
+        });
+
+        // Adiciona script para exportar para Excel
+        document.getElementById('exportExcel').addEventListener('click', function() {
+            // Coletar todos os dados do formulário
+            const data = {
+                data: document.getElementById('data').value,
+                responsavel: document.getElementById('responsavel').value,
+                funcao: document.getElementById('funcao').value,
+                colaborador: document.getElementById('colaborador').value,
+                area: document.getElementById('area').value,
+                observacoes: document.getElementById('observacoes').value,
+                epis: []
+            };
+
+            // Coletar dados de cada EPI
+            document.querySelectorAll('.epi-item').forEach(epiItem => {
+                const epiType = epiItem.querySelector('span.font-medium').textContent;
+                const epiNames = Array.from(epiItem.querySelector('select').selectedOptions).map(opt => opt.value).join(', ');
+                const condicao = epiItem.querySelector('input[name*="_condicao"]').checked ? 'Sim' : 'Não';
+                const substituicao = epiItem.querySelector('input[name*="_substituicao"]').checked ? 'Sim' : 'Não';
+                const higienizado = epiItem.querySelector('input[name*="_higienizado"]').checked ? 'Sim' : 'Não';
+                
+                let substituicaoObservacao = '';
+                if (substituicao === 'Sim') {
+                    substituicaoObservacao = epiItem.querySelector('.substituicao-observacao textarea')?.value || '';
+                }
+
+                data.epis.push({
+                    tipo: epiType,
+                    nomes: epiNames,
+                    boas_condicoes: condicao,
+                    substituicao: substituicao,
+                    observacao_substituicao: substituicaoObservacao,
+                    higienizado: higienizado
+                });
+            });
+
+            // Criar CSV com estrutura solicitada
+            const headers = [
+                'Data', 'Responsável', 'Função', 'Colaborador', 'Área', 
+                'Nome do EPI', 'Condição', 'Higienizado', 'Observações Gerais'
+            ];
+
+            // Criar linhas para cada EPI
+            let csv = headers.join('\t') + '\n';
+            
+            data.epis.forEach(epi => {
+                const row = [
+                    data.data,
+                    data.responsavel,
+                    data.funcao,
+                    data.colaborador,
+                    data.area,
+                    epi.nomes,
+                    epi.boas_condicoes,
+                    epi.higienizado,
+                    epi.substituicao === 'Sim' ? epi.observacao_substituicao : data.observacoes
+                ].map(field => `"${field || ''}"`).join('\t');
+                
+                csv += row + '\n';
+            });
+
+            // Criar link de download como Excel
+            const blob = new Blob(["\uFEFF" + csv], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `EPIs_${data.data || new Date().toISOString().slice(0,10)}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Função para deletar itens de histórico
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-btn')) {
+                const item = e.target.closest('.historico-item');
+                const historicoDiv = item.closest('.historico');
+                const monthHeader = item.previousElementSibling;
+                
+                item.remove();
+                
+                // Check if month header has no items after it
+                if (monthHeader && monthHeader.classList.contains('month-header') && 
+                    (!monthHeader.nextElementSibling || monthHeader.nextElementSibling.classList.contains('month-header'))) {
+                    monthHeader.remove();
+                }
+                
+                if (historicoDiv.children.length === 0) {
+                    historicoDiv.classList.add('hidden');
+                }
+            }
+        });
+
+        // Lógica para mostrar/ocultar campo de observação quando clicar em substituição
+        document.querySelectorAll('input[name*="_substituicao"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const epiItem = this.closest('.epi-item');
+                const condicaoCheckbox = epiItem.querySelector('input[name*="_condicao"]');
+                const substituicaoObservacao = epiItem.querySelector('.substituicao-observacao');
+                
+                if (this.checked) {
+                    if (!substituicaoObservacao) {
+                        const div = document.createElement('div');
+                        div.className = 'substituicao-observacao mt-2';
+                        div.innerHTML = `
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Observação para substituição</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded text-sm min-h-20" placeholder="Descreva o motivo da substituição..." style="resize: vertical; min-height: 5rem;"></textarea>
+                        `;
+                        this.closest('.epi-item').appendChild(div);
+                    }
+                    
+                    // Desmarca boas condições se marcar substituição
+                    condicaoCheckbox.checked = false;
+                } else if (substituicaoObservacao) {
+                    substituicaoObservacao.remove();
+                }
+            });
+        });
+
+        // Não permitir marcar substituição se estiver em boas condições
+        document.querySelectorAll('input[name*="_condicao"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    const substituicaoCheckbox = this.closest('.epi-item').querySelector('input[name*="_substituicao"]');
+                    substituicaoCheckbox.checked = false;
+                    
+                    // Remove campo de observação se existir
+                    const substituicaoObservacao = this.closest('.epi-item').querySelector('.substituicao-observacao');
+                    if (substituicaoObservacao) {
+                        substituicaoObservacao.remove();
+                    }
+                }
+            });
+        });
+
+        // Adiciona histórico quando clicar em Finalizar
+        document.querySelectorAll('.finalizar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const epiItem = this.closest('.epi-item');
+                const historicoDiv = epiItem.querySelector('.historico');
+                const nomeEpi = epiItem.querySelector('select').selectedOptions[0]?.value || 'EPI';
+                const condicao = epiItem.querySelector('input[name*="_condicao"]').checked;
+                const higienizado = epiItem.querySelector('input[name*="_higienizado"]').checked;
+                
+                const substituicao = epiItem.querySelector('input[name*="_substituicao"]').checked;
+                const substituicaoObservacao = substituicao ? epiItem.querySelector('.substituicao-observacao textarea').value : '';
+                let statusClass = 'bg-yellow-100 text-yellow-800';
+                
+                if (substituicao) {
+                    statusClass = 'bg-red-100 text-red-800';
+                } else if (condicao && higienizado) {
+                    statusClass = 'bg-green-100 text-green-800';
+                }
+                
+                const now = new Date();
+                const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                const currentMonth = monthNames[now.getMonth()];
+                
+                // Check if month header already exists
+                let monthHeader = historicoDiv.querySelector(`.month-header[data-month="${currentMonth}"]`);
+                
+                if (!monthHeader) {
+                    monthHeader = document.createElement('div');
+                    monthHeader.className = 'month-header sticky top-0 bg-gray-100 p-2 font-bold text-gray-700 z-10';
+                    monthHeader.textContent = currentMonth;
+                    monthHeader.setAttribute('data-month', currentMonth);
+                    historicoDiv.prepend(monthHeader);
+                }
+                
+                const historicoItem = document.createElement('div');
+                historicoItem.className = `historico-item ${statusClass} p-2 rounded mb-1 text-sm flex justify-between items-center`;
+                historicoItem.innerHTML = `
+                    <div class="w-full">
+                        <span class="font-medium">${nomeEpi}</span> - 
+                        ${condicao ? 'Boas condições' : 'Condições a verificar'} | 
+                        ${higienizado ? 'Higienizado' : 'Não higienizado'} | 
+                        ${substituicao ? `<span class="font-semibold">SUBSTITUIÇÃO</span> <span class="text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded whitespace-normal break-words">${substituicaoObservacao}</span> | ` : ''}
+                        <span class="text-xs text-gray-500">${now.toLocaleString()}</span>
+                    </div>
+                    <button class="delete-btn text-gray-500 hover:text-red-600 ml-2" title="Remover">
+                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                
+                // Adiciona evento para remover o histórico
+                historicoItem.querySelector('.delete-btn').addEventListener('click', function() {
+                    historicoItem.remove();
+                    if (historicoDiv.children.length === 0) {
+                        historicoDiv.classList.add('hidden');
+                    }
+                });
+                
+                historicoDiv.classList.remove('hidden');
+                // Insert after the month header
+                monthHeader.insertAdjacentElement('afterend', historicoItem);
+                feather.replace(); // Atualiza os ícones
+            });
+        });
+
+        // Adiciona campo de texto quando selecionar "Outro"
+        document.querySelectorAll('select[name$="_nome[]"]').forEach(select => {
+            select.addEventListener('change', function() {
+                if (Array.from(this.selectedOptions).some(opt => opt.value === 'Outro')) {
+                    if (!this.nextElementSibling || !this.nextElementSibling.matches('input.other-input')) {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'other-input ml-2 px-3 py-1 border border-gray-300 rounded text-sm';
+                        input.placeholder = 'Especifique outro EPI';
+                        this.parentNode.insertBefore(input, this.nextSibling);
+                    }
+                } else {
+                    const otherInput = this.nextElementSibling;
+                    if (otherInput && otherInput.matches('input.other-input')) {
+                        otherInput.remove();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

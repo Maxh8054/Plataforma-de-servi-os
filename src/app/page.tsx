@@ -16,7 +16,7 @@ import { useAuthStore, authFetch } from "@/store/auth-store";
 import { trackView, sendHeartbeat } from "@/lib/activity";
 
 // Types
-type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | null;
+type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | "ap" | null;
 type ModalType = "services" | "security" | null;
 
 // PWA Install Event Type
@@ -115,6 +115,11 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' }
+  ],
+  'ap': [
+    { title: 'Segurança', description: 'Opções de segurança - Amapá', icon: 'shield', url: '#' },
+    { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
+    { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: 'https://z-services-ai.onrender.com/' },
   ]
 };
 
@@ -126,21 +131,21 @@ const securityData: Record<string, {title: string; description: string; icon: st
     { title: 'Usiminas', description: 'Segurança - Usiminas', icon: 'factory', url: '#usiminas-security' }
   ],
   'mg-rd': [
-    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
-    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' },
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/auditoria-epis-minas.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/inspecoes-seguranca.html' },
     { title: 'KPI Segurança', description: 'Indicadores de segurança', icon: 'bar_chart', url: 'https://app.powerbi.com/links/7fUFPRWu3X?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' }
   ],
   'mg-araxa': [
-    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
-    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' }
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/auditoria-epis-minas.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/inspecoes-seguranca.html' }
   ],
   'mg-usiminas': [
-    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPISMinas.html' },
-    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' }
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/auditoria-epis-minas.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/inspecoes-seguranca.html' }
   ],
   'go': [
-    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/AuditoriaEPIS.html' },
-    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/InspeçõesSegurança.html' },
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/auditoria-epis.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/inspecoes-seguranca.html' },
     { title: 'KPI Segurança', description: 'Indicadores de segurança', icon: 'bar_chart', url: 'https://app.powerbi.com/links/PHZoCHceXg?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
   ],
   'pa': [
@@ -158,6 +163,10 @@ const securityData: Record<string, {title: string; description: string; icon: st
   'ma': [
     { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '#' },
     { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '#' }
+  ],
+  'ap': [
+    { title: 'Auditoria de EPIs', description: 'Sistema de auditoria de EPIs', icon: 'verified', url: '/html/auditoria-epis.html' },
+    { title: 'Inspeções de Segurança', description: 'Registros de inspeções', icon: 'security', url: '/html/inspecoes-seguranca.html' }
   ]
 };
 
@@ -169,7 +178,8 @@ const stateNames: Record<string, string> = {
   'sc': 'Santa Catarina',
   'ma': 'Maranhão',
   'mg-rd': 'R&D',
-  'mg-araxa': 'Araxá'
+  'mg-araxa': 'Araxá',
+  'ap': 'Amapá'
 };
 
 const stateVideos: Record<string, string> = {

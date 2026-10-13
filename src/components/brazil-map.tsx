@@ -33,7 +33,7 @@ const STATE_NAMES: Record<string, string> = {
 };
 
 // States where Zamine operates (initially highlighted)
-const ACTIVE_STATES = new Set(["PA", "MA", "BA", "GO", "MG", "SC"]);
+const ACTIVE_STATES = new Set(["PA", "MA", "BA", "GO", "MG", "SC", "AP"]);
 
 // Map from SVG UF to app state key
 const UF_TO_STATE: Record<string, string> = {
@@ -43,6 +43,7 @@ const UF_TO_STATE: Record<string, string> = {
   BA: "ba",
   SC: "sc",
   MA: "ma",
+  AP: "ap",
 };
 
 interface BrazilMapProps {
