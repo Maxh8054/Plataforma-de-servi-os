@@ -52,3 +52,18 @@ Stage Summary:
 - Aplicação 100% copiada do repositório original e funcional
 - Verificada via curl: HTML retornado contém todos os componentes originais
 - Limitação do sandbox impede visualização no Preview Panel (Caddy sem config de proxy)
+
+---
+Task ID: 8 (v13)
+Data: 13/10/2026
+
+## Resgate dos apps de Segurança (Inspeção + Auditoria EPIs) e módulo Amapá
+
+- public/html/ estava ausente do main (links mortos em securityData); arquivos recuperados do branch master via git show com nomes ASCII:
+  - inspecoes-seguranca.html — Sistema Avançado de Inspeção de Área (292KB, standalone, localStorage: inspections/formState/checklistData/completeBackup)
+  - auditoria-epis.html / auditoria-epis-minas.html — Formulário de Autoria de EPIs
+  - historico-inspecoes.html — galeria estática de imagens (legado, sem fonte de dados)
+- Fixes: cross-link quebrado (Historicoinspecoes.html / L:\), botão Histórico agora rola ao histórico interno do app
+- Amapá ('ap') habilitado de ponta a ponta (mapa clicável + serviços + segurança com apps reais)
+- Testado com agent-browser: salvamento com validação (risco+foto), persistência e histórico interno OK
+- v13 (cache-bust); commit 5d03b4e na main
