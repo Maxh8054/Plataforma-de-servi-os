@@ -15,7 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { generatePowerPoint, generateHomePowerPoint } from '@/lib/powerpoint';
 import { UserMenu } from '@/components/reports/UserMenu';
-import { LoginPage } from '@/components/reports/LoginPage';
+import { PlatformAuthGate, RequirePlatformToken } from '@/components/reports/PlatformAuthGate';
+import { DraftSync } from '@/components/reports/DraftSync';
 import { useStoresHydrated } from '@/hooks/useStoresHydrated';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import { getSubPartsForPhoto, photoShouldBeInPartsTable, getDisplayPn, photoHasSubPartData } from '@/lib/partsUtils';
@@ -3905,9 +3906,10 @@ export default function TechnicalReportPage() {
     );
   }
 
-  // Show login page if not authenticated
+  // Show login page if not authenticated — LOGIN ÚNICO: usa a sessão da
+  // plataforma Zamine (zamine_token), sem login próprio no relatórios
   if (status === 'unauthenticated' || !session) {
-    return <LoginPage onSuccess={() => window.location.reload()} />;
+    return <PlatformAuthGate onSuccess={() => window.location.reload()} />;
   }
 
   // Wait for stores to hydrate from IndexedDB before rendering
@@ -3921,6 +3923,10 @@ export default function TechnicalReportPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Login único: derruba sessão órfã se o logout da plataforma acontecer em outra aba */}
+      <RequirePlatformToken />
+      {/* Autosave no banco ligado ao login: recarregar/sair não perde nada, e continua no outro dia */}
+      <DraftSync />
       {/* Mobile Header */}
       <header className="bg-black text-white p-3 flex justify-between items-center md:hidden sticky top-0 z-50">
         <button 

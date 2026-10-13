@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, ArrowLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,8 +35,10 @@ export function UserMenu({ currentReportType }: UserMenuProps) {
     return 'U';
   };
 
+  // LOGIN ÚNICO: a sessão do relatórios é espelho da sessão da plataforma.
+  // 'Sair' daqui só volta para a plataforma — o logout de verdade é lá.
   const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
+    window.location.href = '/';
   };
 
   if (!session) return null;
@@ -71,8 +73,8 @@ export function UserMenu({ currentReportType }: UserMenuProps) {
           onClick={handleLogout}
           className="text-red-400 hover:text-red-300 hover:bg-gray-800 cursor-pointer"
         >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sair
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Voltar para a plataforma
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

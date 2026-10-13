@@ -48,8 +48,40 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        // SSO: token de sessão da plataforma Zamine (login único — sem senha aqui)
+        zamineToken: { label: 'Zamine Token', type: 'text' },
       },
       async authorize(credentials) {
+        // ==========================================================
+        // SSO — Login ÚNICO da plataforma: o /relatorios não tem mais
+        // login próprio. O cliente envia o token de sessão da plataforma
+        // (localStorage 'zamine_token') e validamos direto no banco.
+        // ==========================================================
+        if (credentials?.zamineToken) {
+          try {
+            const { db } = await import('@/lib/db');
+            const { SESSION_MAX_AGE } = await import('@/lib/auth');
+
+            const user = await db.user.findUnique({
+              where: { sessionToken: credentials.zamineToken },
+              select: { id: true, name: true, email: true, isActive: true, tokenExpiresAt: true },
+            });
+
+            if (!user || !user.isActive) return null;
+            if (user.tokenExpiresAt && new Date(user.tokenExpiresAt) < new Date()) return null;
+
+            // Renova a janela da sessão da plataforma (mesma política do lib/auth)
+            await db.user.update({
+              where: { id: user.id },
+              data: { tokenExpiresAt: new Date(Date.now() + SESSION_MAX_AGE * 1000) },
+            }).catch(() => {});
+
+            return { id: user.id, email: user.email, name: user.name };
+          } catch {
+            return null;
+          }
+        }
+
         if (!credentials?.email || !credentials?.password) {
           return null;
         }

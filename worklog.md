@@ -105,3 +105,31 @@ Testes:
 Pendências para o Render (usuário):
 - Recomendado adicionar envs no serviço da plataforma: NEXTAUTH_URL=https://<dominio> e NEXTAUTH_SECRET (fallback inseguro existe; afeta links de colaboração/compartilhamento)
 - O serviço antigo z-services-ai.onrender.com pode ser suspenso (histórico já estava desabilitado lá; nada a migrar)
+
+---
+Task ID: 11 (v16)
+Data: 13/10/2026
+
+## Criar Relatórios com LOGIN ÚNICO da plataforma + rascunhos persistentes no banco
+
+- SSO: NextAuth dos relatórios (reports-auth.ts) aceita credencial `zamineToken` — valida o token de sessão da plataforma no banco (User.sessionToken + tokenExpiresAt + isActive) e renova a janela de 24h; fim do login duplicado (email + senha '2026' removidos da prática)
+- PlatformAuthGate substitui LoginPage no /relatorios: lê localStorage 'zamine_token', signIn automático sem senha; sem token → tela "Faça login na plataforma" com botão para '/'; token expirado → "Sessão expirada"
+- RequirePlatformToken derruba sessão órfã (logout da plataforma em outra aba); DraftSync faz handleSessionLost em 401 da API de rascunhos
+- UserMenu: "Sair" virou "Voltar para a plataforma" (logout de verdade só na plataforma)
+- Model ReportDraft no PostgreSQL (um rascunho por usuário + tipo 'home'|'inspecao', @@unique(userId, reportType), cascade no User)
+- API /api/reports/drafts (GET/PUT/DELETE) autenticada via x-zamine-token; auditoria: report_draft_created (info) e report_draft_deleted (warning); autosave NÃO polui o log
+- DraftSync: autosave com debounce 2,5s + flush imediato em visibilitychange hidden / pagehide (fetch keepalive); restore no load com merge por lastLocalEdit (última edição vence); pill fixa bottom-left "Rascunho salvo HH:MM" (não colide com FAB bottom-right)
+- IndexedDB continua como cache local; o banco passa a ser a fonte da verdade — apagar cache/trocar de computador não perde mais nada
+- v16 (cache-bust)
+
+Testes (E2E agent-browser + curl contra banco real do Render):
+- Sem token → gate "Faça login na plataforma" (LoginPage antiga eliminada)
+- Com token da plataforma → app abre direto, UserMenu mostra usuário da plataforma, ZERO tela de login
+- Drafts API: PUT upsert / GET / 401 sem token / 400 tipo inválido — OK
+- NextAuth SSO via curl: sessão criada com usuário correto da plataforma — OK
+- Digitou cliente+descrição (Home) e inspetor (Inspeção) → "Rascunho salvo HH:MM" e linhas no PostgreSQL — OK
+- Reload → campos persistem; IndexedDB apagado (simula outro computador) → dados RESTAURADOS do servidor — OK
+- Token da plataforma removido (simula logout) → relatórios derruba sessão e volta ao gate — OK
+- Mobile 390px: pill bottom-left sem sobrepor FAB; plataforma (/) intacta
+- Cleanup: rascunhos de teste apagados (via API), sessionToken de teste anulado
+- lint: apenas +2 warnings intencionais (full-reload para revalidar SSO); nenhum erro novo; TS: apenas baseline pré-existente
