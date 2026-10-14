@@ -12,27 +12,28 @@
         }
 
         :root {
+            color-scheme: light;
             --primary: #ff6600;
             --primary-hover: #e55a00;
-            --primary-glow: rgba(255, 102, 0, 0.15);
-            --bg-dark: #09090b;
-            --bg-card: #18181b;
-            --bg-card-hover: #1f1f23;
-            --bg-input: #27272a;
-            --bg-elevated: #2a2a2e;
-            --border: #3f3f46;
-            --border-subtle: #27272a;
-            --text-primary: #fafafa;
-            --text-secondary: #a1a1aa;
-            --text-muted: #71717a;
+            --primary-glow: rgba(255, 102, 0, 0.12);
+            --bg-dark: #f4f5f7;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fafbfc;
+            --bg-input: #ffffff;
+            --bg-elevated: #f8f9fa;
+            --border: #e4e7ec;
+            --border-subtle: #eef0f3;
+            --text-primary: #1a1d23;
+            --text-secondary: #4b5563;
+            --text-muted: #9aa3af;
             --success: #10b981;
-            --success-bg: rgba(16, 185, 129, 0.1);
+            --success-bg: rgba(16, 185, 129, 0.12);
             --warning: #f59e0b;
-            --warning-bg: rgba(245, 158, 11, 0.1);
+            --warning-bg: rgba(245, 158, 11, 0.12);
             --danger: #ef4444;
-            --danger-bg: rgba(239, 68, 68, 0.1);
+            --danger-bg: rgba(239, 68, 68, 0.12);
             --info: #06b6d4;
-            --info-bg: rgba(6, 182, 212, 0.1);
+            --info-bg: rgba(6, 182, 212, 0.12);
         }
 
         html { scroll-behavior: smooth; }
@@ -83,7 +84,7 @@
                 border: 1px solid var(--border);
                 padding: 12px;
                 border-radius: 12px;
-                box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                box-shadow: 0 8px 32px rgba(16,24,40,0.14);
                 flex-direction: column;
                 z-index: 1001;
                 opacity: 0;
@@ -143,7 +144,7 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(12px);
-            background: rgba(24, 24, 27, 0.92);
+            background: rgba(255, 255, 255, 0.92);
         }
 
         .header-content {
@@ -232,7 +233,7 @@
     color: var(--text-primary);
     width: 100%;
     max-width: 900px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 24px rgba(16,24,40,0.08);
 }
 
 @media (min-width: 1400px) {
@@ -332,7 +333,7 @@
 
         .risk-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 16px rgba(16,24,40,0.1);
         }
 
         .risk-btn.low.active {
@@ -576,7 +577,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.55);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -666,7 +667,7 @@
             color: #fafafa;
             padding: 15px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(16,24,40,0.08);
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 2000;
@@ -1446,7 +1447,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.55);
             z-index: 2000;
             align-items: center;
             justify-content: center;
@@ -1502,11 +1503,11 @@
 </head>
 <body>
     <!-- Botão Voltar para Home -->
-    <a href="/" style="position: fixed; top: 12px; left: 12px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 8px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 13px; box-shadow: 0 2px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.1);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</a>
+    <a href="/" style="position: fixed; bottom: 18px; right: 18px; z-index: 9999; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 8px 14px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 13px; box-shadow: 0 2px 12px rgba(0,0,0,0.4); display: flex; align-items: center; gap: 6px; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.1);"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Voltar</a>
     <header>
         <div class="header-content">
             <h1>
-                <div class="logo">📋</div>
+                <img src="/images/zamine-logo-dark.png" alt="ZAMine" style="height: 30px; width: auto; display: block;">
                 Sistema Avançado de Inspeção
             </h1>
             <button class="menu-toggle" onclick="toggleMenu()">
@@ -1524,7 +1525,7 @@
     <button class="btn btn-info" onclick="toggleDropdown()">
         💾 Exportar JSON ▼
     </button>
-    <div id="exportDropdown" class="dropdown-content" style="display: none; position: absolute; background-color: #18181b; min-width: 220px; box-shadow: 0px 8px 32px rgba(0,0,0,0.5); z-index: 1000; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46;">
+    <div id="exportDropdown" class="dropdown-content" style="display: none; position: absolute; background-color: #ffffff; min-width: 220px; box-shadow: 0px 8px 32px rgba(16,24,40,0.16); z-index: 1000; border-radius: 12px; overflow: hidden; border: 1px solid #e4e7ec;">
         <a href="#" class="dropdown-item" onclick="exportHistoryJSON(event)">📋 Exportar Histórico Completo</a>
         <a href="#" class="dropdown-item" onclick="exportFormJSON(event)">📝 Exportar Formulário Atual</a>
     </div>

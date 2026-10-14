@@ -188,7 +188,7 @@ export default function BrazilMap({ onStateClick, activeState }: BrazilMapProps)
         }}
       >
         <svg
-          viewBox="0 0 1080 1080"
+          viewBox="220 205 640 670"
           className="w-full h-full"
           style={{ filter: "drop-shadow(0 0 30px rgba(244, 114, 22, 0.06))", minWidth: '100%', minHeight: '100%' }}
           preserveAspectRatio="xMidYMid meet"

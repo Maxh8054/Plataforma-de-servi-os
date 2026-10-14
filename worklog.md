@@ -133,3 +133,28 @@ Testes (E2E agent-browser + curl contra banco real do Render):
 - Mobile 390px: pill bottom-left sem sobrepor FAB; plataforma (/) intacta
 - Cleanup: rascunhos de teste apagados (via API), sessionToken de teste anulado
 - lint: apenas +2 warnings intencionais (full-reload para revalidar SSO); nenhum erro novo; TS: apenas baseline pré-existente
+
+---
+Task ID: 12 (v17)
+Data: 14/10/2026
+
+## Mapa maior no desktop + repaginação clara do app de Inspeção + nova logo ZAMine
+
+- Mapa do Brasil: viewBox apertado de "0 0 1080 1080" para "220 205 640 670" (bbox real do desenho calculado por script) — mapa ~1.6x MAIOR em desktop e mobile, sem cortar nada; clique nos estados revalidado (AP abre Serviços)
+- Nova logo (enviada pelo Max: ZAMine Branco&Laranja):
+  - public/images/zamine-logo.png (branca, recortada) — substitui a antiga em todos os usos (header, loading, login, Sobre, modais EPI/ZAB)
+  - public/images/zamine-logo-dark.png (NOVA, texto escuro) — para fundos claros
+  - Ícones PWA 192/512 + favicon regenerados (logo branca em quadrado escuro #111214, 62% maskable-safe)
+  - Login desktop/mobile: logo antiga com tagline removida via image-edit (SDK z-ai) e nova logo composta (PIL) — public/login-desktop.png / login-mobile.png
+- App de Inspeção de Segurança (public/html/inspecoes-seguranca.html) repaginado para TEMA CLARO clean:
+  - :root trocado (branco/#f4f5f7, bordas #e4e7ec, textos #1a1d23, color-scheme: light); laranja da marca mantido
+  - header branco translúcido; sombras suavizadas (rgba preto → rgba(16,24,40,~0.08-0.16)); modal backdrop 0.8→0.55
+  - dropdown de export inline escuro → branco; emoji 📋 → <img> da nova logo dark
+  - botão Voltar fixo movido do topo (cobria a logo) para canto inferior direito flutuante
+- v17 (cache-bust)
+
+Testes (agent-browser, desktop 1440x900 + mobile 390x844):
+- Login: fundos novos com a logo ZAMine; v17 no badge e rodapé
+- Mapa desktop: ocupa quase toda a altura, labels legíveis; mobile: preenche a largura; AP clicável
+- Inspeção: tema claro em todas as seções (stats, formulário, checklist, resumo, histórico); header com logo; Voltar não cobre mais nada permanente
+- Console sem erros; lint = baseline (24 erros pré-existentes, +2 warnings intencionais); token de teste limpo
