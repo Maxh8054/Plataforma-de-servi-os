@@ -331,3 +331,25 @@ Stage Summary:
 - A lista completa dos 78 segue no ar (intacta); o recurso serve para inclusões futuras (contratações) e correções em lote
 - Fotos continuam sendo enviadas por Fotos em lote (nome do arquivo casa com a pessoa)
 - Arquivos: public/html/painel-tv-goias.html (part colar + parser + CSS + fix setDirty)
+
+---
+Task ID: 20
+Agent: Main
+Task: Correção — colagem não lia tabela colada de fora do Excel e fotos em lote não casavam com lixo no nome do arquivo
+
+Work Log:
+- Diagnóstico via logs do servidor: sessão do usuário teve 0 PUT (nenhum save) e 0 POST /api/tv/upload (nenhuma foto enviada) — as duas falhas eram 100% no navegador; banco intacto (78 pessoas, nada corrompido, tv_assets=0 porque foto sem casamento nunca é enviada)
+- Causa 1 (colagem): o parser só entendia colunas separadas por tab (Excel puro). Colando de PDF/WhatsApp/Word (espaço simples), a data ficava colada ao nome e TODAS as linhas viravam problema → "não entendi nenhuma linha" sem confirmação de sucesso
+- Fix parser: se a linha não tem colunas, extrai a data de qualquer posição (regex dia/mês/ano, dia/mês, ISO yyyy-mm-dd, com espaço em branco ao redor dos separadores) e o nome é o resto da linha; cabeçalho com variantes ("NOME NASCIMENTO", "NOME DATA DE NASCIMENTO", "COLABORADOR...") pulado; vírgula aceita como separador; BOM do Excel removido; sufixo de hora ("08/12/1974 00:00:00") limpo do nome; mensagens de erro mostram a linha bruta ("Chegou assim aqui: …") para o usuário ver o que o painel recebeu
+- Causa 2 (fotos): casarFotoNome exigia o nome no começo do arquivo. "foto 1 - adriana", "1 - NOME (2)", "WhatsApp Image 2024-01-15 at 10.30.00 higor ataides" não casavam NADA
+- Fix casarFotoNome: tira tokens numéricos e palavras-lixo (foto/fotos/img/image/images/whatsapp/zap/at/am/pm/colaborador/col/funcionario/equipe/time/painel/tv) e adiciona regra "nome completo contido em qualquer posição do nome do arquivo"; tenta primeiro com o texto limpo e depois com o bruto; ambiguidade continua reportada com os candidatos
+- UX: resultado da leitura agora rola para a visão (scrollIntoView) — antes podia ficar abaixo da dobra e parecer "nada aconteceu"; mensagem de sucesso diz "Lido com sucesso: N linha(s)…"; texto dos hints atualizado (colagem aceita qualquer origem; fotos explicam o que é ignorado)
+- parseDataBR ganhou branch ISO (yyyy-mm-dd) antes do dia/mês/ano (evitava "1974-12-08" virar dia 74 inválido)
+- Testes node: tab ✓, sem-tab ✓, vírgula+BOM ✓, vazio ✓, data com hora ✓, data inválida reportada ✓; casador: nome completo ✓, primeiro nome ✓, com lixo antes/depois ✓, WhatsApp ✓, ambíguos (robson×3/marcos×2/victor×2) reportados ✓, IMG sem nome rejeitado ✓, sobrenome sozinho rejeitado ✓
+- E2E real (agent-browser + usuário admin temporário, apagado depois): colagem SEM TAB via evento paste real → "Lido com sucesso: 7 linha(s)" → Juntar → "Pronto: 0 adicionada(s) · 7 atualizada(s). A lista agora tem 78 pessoas"; casador no painel real casou adriana.jpg, "foto 2 - HIGOR ATAIDES MACEDO (1).jpg", "WhatsApp Image … reinaldo duarte.jpeg" e "robson leao.jpg"; IMG_2041.jpg sem casamento (correto); storage limpo, banco segue 78/sem pendência
+
+Stage Summary:
+- Colar agora funciona de QUALQUER origem (Excel, Planilhas, PDF, WhatsApp, Word) — a data é achada em qualquer lugar da linha
+- Fotos casam mesmo com números/"WhatsApp Image"/"foto 1"/parênteses no nome do arquivo — só precisa do nome da pessoa em algum lugar dele
+- Nada do que o usuário tinha feito se perdeu: banco estava (e está) com as 78 pessoas íntegras
+- Arquivos: public/html/painel-tv-goias.html (parseDataBR + lerLinhasExcel + casarFotoNome + lerColagem + hints)

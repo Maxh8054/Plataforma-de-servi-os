@@ -1216,26 +1216,40 @@ function input(f, val, id){
   }
   return `<input id="${id}" type="${t==="number"?"number":t}" value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:""}>`;
 }
-/* fotos em lote: casa o nome do arquivo com a pessoa pelo nome (imune a acentos/maiúsculas) */
+/* fotos em lote: casa o nome do arquivo com a pessoa (imune a acentos/maiúsculas; ignora números e palavras de câmera/app) */
 function normNome(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+const PALAVRAS_LIXO = new Set(["foto","fotos","img","image","images","whatsapp","zap","at","am","pm","colaborador","col","funcionario","equipe","time","painel","tv"]);
 function casarFotoNome(base, itens){
-  const q = normNome(base);
-  if(!q) return {idx:-1, motivo:"sem"};
-  let hits = itens.map((it,i)=>({it,i})).filter(x=>normNome(x.it.nome)===q);          // 1) nome completo igual
-  if(hits.length===1) return {idx:hits[0].i};
-  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
-  hits = itens.map((it,i)=>({it,i})).filter(x=>{const n=normNome(x.it.nome); return n===q||n.startsWith(q+" ");});  // 2) arquivo é começo do nome
-  if(hits.length===1) return {idx:hits[0].i};
-  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
-  hits = itens.map((it,i)=>({it,i})).filter(x=>{const n=normNome(x.it.nome); return n.length>3 && (q+" ").startsWith(n+" ");});  // 3) nome é começo do arquivo
-  if(hits.length===1) return {idx:hits[0].i};
-  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
+  const sujo = normNome(base);
+  if(!sujo) return {idx:-1, motivo:"sem"};
+  /* tira números soltos e palavras de câmera/app: "whatsapp image 2024 01 15 adriana" e "foto 3 - adriana (2)" viram "adriana" */
+  const limpo = sujo.split(" ").filter(w=>!/^(\d+|\d{1,2}h\d{0,2})$/.test(w) && !PALAVRAS_LIXO.has(w)).join(" ");
+  const tentativas=[limpo, sujo].filter((v,i,a)=>v && a.indexOf(v)===i);
+  for(const q of tentativas){
+    const cand = itens.map((it,i)=>({n:normNome(it.nome), i}));
+    let hits = cand.filter(x=>x.n===q);                                          // 1) nome completo igual
+    if(hits.length===1) return {idx:hits[0].i};
+    if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
+    hits = cand.filter(x=>x.n.length>3 && q.includes(x.n));                      // 2) nome completo está em qualquer lugar do nome do arquivo
+    if(hits.length===1) return {idx:hits[0].i};
+    if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
+    hits = cand.filter(x=>x.n===q||x.n.startsWith(q+" "));                       // 3) arquivo é começo do nome (só o primeiro nome, nome+sobrenome…)
+    if(hits.length===1) return {idx:hits[0].i};
+    if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
+    hits = cand.filter(x=>x.n.length>3 && (q+" ").startsWith(x.n+" "));          // 4) nome é começo do arquivo
+    if(hits.length===1) return {idx:hits[0].i};
+    if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
+  }
   return {idx:-1, motivo:"sem"};
 }
 /* colar do excel: entende a tabela NOME + NASCIMENTO (dia/mês/ano, dia/mês, separador / - .) */
 function parseDataBR(v){
   const s=String(v||"").trim().replace(/\s+\d{1,2}:\d{2}(:\d{2})?\s*$/,"").trim();
-  let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m){ const y=+m[1],mo=+m[2],d=+m[3];
+    if(d>=1&&d<=31&&mo>=1&&mo<=12&&y>=1900&&y<=2100) return {dia:d,mes:mo,nasc:`${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`};
+    return {bad:true}; }
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
   if(m){ const d=+m[1],mo=+m[2]; let y=+m[3]; if(m[3].length<4) y+=y<=30?2000:1900;
     if(d>=1&&d<=31&&mo>=1&&mo<=12&&y>=1900&&y<=2100) return {dia:d,mes:mo,nasc:`${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`};
     return {bad:true}; }
@@ -1245,19 +1259,33 @@ function parseDataBR(v){
 }
 function lerLinhasExcel(txt){
   const probs=[],vistos=new Set(),map=new Map();
-  String(txt||"").split(/\r?\n/).forEach((ln,i)=>{
-    if(!ln.trim()) return;
+  const linhas=String(txt||"").replace(/^\uFEFF/,"").split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
+  linhas.forEach((ln,idx)=>{
+    const linha=idx+1;
+    const h=normNome(ln);
+    if(h==="nome"||h==="nome nascimento"||h==="nome data"||h==="nome data nascimento"||h==="nome data de nascimento"||h==="colaborador nascimento"||h==="colaborador data nascimento") return;
     let cells=ln.split("\t").map(c=>c.trim());
-    if(cells.length<2) cells=ln.split(/\s*;\s*|\s{2,}/).map(c=>c.trim());
+    if(cells.length<2) cells=ln.split(/\s*;\s*/).map(c=>c.trim());
+    if(cells.length<2) cells=ln.split(/\s{2,}|\s*,\s*/).map(c=>c.trim());
     cells=cells.filter(c=>c!=="");
-    if(!cells.length) return;
-    if(normNome(cells[0])==="nome") return;
     let di=-1,dt=null;
     for(let ci=0;ci<cells.length;ci++){ const p=parseDataBR(cells[ci]); if(p){di=ci;dt=p;break;} }
-    const nome=(di<0?cells.join(" "):cells.filter((c,ci)=>ci!==di).join(" ")).replace(/\s+/g," ").trim();
-    if(dt&&dt.bad){ probs.push(`linha ${i+1}: data não entendida em <b>${esc(nome)}</b>`); return; }
-    if(!nome){ probs.push(`linha ${i+1}: sem nome`); return; }
-    if(!dt){ probs.push(`linha ${i+1}: sem data — <b>${esc(nome)}</b>`); return; }
+    let nome=null;
+    if(dt&&!dt.bad){ nome=cells.filter((c,ci)=>ci!==di).join(" "); }
+    if(!dt||dt.bad){
+      /* sem colunas separadas (colou de PDF, WhatsApp, Word, ou o Excel juntou tudo): acha a data em qualquer lugar da linha */
+      const mi=ln.match(/\d{4}-\d{1,2}-\d{1,2}/);
+      const md=ln.match(/\d{1,2}\s*[\/\-.]\s*\d{1,2}(?:\s*[\/\-.]\s*\d{2,4})?/);
+      const alvo=mi?mi[0]:(md?md[0]:null);
+      if(alvo){
+        const p=parseDataBR(alvo.replace(/\s+/g,""));
+        if(p&&!p.bad){ dt=p; nome=ln.replace(alvo," "); }
+        else if(p&&p.bad){ probs.push(`linha ${linha}: a data "${esc(alvo.trim())}" não existe no calendário`); return; }
+      }
+    }
+    if(!dt){ probs.push(`linha ${linha}: não achei a data — "${esc(ln.substring(0,50))}${ln.length>50?"…":""}"`); return; }
+    nome=String(nome||"").replace(/\s+\d{1,2}:\d{2}(:\d{2})?\s*$/,"").replace(/[\s,;]+/g," ").trim();
+    if(!nome){ probs.push(`linha ${linha}: tem a data mas falta o nome`); return; }
     const k=normNome(nome);
     if(vistos.has(k)) probs.push(`repetido na cola: <b>${esc(nome)}</b> (vale a última)`);
     vistos.add(k);
@@ -1282,15 +1310,24 @@ function lerColagem(txt){
   const byNome=new Map(itens.map((it,i)=>[normNome(it.nome),i]));
   let novas=0,atu=0;
   rows.forEach(r=>{ if(byNome.has(normNome(r.nome))) atu++; else novas++; });
-  if(!rows.length){ out.innerHTML=`<div class="lote-rep"><b>Não entendi nenhuma linha da colagem.</b>${probs.length?`<p>${probs.join(" · ")}</p>`:""}<p class="hint" style="margin:0">No Excel, selecione as duas colunas (NOME e NASCIMENTO) juntas, copie e cole aqui.</p></div>`; return; }
-  let html=`<div class="lote-rep"><b>${rows.length} linha(s) lida(s): ${novas} nova(s) · ${atu} já na lista (dia e mês serão atualizados)</b>`;
+  if(!rows.length){
+    const amostra=String(txt||"").split(/\r?\n/).map(l=>l.trim()).filter(l=>l).slice(0,3);
+    out.innerHTML=`<div class="lote-rep"><b>Não consegui ler nenhuma linha${String(txt||"").trim()?"":" — a caixa está vazia (cole com Ctrl+V dentro dela)"}.</b>
+      ${amostra.length?`<p>Chegou assim aqui:<br><code style="white-space:pre-wrap">${esc(amostra.join("\n"))}</code></p>`:""}
+      ${probs.length?`<p>${probs.slice(0,8).join(" · ")}${probs.length>8?" …":""}</p>`:""}
+      <p class="hint" style="margin:0">Cada linha precisa ter o nome e a data de nascimento (dia/mês/ano). Vale Excel, Google Planilhas ou qualquer lista em texto.</p></div>`;
+    out.scrollIntoView({behavior:"smooth",block:"nearest"});
+    return;
+  }
+  let html=`<div class="lote-rep"><b>Lido com sucesso: ${rows.length} linha(s) — ${novas} nova(s) · ${atu} já na lista (dia e mês serão atualizados)</b>`;
   html+=`<div class="colar-prev">`+rows.slice(0,12).map(r=>{ const alvo=byNome.get(normNome(r.nome));
     return `<div class="cr"><span>${esc(r.nome)}</span><span>${r.dia} de ${esc(r.mes)}</span><span class="${alvo!=null?"up":"nw"}">${alvo!=null?"atualiza":"nova"}</span></div>`; }).join("")+`</div>`;
   if(rows.length>12) html+=`<p class="hint" style="margin:0">… e mais ${rows.length-12} linha(s) — a prévia mostra só as 12 primeiras.</p>`;
-  if(probs.length) html+=`<p>Ignoradas (${probs.length}): ${probs.join(" · ")}</p>`;
+  if(probs.length) html+=`<p>Ignoradas (${probs.length}): ${probs.slice(0,10).join(" · ")}${probs.length>10?" …":""}</p>`;
   html+=`<div class="bk" style="margin-top:6px"><button type="button" class="btn pri" id="colarJun">Juntar com a lista atual</button><button type="button" class="btn" id="colarSub">Substituir tudo (mantém as fotos)</button><button type="button" class="btn" id="colarV">Colar de novo</button></div>
     <p class="hint" style="margin:0">Quem já está na lista não é duplicado — só o dia e o mês são atualizados, e a foto fica de onde está.</p></div>`;
   out.innerHTML=html;
+  out.scrollIntoView({behavior:"smooth",block:"nearest"});
   const aplicar=(modo)=>{
     const itens2=draft[curSec].itens=draft[curSec].itens||[];
     const b2=new Map(itens2.map((it,i)=>[normNome(it.nome),i]));
@@ -1304,7 +1341,7 @@ function lerColagem(txt){
     }
     setDirty(true); renderSec();
     const fim=$("colarBox");
-    if(fim) fim.innerHTML=`<div class="lote-rep"><b>Pronto: ${nN} adicionada(s) · ${nA} atualizada(s). A lista agora tem ${(draft[curSec].itens||[]).length} pessoas.</b><p class="hint" style="margin:0">Dê uma olhada na lista acima e clique em Salvar e enviar para a TV.</p></div>`;
+    if(fim){ fim.innerHTML=`<div class="lote-rep"><b>Pronto: ${nN} adicionada(s) · ${nA} atualizada(s). A lista agora tem ${(draft[curSec].itens||[]).length} pessoas.</b><p class="hint" style="margin:0">Dê uma olhada na lista acima e clique em Salvar e enviar para a TV.</p></div>`; fim.scrollIntoView({behavior:"smooth",block:"nearest"}); }
     toast("Colagem aplicada. Salve para entrar na TV.");
   };
   $("colarJun").onclick=()=>aplicar("jun");
@@ -1326,11 +1363,11 @@ function renderSec(){
         SECTIONS.filter(x=>!x.admin).map(x=>{const u=`${PANEL_URL}#editar-${x.key}`;return `<div class="lk"><b>${esc(x.label)}</b><code>${esc(u)}</code><button type="button" class="btn" data-copy="${esc(u)}">Copiar</button></div>`;}).join("") + `</div>`;
     } else if(p.kind==="lote"){
       const total = (draft[s.key].itens||[]).length;
-      h += `<p class="hint">Selecione várias fotos de uma vez (Ctrl+Clique para escolher várias, ou Shift+Clique para um intervalo). O nome de cada arquivo é comparado com o nome das pessoas — pode ser o nome completo ou só o primeiro nome, com ou sem acento. Nome que bater com mais de uma pessoa (ex.: dois Robsons) fica de fora para você escolher a foto na linha certa.</p>
+      h += `<p class="hint">Selecione várias fotos de uma vez (Ctrl+Clique para escolher várias, ou Shift+Clique para um intervalo). O nome da pessoa precisa estar no nome do arquivo — pode ser o nome completo, nome e sobrenome ou só o primeiro nome, com ou sem acento. Números e palavras como "foto", "img" e "WhatsApp" no arquivo são ignorados. Arquivos sem nome de pessoa (ex.: IMG_2041.jpg) e nomes repetidos (ex.: dois Robsons) ficam de fora do relatório para você resolver.</p>
         <div class="bk"><label class="btn pri" for="loteFile">Escolher as fotos (${total} pessoas na lista)</label><input type="file" id="loteFile" accept="image/*" multiple class="fileIn"></div>
         <div id="loteOut"></div>`;
     } else if(p.kind==="colar"){
-      h += `<p class="hint">No Excel, selecione as colunas NOME e NASCIMENTO juntas e copie (Ctrl+C). Clique no botão, cole (Ctrl+V) e o painel lê a tabela sozinho: entende dia/mês/ano ou só dia/mês, atualiza quem já está na lista e adiciona os novos — sem duplicar ninguém. As fotos já enviadas continuam em cada pessoa.</p>
+      h += `<p class="hint">Copie a tabela (NOME e NASCIMENTO) de onde ela estiver — Excel, Google Planilhas, PDF, WhatsApp, Word — clique no botão e cole (Ctrl+V). O painel acha a data em cada linha sozinho, atualiza quem já está na lista e adiciona os novos, sem duplicar ninguém. As fotos já enviadas continuam em cada pessoa.</p>
         <div class="bk"><button type="button" class="btn pri" id="colarOpen">Colar do Excel</button></div>
         <div id="colarBox"></div>`;
     } else if(p.kind==="obj"){
