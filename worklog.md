@@ -309,3 +309,25 @@ Stage Summary:
 - Usuário só precisa: abrir a aba Aniversariantes → Fotos em lote → selecionar as 77 fotos → conferir o relatório → Salvar
 - Nomes ambíguos (Robson ×3, Carlos ×2, Victor ×2, Vinicius ×2, Marcelo ×2, Marcos ×2, Jean ×2) precisam de arquivo com nome mais completo (ex.: "robson leao lima.jpg") ou escolha manual na linha
 - Arquivos: public/html/painel-tv-goias.html (aba + editor + handler + CSS), prisma (dados)
+
+---
+Task ID: 19
+Agent: Main
+Task: Colar do Excel no cadastro de aniversariantes (lote por colagem NOME + NASCIMENTO)
+
+Work Log:
+- Nova part kind:"colar" na aba Aniversariantes (abaixo de Fotos em lote): botão "Colar do Excel" abre textarea para colar as colunas NOME e NASCIMENTO copiadas do Excel (TSV com tab; aceita também ; e 2+ espaços)
+- Parser próprio (parseDataBR + lerLinhasExcel): pula linha de cabeçalho (NOME/NASCIMENTO), encontra a célula de data em qualquer posição (troca colunas invertidas), entende DD/MM/YYYY, DD/MM (sem ano), separadores / - . , ano com 2 dígitos (≤30→2000s, senão 1900s) e tira sufixo de hora ("08/12/1974 00:00:00")
+- Prévia antes de aplicar: contagem "X linha(s) lida(s): N nova(s) · M já na lista", tabela com as 12 primeiras (nome, dia de Mês, selo nova/atualiza), problemas listados (data inválida, sem data, repetido na cola) e 3 botões: Juntar com a lista atual / Substituir tudo (mantém as fotos) / Colar de novo
+- Juntar: casa por nome normalizado (normNome, imune a acentos/caixa) — quem já existe só atualiza dia+mês+nascimento (foto e setor ficam), novo é adicionado; não duplica. Substituir: lista passa a ser a colada, carregando foto/setor/nascimento antigos de quem já existia. Duplicado na cola vale a última (dedupe no parser)
+- Aplicar re-renderiza a lista e mostra "Pronto: N adicionada(s) · M atualizada(s). A lista agora tem X pessoas." — salvamento segue pelo fluxo normal (Salvar e enviar para a TV, com rascunho/409 já existentes)
+- Fix de robustez no handler genérico de inputs do editor: setDirty agora só nos branches f-/lista (evitava marcar "não salvo" ao digitar em inputs alheios ao draft, ex. busca e textarea da colagem)
+- E2E real (agent-browser, usuário admin temporário depois apagado): lista completa de 78 colada no formato exato do Excel do usuário → "78 lidas: 0 nova · 78 já na lista" (bate 100% com o cadastrado na Task 18); cenário com data trocada + pessoa nova → atualizou dia/nascimento e adicionou sem duplicar (79); Substituir tudo → lista ficou com as 2 coladas; reload sem salvar recuperou o rascunho (blindagem Task 15) e Descartar voltou às 78 do banco — banco intacto no fim (78, ADRIANA dia 8)
+- TV conferida: /content entrega 78 itens; slide de Outubro mostra Reinaldo (15/10) e Victor (28/10); renderer OK
+- Lint sem novos problemas (31 preexistentes em outros arquivos); usuário/permissão de teste removidos; localStorage do navegador de teste limpo
+
+Stage Summary:
+- Cadastrar/atualizar os aniversariantes agora é colar a tabela do Excel e clicar em Juntar — sem digitar linha por linha
+- A lista completa dos 78 segue no ar (intacta); o recurso serve para inclusões futuras (contratações) e correções em lote
+- Fotos continuam sendo enviadas por Fotos em lote (nome do arquivo casa com a pessoa)
+- Arquivos: public/html/painel-tv-goias.html (part colar + parser + CSS + fix setDirty)
