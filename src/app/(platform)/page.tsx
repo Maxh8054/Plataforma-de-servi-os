@@ -14,6 +14,7 @@ import ForceChangePassword from "@/components/force-change-password";
 import UpdateScreen from "@/components/update-screen";
 import { useAuthStore, authFetch } from "@/store/auth-store";
 import { trackView, sendHeartbeat } from "@/lib/activity";
+import { DATA_BASE_SEGURANCA } from "@/lib/contador-seguranca";
 
 // Types
 type StateType = "mg" | "go" | "pa" | "ba" | "sc" | "ma" | "ap" | null;
@@ -567,14 +568,15 @@ export default function Home() {
     const updateCounters = () => {
       const now = new Date();
       
-      const mgStart = new Date('2024-07-11');
+      // datas-base do contador oficial — fonte única em src/lib/contador-seguranca.ts
+      const mgStart = new Date(DATA_BASE_SEGURANCA.minas);
       const mgDiff = now.getTime() - mgStart.getTime();
       const mgDays = Math.floor(mgDiff / (1000 * 60 * 60 * 24));
       const mgHours = Math.floor((mgDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const mgMinutes = Math.floor((mgDiff % (1000 * 60 * 60)) / (1000 * 60));
       const mgSeconds = Math.floor((mgDiff % (1000 * 60)) / 1000);
       
-      const goStart = new Date('2022-08-01');
+      const goStart = new Date(DATA_BASE_SEGURANCA.goias);
       const goDiff = now.getTime() - goStart.getTime();
       const goDays = Math.floor(goDiff / (1000 * 60 * 60 * 24));
       const goHours = Math.floor((goDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));

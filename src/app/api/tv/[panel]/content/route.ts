@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido } from '@/lib/tv';
 import { TZ_PADRAO, computarEscalaAutoSeguro } from '@/lib/escala-auto';
+import { computarSegurancaAuto } from '@/lib/seguranca-auto';
 
 function safeJson(str: string | null | undefined): unknown {
   if (!str) return null;
@@ -30,6 +31,10 @@ export async function GET(
       computarEscalaAutoSeguro(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
     ]);
 
+    // dias sem afastamento automáticos — mesmo contador da tela inicial da
+    // plataforma; a TV mostra sozinha, sem lançamento de data no editor
+    const segurancaAuto = computarSegurancaAuto(panel, request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO);
+
     const secoesObj: Record<string, unknown> = {};
     for (const s of secoes) {
       const data = safeJson(s.data);
@@ -47,6 +52,8 @@ export async function GET(
         // escala de turno automática (equipes A/B/C/D da plataforma) — a TV
         // mostra sozinha o técnico de hoje e de amanhã; null se falhar
         escalaAuto,
+        // dias sem afastamento automáticos (contador oficial da plataforma)
+        segurancaAuto,
       },
       { headers: { 'Cache-Control': 'no-store' } }
     );

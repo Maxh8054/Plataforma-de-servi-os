@@ -151,21 +151,22 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .turma b{display:block;font-size:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turma span{font-size:20px;color:var(--muted)}
 
-/* Escala automática (puxada da plataforma) */
-.esc-auto{display:grid;grid-template-columns:1fr 1fr;gap:28px}
-.esc-day{padding:30px 34px;display:flex;flex-direction:column;gap:10px;border-top:8px solid var(--line);min-width:0}
+/* Escala automática (puxada da plataforma) — tela limpa: só hoje e amanhã */
+.s-esc.esc-only{display:grid;height:100%;grid-template-rows:100%}
+.esc-auto{display:grid;grid-template-columns:1fr 1fr;gap:40px;height:100%}
+.esc-day{padding:44px 48px;display:flex;flex-direction:column;gap:12px;border-top:8px solid var(--line);min-width:0;height:100%}
 .esc-day.hj{border-top-color:var(--accent)}
-.esc-dh{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
-.esc-dh b{font-family:var(--f-display);font-size:40px;text-transform:uppercase;letter-spacing:.05em}
+.esc-dh{display:flex;align-items:baseline;gap:16px;margin-bottom:10px}
+.esc-dh b{font-family:var(--f-display);font-size:46px;text-transform:uppercase;letter-spacing:.05em}
 .esc-day.hj .esc-dh b{color:var(--accent)}
-.esc-dh span{font-size:24px;color:var(--muted);text-transform:capitalize}
-.esc-row{display:flex;align-items:center;gap:24px;padding:12px 0;border-top:1px solid var(--line)}
-.esc-row .lt3{font-family:var(--f-display);font-size:88px;font-weight:800;line-height:1;width:88px;text-align:center;flex:none}
+.esc-dh span{font-size:26px;color:var(--muted);text-transform:capitalize}
+.esc-row{display:flex;align-items:center;gap:28px;padding:22px 0;border-top:1px solid var(--line)}
+.esc-row .lt3{font-family:var(--f-display);font-size:108px;font-weight:800;line-height:1;width:108px;text-align:center;flex:none}
 .esc-p{min-width:0}
-.esc-p b{display:block;font-size:42px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.esc-p .t{font-size:23px;color:var(--muted)}
-.esc-selo{display:inline-flex;margin-top:6px;padding:3px 14px;border:1px solid var(--accent);border-radius:999px;font-size:19px;color:var(--accent)}
-.esc-off{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:21px;color:var(--muted)}
+.esc-p b{display:block;font-size:50px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esc-p .t{font-size:25px;color:var(--muted)}
+.esc-selo{display:inline-flex;margin-top:8px;padding:4px 16px;border:1px solid var(--accent);border-radius:999px;font-size:20px;color:var(--accent)}
+.esc-off{margin-top:auto;padding-top:18px;border-top:1px dashed var(--line);font-size:23px;color:var(--muted)}
 .esc-off em{font-style:normal;opacity:.85}
 .esc-next{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .esc-nx{padding:12px 10px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:10px}
@@ -260,22 +261,19 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .an .dd{font-size:60px;width:70px}
 
 /* Valores */
-.s-val{display:grid;grid-template-columns:1fr 1.5fr;gap:64px;height:100%}
-.mv{display:flex;flex-direction:column;justify-content:center;gap:44px;padding-right:56px;border-right:1px solid var(--line)}
-.mv p{margin:12px 0 0;font-size:36px;line-height:1.35;text-wrap:pretty}
-.vl{display:flex;flex-direction:column;justify-content:center}
-.vr{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
-.vl.ac .vr{grid-template-columns:96px minmax(0,5fr) minmax(0,7fr);gap:32px}
-.vr .lt3{font-family:var(--f-display);font-weight:800;font-size:96px;line-height:.85;color:var(--accent);text-align:center}
-.vl.ac .vr b::first-letter{color:inherit}
-.vl.ac.sm b{font-size:42px}.vl.ac.sm p{font-size:22px}.vl.ac.sm .vr{padding:13px 0}
+/* Valores — modelo CONTAG (letra grande + valor + prática) */
+.s-val{display:flex;flex-direction:column;height:100%;min-height:0}
+.vh{display:flex;align-items:center;justify-content:space-between;gap:40px;padding-bottom:14px;border-bottom:5px solid var(--accent);flex:none}
+.vh small{display:block;color:var(--accent);font-weight:600;letter-spacing:.22em;text-transform:uppercase;font-size:20px}
+.vh h1{margin:4px 0 0;font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:.95;font-size:62px;letter-spacing:.01em}
+.vh .sig{font-family:var(--f-display);font-weight:800;font-size:36px;letter-spacing:.32em;color:var(--accent);margin-top:6px}
+.vh-logo{height:74px;width:auto;display:block;flex:none}
+.vlz{list-style:none;margin:0;padding:0;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;min-height:0}
+.vr{display:grid;grid-template-columns:92px minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);min-height:0}
 .vr:last-child{border-bottom:0}
-.vr b{font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:.95;color:var(--fg)}
-.vr b::first-letter{color:var(--accent)}
-.vr p{margin:0;color:var(--muted);line-height:1.35}
-.vl.lg b{font-size:72px}.vl.lg p{font-size:30px}.vl.lg .vr{padding:34px 0}
-.vl.md b{font-size:58px}.vl.md p{font-size:26px}
-.vl.sm b{font-size:48px}.vl.sm p{font-size:23px}.vl.sm .vr{padding:16px 0}
+.vr .lt3{font-family:var(--f-display);font-weight:800;color:var(--accent);text-align:center;line-height:.85;font-size:78px}
+.vr h2{margin:0;font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:1;font-size:33px;text-wrap:balance}
+.vr p{margin:0;color:var(--muted);line-height:1.35;font-size:21px;max-width:62ch;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
 /* Organograma em cascata */
 .cas{display:flex;flex-direction:column;align-items:stretch;min-width:1200px}
@@ -580,9 +578,8 @@ const LETRAS = ["","A","B","C","D"];
 
 const MESES = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const SECTIONS = [
-  {key:"seguranca", label:"Dias sem acidentes", hint:"A contagem de dias é automática a partir da data do último acidente. Você só muda a data quando houver um novo registro.",
+  {key:"seguranca", label:"Dias sem acidentes", hint:"O contador é automático, puxado direto da plataforma — o mesmo número mostrado na tela inicial (Goiás conta desde 01/08/2022). Ninguém cadastra data aqui: quando houver um acidente com afastamento, a data-base é atualizada na plataforma e a TV se ajusta sozinha. Nesta aba você só ajusta recorde, meta e mensagem.",
     parts:[{kind:"obj",key:"dados",fields:[
-      {k:"ultimoAcidente",l:"Data do último acidente",t:"date"},
       {k:"recorde",l:"Recorde anterior (dias)",t:"number"},
       {k:"meta",l:"Meta (dias)",t:"number"},
       {k:"mensagem",l:"Mensagem de segurança",t:"textarea",wide:true}]}]},
@@ -642,10 +639,9 @@ const SECTIONS = [
   {key:"beneficios", label:"Benefícios da empresa", hint:"Até 6 benefícios por tela.",
     parts:[{kind:"list",key:"itens",label:"Benefícios",cols:[
       {k:"titulo",l:"Benefício",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:5}]}]},
-  {key:"valores", label:"Valores da empresa", hint:"Missão e visão aparecem à esquerda; os valores, um embaixo do outro, à direita. Até 6 valores por tela.",
+  {key:"valores", label:"Valores da empresa", hint:"Cada valor vira uma linha na TV: letra grande em laranja + nome do valor + o que significa na prática. As letras formam a assinatura (ex.: C-O-N-T-A-G). Deixe os 6 valores da empresa nesta ordem.",
     parts:[
-      {kind:"obj",key:"dados",fields:[{k:"missao",l:"Missão",t:"textarea",wide:true},{k:"visao",l:"Visão",t:"textarea",wide:true}]},
-      {kind:"list",key:"itens",label:"Valores",cols:[{k:"letra",l:"Letra (opcional)",w:1},{k:"titulo",l:"Valor",w:2},{k:"descricao",l:"O que significa na prática",t:"textarea",w:5}]}]},
+      {kind:"list",key:"itens",label:"Valores",cols:[{k:"letra",l:"Letra",w:1},{k:"titulo",l:"Valor",w:3},{k:"descricao",l:"O que significa na prática",t:"textarea",w:6}]}]},
   {key:"organograma", label:"Organograma", hint:"O desenho segue em cascata: quem está no Centro fica empilhado na linha do meio, na ordem da lista. Esquerda e Direita saem da linha do meio, uma fileira por número (mesma fileira = lado a lado). Base fica na barra de baixo. O desenho se ajusta sozinho ao tamanho da tela.",
     parts:[{kind:"list",key:"itens",label:"Pessoas",cols:[
       {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"cargo",l:"Cargo",w:3},
@@ -719,22 +715,23 @@ const emptyBox = (t,m) => `<div class="empty"><div><b>${esc(t)}</b>${esc(m)}</di
 /* ---------- escala automática (puxada da plataforma) ---------- */
 const TV_TZ = (()=>{ try{ return encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Sao_Paulo"); }catch(e){ return encodeURIComponent("America/Sao_Paulo"); } })();
 let escalaAuto = null;   // calculada no servidor e entregue junto com o /content
+let segurancaAuto = null; // dias sem afastamento automáticos (contador oficial da plataforma)
 const HORA_DIURNA = "07:00 – 19:00", HORA_NOTURNA = "19:00 – 07:00";
 const LCLS = {A:"L-A",B:"L-B",C:"L-C",D:"L-D"};
 function escPessoa(x, linha){
   return `<div class="esc-row"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>
     <div class="esc-p"><b>${esc(x.nome)}</b><span class="t">${esc(linha)}</span>
-    ${x.selo?`<span class="esc-selo">🔄 ${esc(x.selo)}</span>`:""}</div></div>`;
+    ${x.selo?`<span class="esc-selo">${esc(x.selo)}</span>`:""}</div></div>`;
 }
 function escDiaAuto(d, hd, hn){
   const dt = pDate(d.data);
-  const off = d.fora.map(f=>`${esc(f.letra)} — ${esc(f.nome)} <em>(${esc(f.motivo||"Folga")})</em>`).join(" · ");
+  const off = d.fora.map(f=>`${esc(f.letra)} <em>(${esc(f.motivo||"Folga")})</em>`).join(" · ");
   const row = (arr, hora, vazio)=>arr.length?arr.map(x=>escPessoa(x,hora)).join("")
     :`<div class="esc-row"><span class="lt3">–</span><div class="esc-p"><b>${vazio}</b><span class="t">${esc(hora)}</span></div></div>`;
   return `<div class="card esc-day ${d.destaque==="hoje"?"hj":""}">
     <div class="esc-dh"><b>${d.destaque==="hoje"?"Hoje":"Amanhã"}</b><span>${esc(d.diaSemana)}${dt?" · "+fmtDM(dt):""}</span></div>
-    ${row(d.diurno,"🌅 Diurno · "+hd,"Sem diurno escalado")}
-    ${row(d.noturno,"🌙 Noturno · "+hn,"Sem noturno escalado")}
+    ${row(d.diurno,"Diurno · "+hd,"Sem diurno escalado")}
+    ${row(d.noturno,"Noturno · "+hn,"Sem noturno escalado")}
     ${off?`<div class="esc-off">Fora: ${off}</div>`:""}
   </div>`;
 }
@@ -746,24 +743,10 @@ function renderEscalaAuto(o){
   const hn = String(h.noturno||"").trim() || HORA_NOTURNA;
   const hj = escalaAuto.dias.find(d=>d.destaque==="hoje");
   const am = escalaAuto.dias.find(d=>d.destaque==="amanha");
-  const nx = escalaAuto.dias.filter(d=>!d.destaque);
-  const prox = nx.length?`<div class="esc-next">${nx.map(d=>{const dt=pDate(d.data);
-    const ld=d.diurno.map(x=>`<span class="${LCLS[x.letra]||""}">${esc(x.letra)}</span>`).join("")||"<span>–</span>";
-    const ln=d.noturno.map(x=>`<span class="${LCLS[x.letra]||""}">${esc(x.letra)}</span>`).join("")||"<span>–</span>";
-    return `<div class="esc-nx"><div class="lbl">${dt?wk(dt):""}</div><div class="num2">${dt?fmtDM(dt):""}</div>
-      <div class="duo"><span style="font-size:26px">🌅</span>${ld}<span style="font-size:26px">🌙</span>${ln}</div></div>`;}).join("")}</div>`:"";
-  const tur = list(o,"escala","turmas");
-  /* sem turmas cadastradas, mostra as 4 equipes com os nomes da plataforma */
-  const hjDia = escalaAuto.dias.find(d=>d.destaque==="hoje");
-  const equipes = hjDia ? [...hjDia.diurno,...hjDia.noturno,...hjDia.fora]
-    .sort((a,b)=>a.letra.localeCompare(b.letra))
-    .map(p=>({letra:p.letra,lider:p.nome,obs:p.selo||p.motivo||("Equipe "+p.letra)})) : [];
-  const turmas = tur.length ? tur.slice(0,4)
-    : equipes.slice(0,4).map(x=>`<div class="card turma"><span class="lt2 ${LCLS[x.letra]||"L-"+esc(x.letra)}">${esc(x.letra)}</span><div><b>${esc(x.lider)}</b><span>${esc(x.obs)}</span></div></div>`).join("");
-  return `<div class="s-esc">
+  if(!hj || !am) return emptyBox("Escala automática carregando","A TV está buscando a escala da plataforma. Se persistir, verifique a conexão.");
+  /* tela limpa: só hoje e amanhã — sem previsão dos próximos dias nem cartões de equipe */
+  return `<div class="s-esc esc-only">
     <div class="esc-auto">${escDiaAuto(hj,hd,hn)}${escDiaAuto(am,hd,hn)}</div>
-    ${prox}
-    ${turmas?`<div class="turmas">${turmas}</div>`:""}
   </div>`;
 }
 
@@ -771,16 +754,23 @@ function renderEscalaAuto(o){
 const R = {
   seguranca(o){
     const s = get(o,"seguranca","dados") || {};
-    const dias = diasSemAcidente(o);
-    if(dias===null) return emptyBox("Sem data cadastrada","Informe a data do último acidente no editor.");
-    const rec = Math.max(num(s.recorde), dias), meta = num(s.meta);
+    /* contador automático: puxado da plataforma (mesmo número da tela inicial).
+       Fallback: data manual antiga, caso o servidor não tenha entregue o contador. */
+    const auto = (segurancaAuto && segurancaAuto.dias!=null) ? segurancaAuto : null;
+    const dias = auto ? auto.dias : diasSemAcidente(o);
+    if(dias===null) return emptyBox("Contador chegando","A contagem automática da plataforma ainda não carregou.");
+    const recField = num(s.recorde);
+    const rec = recField>0 ? Math.max(recField, dias) : dias;
+    const novoRec = recField>0 && dias>recField;
+    const meta = num(s.meta);
     const pct = meta>0 ? Math.min(100, dias/meta*100) : 0;
+    const desde = auto ? pDate(auto.desde) : pDate(s.ultimoAcidente);
     return `<div class="s-dsa">
       <div class="hazard"></div>
       <div class="big"><b class="num">${dias}</b><span>dias sem acidentes com afastamento</span></div>
       <div class="side">
-        <div class="card kv"><div class="lbl">Último registro</div><b class="num">${fmtDMY(pDate(s.ultimoAcidente))}</b></div>
-        <div class="card kv"><div class="lbl">Recorde da operação</div><b class="num">${rec} dias${rec===dias&&dias>0?' <span style="font-size:30px;color:var(--accent)">· novo recorde</span>':''}</b></div>
+        ${desde?`<div class="card kv"><div class="lbl">Contando desde</div><b class="num">${fmtDMY(desde)}</b></div>`:""}
+        <div class="card kv"><div class="lbl">Recorde da operação</div><b class="num">${rec} dias${novoRec?' <span style="font-size:30px;color:var(--accent)">· novo recorde</span>':''}</b></div>
         ${meta>0?`<div class="card kv"><div class="lbl">Meta: ${meta} dias · faltam ${Math.max(0,meta-dias)}</div><div class="meter"><i style="width:${pct}%"></i></div></div>`:""}
         ${s.mensagem?`<div class="quote clamp3">${esc(s.mensagem)}</div>`:""}
       </div></div>`;
@@ -956,15 +946,19 @@ const R = {
     return `<div class="grid-b" style="grid-template-columns:repeat(${cols},1fr)">${it.map(b=>`<div class="card bn"><b>${esc(b.titulo)}</b><p class="clamp3" style="-webkit-line-clamp:4">${esc(b.descricao)}</p></div>`).join("")}</div>`;
   }
 };
+/* logo do cabeçalho da TV (mesma arte, sem duplicar base64 no arquivo) */
+const LOGO_TV = (()=>{ try{ const i=document.querySelector("#stage .hd .logo-d")||document.querySelector("#stage .hd .logo-l"); return i?(i.getAttribute("src")||""):""; }catch(e){ return ""; } })();
 R.valores = function(o){
-  const d = get(o,"valores","dados") || {};
-  const it = list(o,"valores").slice(0,6);
-  if(!it.length && !d.missao && !d.visao) return emptyBox("Valores não cadastrados","Preencha missão, visão e valores no editor.");
-  const mv = (d.missao||d.visao) ? `<div class="mv">${d.missao?`<div><div class="lbl" style="color:var(--accent)">Missão</div><p>${esc(d.missao)}</p></div>`:""}${d.visao?`<div><div class="lbl" style="color:var(--accent)">Visão</div><p>${esc(d.visao)}</p></div>`:""}</div>` : "";
-  const sz = it.length<=3?"lg":it.length<=5?"md":"sm";
-  const ac = it.some(v=>String(v.letra||"").trim());
-  return `<div class="s-val" style="${mv&&it.length?"":"grid-template-columns:1fr"}">${mv}
-    ${it.length?`<div class="vl ${sz} ${ac?"ac":""}">${it.map(v=>`<div class="vr">${ac?`<span class="lt3">${esc(String(v.letra||v.titulo||"").trim().charAt(0).toUpperCase())}</span>`:""}<b>${esc(v.titulo)}</b><p class="${ac?"clamp3":"clamp2"}">${esc(v.descricao)}</p></div>`).join("")}</div>`:""}</div>`;
+  const it = list(o,"valores").slice(0,8);
+  if(!it.length) return emptyBox("Valores não cadastrados","Preencha os valores no editor (letra, nome e descrição).");
+  const sig = it.map(v=>String(v.letra||"").trim().charAt(0).toUpperCase()).join("");
+  return `<div class="s-val">
+    <header class="vh">
+      <div class="vh-t"><small>ZAMine · Alto Horizonte</small><h1>Nossos valores</h1>${sig?`<div class="sig" aria-label="${esc(sig.split("").join(" "))}">${esc(sig)}</div>`:""}</div>
+      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
+    </header>
+    <ol class="vlz">${it.map(v=>`<li class="vr"><span class="lt3" aria-hidden="true">${esc(String(v.letra||"").trim().charAt(0).toUpperCase()||"•")}</span><h2>${esc(v.titulo)}</h2><p>${esc(v.descricao)}</p></li>`).join("")}</ol>
+  </div>`;
 };
 const orgCard = (p, side) => { const vaga = /^vaga/i.test(p.nome||"");
   const ini = String(p.nome||"").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
@@ -1065,8 +1059,8 @@ function renderFrame(animate){
   }
   if(key==="organograma"){ fitOrg(); main.querySelectorAll(".org img").forEach(i=>i.addEventListener("load",fitOrg,{once:true})); }
   $("ftPos").innerHTML = sl.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("") + `<em class="num">${idx+1}/${sl.length}</em>`;
-  const dias = diasSemAcidente(data);
-  $("ftDias").textContent = dias===null?"–":dias;
+  const dias = (segurancaAuto && segurancaAuto.dias!=null) ? segurancaAuto.dias : diasSemAcidente(data);
+  $("ftDias").textContent = dias===null||dias===undefined?"–":dias;
   setTicker();
   $("sample").hidden = true;
 }
@@ -1582,7 +1576,7 @@ async function refreshPend(){
 async function refreshContent(){
   try{
     const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
-    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null;
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; segurancaAuto = j.segurancaAuto||null;
     gotSec = true; gotCfg = true;
     onData();
   }catch(e){}
@@ -1759,7 +1753,7 @@ async function carregarConteudo(){
   try{
     const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
     failStreak = 0;
-    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null;
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; segurancaAuto = j.segurancaAuto||null;
     gotSec = true; gotCfg = true;
     onData();
     return true;
