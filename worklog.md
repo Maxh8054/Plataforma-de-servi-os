@@ -287,3 +287,25 @@ Stage Summary:
 - Qualquer atestado/férias/folga/cobertura lançado no EscalaModal da plataforma aparece na TV no próximo polling (30s)
 - Modo manual da aba escala continua disponível (basta desligar o checkbox)
 - Arquivos: src/lib/escala-auto.ts (novo), src/app/api/tv/[panel]/content/route.ts, public/html/painel-tv-goias.html
+
+---
+Task ID: 18
+Agent: Main
+Task: Aniversariantes — cadastro dos colaboradores + upload de fotos em lote (casa foto com pessoa pelo nome do arquivo)
+
+Work Log:
+- Cadastrados no banco os 78 colaboradores da lista enviada pelo usuário (aba "aniversarios" do painel goias estava vazia): nome completo + dia + mês (nome) + nascimento (data completa, novo campo t:"date" na aba); distribuição por mês conferida (máx. 12 em Maio — slide mostra até 16, cabe)
+- Novo campo "nascimento" na definição da aba (registro histórico; TV continua usando dia+mês)
+- Nova part kind:"lote" no editor da aba: botão de seleção múltipla de fotos (input file multiple) + área de progresso/relatório
+- Matching por nome do arquivo (casarFotoNome): normalização NFD (imune a acentos/maiúsculas/pontuação) → 1) nome completo igual, 2) nome do arquivo é começo do nome (primeiro nome), 3) nome é começo do arquivo; ambiguidade (ex.: 3 Robsons) NÃO casa — vai para o relatório para escolha manual; separadores _ e - viram espaço
+- Loop de envio com progresso "Enviando N/total: arquivo…" reusando shrink() + /api/tv/upload (mesmas primitivas do campo foto individual); fotos entram no draft (rascunho persistente sobrevive a F5); relatório final: casadas, sem casamento, ambíguas (com as opções), falhas de envio; usuário revisa e salva pelo fluxo normal (Salvar e enviar para a TV)
+- Handler de upload individual excluído do seletor genérico (.fileIn:not(#bkFile):not(#loteFile)) para não conflitar
+- Teste E2E: usuário de teste (com permissão só da aba aniversarios) + 5 fotos de teste → 3 casaram nas pessoas certas (exato + 2 pelo primeiro nome), 1 ambígua reportada com os 3 Robsons, 1 sem casamento reportada; checkbox/relatório validados
+- Upload real provado via curl (200 + asset criado); headless do agent-browser falhou com File-via-CDP (limitação do ambiente de teste, não do código — o campo foto individual que a equipe já usa em produção usa as mesmas primitivas)
+- Limpeza total: localStorage do browser limpo (nenhum draft com fotos de teste), usuário/permissão de teste deletados, 2 assets de teste deletados; aba ficou com 78 itens e 0 fotos (pronta para as fotos reais)
+
+Stage Summary:
+- As 78 pessoas já estão na TV (slide mostra automaticamente os do mês; destaque nos do dia)
+- Usuário só precisa: abrir a aba Aniversariantes → Fotos em lote → selecionar as 77 fotos → conferir o relatório → Salvar
+- Nomes ambíguos (Robson ×3, Carlos ×2, Victor ×2, Vinicius ×2, Marcelo ×2, Marcos ×2, Jean ×2) precisam de arquivo com nome mais completo (ex.: "robson leao lima.jpg") ou escolha manual na linha
+- Arquivos: public/html/painel-tv-goias.html (aba + editor + handler + CSS), prisma (dados)
