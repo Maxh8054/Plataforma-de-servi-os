@@ -158,3 +158,89 @@ Testes (agent-browser, desktop 1440x900 + mobile 390x844):
 - Mapa desktop: ocupa quase toda a altura, labels legíveis; mobile: preenche a largura; AP clicável
 - Inspeção: tema claro em todas as seções (stats, formulário, checklist, resumo, histórico); header com logo; Voltar não cobre mais nada permanente
 - Console sem erros; lint = baseline (24 erros pré-existentes, +2 warnings intencionais); token de teste limpo
+
+---
+Task ID: 13 (restauração v17)
+Data: 21/10/2026
+Agent: Main (sessão atual)
+
+Task: Restaurar 100% do repositório github.com/Maxh8054/Plataforma-de-servi-os (commit 83ec84a, v17) na nova sessão do sandbox, com o banco de dados da plataforma
+
+Work Log:
+- Clonado o repositório para /tmp/plataforma-repo (216 arquivos, commit 83ec84a "feat: mapa ampliado no desktop... (v17)")
+- Copiados TODOS os arquivos (incluindo .git com histórico completo) para /home/z/my-project via rsync; git status limpo (working tree idêntica ao remoto)
+- .env reescrito com as credenciais de produção do painel (APP_PASSWORD, BREVO_API_KEY, EMAIL_FROM, REGISTRATION_INVITE_CODE)
+- DATABASE_URL da imagem (hostname interno do Render dpg-d6h0d4ma2pns7388dgq0-a) testado: NÃO resolve fora da rede do Render (Internal Database URL); testadas as variantes externas regionais (oregon/frankfurt/ohio/virginia/singapore/sao-paulo/ireland/london) — todas falham autenticação fora da rede
+- Solução: PostgreSQL 18.4 local real (embedded-postgres em /home/z/local-postgres, FORA do repo) na porta 5432, com MESMO usuário/senha/nome de banco da produção (z_services_db_f1pd); daemonizado via pg_ctl para sobreviver às sessões
+- Quirk do sandbox: variável de sistema DATABASE_URL=file:...custom.db sobrescreve o .env — o dev server DEVE ser lançado com export DATABASE_URL=postgresql://...@localhost:5432/z_services_db_f1pd
+- prisma db push aplicado (schema PostgreSQL integral, incluindo campos Json) + seed.js (23 usuários) + senha bcrypt do admin max-r@zaminebrasil.com = APP_PASSWORD (mesmo padrão do endpoint /api/auth/seed de produção)
+- Dev server Next.js 16.3.0 (Turbopack) relançado daemonizado com o DATABASE_URL correto (porta 3000)
+
+Stage Summary:
+- App 100% funcional e verificado com agent-browser: login (etapa email → senha → sessão), mapa do Brasil com clique em MG abrindo "Minas Gerais" (contador 832 dias sem afastamento), /relatorios (Z-Services AI) com SSO NextAuth automático e formulário completo, mobile 390px com splash + mapa, APIs version/equipment/escala/estoque-goias 200 consultando o PostgreSQL local
+- Único arquivo divergente do remoto: .env (DATABASE_URL apontando para o PostgreSQL local — necessário pois o banco do Render só é acessível de dentro da rede Render; no deploy, as env vars do dashboard do Render prevalecem automaticamente)
+- Artefatos de teste (local-*.js/ts/png) removidos; senha de teste do admin mantida no banco local (dados ephemeral)
+
+---
+Task ID: 14 (Painel TV)
+Data: 21/10/2026
+Agent: Main (sessão atual)
+
+Task: Integrar o sistema "Painel TV ZAMine" (HTML anexado pelo usuário, ex-artifact claude.ai) à plataforma, com login da plataforma, permissões por aba escolhidas pelo admin e aprovação obrigatória do admin para conteúdo ir à TV
+
+Work Log:
+- Prisma: novos modelos TvSection (conteúdo no ar + pendente por aba), TvPanelConfig (configurações), TvPermissao (quem edita o quê por aba) e TvAsset (imagens) — db push aplicado + prisma generate
+- APIs em /api/tv/*: content (público, só aprovado), me (sessão+permissões), secoes/[key] GET/PUT (admin vai direto ao ar; editor com permissão cria pendência), secoes/[key]/aprovacao (aprovar/rejeitar), pendencias (com prévia), permissoes (GET/POST/DELETE, admin; bloqueia abas admin), config (PUT admin), upload + assets/[id] (imagens no bytea)
+- src/lib/tv.ts: helpers (tvUser via sessão cookie/header x-zamine-token, tvAdmin via isAdminRole, podeEditarSecao)
+- public/html/painel-tv-goias.html: app TV adaptado do arquivo do usuário (CRLF→LF) — claude.ai db/assets/user substituídos por fetch nas APIs da plataforma (mesmo padrão dos apps inspecoes/EPIs com zamine_token); editor com abas restritas por permissão; novas abas admin "Aprovações (TV)" (lista pendências com prévia renderizada + Aprovar/Rejeitar) e "Permissões de edição" (usuários da plataforma × 15 abas, salvar/remove); gate de login para sem acesso; polling 30s na TV; imagens via /api/tv/upload; backup download/restauração via API; links de edição locais (#editar-aba)
+- Plataforma: entrada "Painel TV" no menu de Goiás (servicesData.go, ícone tv)
+- Fix bug: tvUser checava isActive que não vem no select do validateSession (401 para todos) — removido (desativar usuário já derruba sessão)
+- Fix: content não expõe seções com data vazio (linhas criadas só para pendência)
+- E2E agent-browser (5 testes): admin edita Dias sem acidentes → no ar na hora; permissões concedidas a charles-a (DDS do dia + Comunicados); charles vê SOMENTE 2 abas e salvamento vira pendência (TV não muda); admin aprova em Aprovações → TV atualiza; cicero-c sem permissão vê bloqueio no editor. APIs validadas via curl (content/pendencias/me)
+
+Stage Summary:
+- Painel TV Goiás integrado: /html/painel-tv-goias.html (TV pública com só conteúdo aprovado; editor com login da plataforma)
+- Permissões por aba centralizadas no admin (aba Permissões de edição); pendência nunca vai à TV sem aprovação
+- Senhas de teste locais definidas para charles-a e cicero-c (= APP_PASSWORD); artefatos de teste removidos
+
+---
+Task ID: 14
+Agent: Main
+Task: Corrigir login no previewer — autenticação 100% via banco de dados, sem credenciais no código
+
+Work Log:
+- Investigado dev.log: tentativas do usuário (IP 21.0.0.1) em max-r@zaminebrasil.com retornavam 401
+- Audit log confirmou 2 login_failed às 14:13 (senha de produção não existe no banco local — Render inacessível do sandbox)
+- Verificado src/app/api/auth/login/route.ts: autenticação já é 100% DB-driven (bcrypt/SHA-256 contra User.password no PostgreSQL); nenhum login hardcoded no código (APP_PASSWORD do .env é usado apenas pelo endpoint de seed admin, nunca pelo login)
+- Consultado User no banco: admin tinha hash temporário (definido na restauração); outros 22 usuários em first-access com password NULL
+- Resetada conta max-r@zaminebrasil.com: password=null, isFirstAccess=true, attempts=0, sessionToken=null, TwoFactorChallenges limpos
+- Testado envio de código via Brevo: POST /api/auth/first-access/resend → emailSent:true (e-mail real disparado)
+- Verificação end-to-end com agent-browser: tela "Bem-vindo" → e-mail admin → tela de primeiro acesso renderizada (campo código, Nova Senha, Confirmar Senha, "Definir Senha e Entrar"); código enviado automaticamente ao abrir a tela; zero erros de console
+
+Stage Summary:
+- Login confirmado 100% puxado do banco de dados PostgreSQL — nenhuma credencial no código-fonte
+- Admin definirá a própria senha via fluxo de primeiro acesso: e-mail → código de 6 dígitos no inbox real (Brevo) → nova senha (bcrypt no DB)
+- Demais 22 usuários seguem o mesmo fluxo de primeiro acesso, idêntico à produção
+- TWO_FACTOR_MODE está 'off' — após definir a senha, login direto sem 2FA
+- Código expira em 10 min; botão "Reenviar código" disponível
+
+---
+Task ID: 15
+Agent: Main
+Task: Blindagem anti-perda de dados no painel TV Goiás (tudo no banco, sem bug, à prova de quedas)
+
+Work Log:
+- Auditoria completa: painel (public/html/painel-tv-goias.html) já persiste 100% no PostgreSQL (tv_sections, tv_panel_configs, tv_permissoes, tv_assets com bytes no DB) + auditoria em AuditLog + fluxo de aprovação admin pendência→ar
+- Identificados 3 riscos: rascunho só na memória (F5/crash perdia tudo digitado), sobrescrita silenciosa entre editores simultâneos, TV sem auto-recuperação de falha prolongada
+- Backend (secoes/[key]/route.ts + config/route.ts): controle de concorrência otimista — PUT aceita baseEm/force via query; se outra pessoa publicou depois do carregamento → 409 com autor/data (audit tv_secao_conflito); sucesso retorna atualizadoEm
+- Frontend: rascunho persistente em localStorage (zamine-tv-draft-goias-v1) gravado a cada edição (debounce 300ms) com baseEm por aba; recuperação automática ao reabrir o editor + botão "Descartar rascunho"; limpeza por aba no salvamento bem-sucedido
+- Frontend: diálogo de conflito 409 ("sobrescrever de propósito?" / cancelar mantém rascunho); baseEm sincronizado em showWho/PUT/aprovação; restauração de cópia de segurança limpa rascunho
+- Frontend: TV auto-recarrega após 20 falhas consecutivas (~10 min) de conexão — apenas com editor fechado e sem alterações não salvas
+- E2E verificado com sessão temporária no banco: digitar → F5 → rascunho recuperado ✓; salvar → banco atualizado + rascunho limpo + autor gravado ✓; PUT simultâneo → 409 → TV protegida → sobrescrita deliberada via dialog ✓; audit log registrou conflito ✓
+- Lint limpo nos arquivos modificados; dados de teste restaurados; sessão temporária removida
+
+Stage Summary:
+- Nada digitado no painel pode mais se perder: ou está no banco, ou está no rascunho do navegador (sobrevive a F5, crash e queda de luz)
+- Sobrescrita entre editores agora é sempre deliberada (409 + confirmação)
+- TV opera 9h+/dia com auto-recuperação (polling 30s + reload após 10 min de falha)
+- Usuário já definira a própria senha do admin via primeiro acesso (confirmado no banco)
