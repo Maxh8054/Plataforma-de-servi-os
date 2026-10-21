@@ -265,3 +265,25 @@ Stage Summary:
 - Repositório no GitHub mantém .env neutro (DATABASE_URL sandbox); produção usa env vars do dashboard Render (confirmado no screenshot do usuário)
 - Token do usuário usado apenas nos comandos de push (nunca salvo em arquivo); usuário orientado a revogar
 - .env local protegido contra commits futuros via skip-worktree
+
+---
+Task ID: 17
+Agent: Main
+Task: Escala de turno automática no painel da TV (técnico de hoje e amanhã puxados da plataforma)
+
+Work Log:
+- Mapeado o fluxo existente: plataforma tem escala Lundin (ciclo 8 dias, equipes A=Weslley, B=Higor, C=Marcos, D=Marcelo em src/data/escala-lundin.ts) + lançamentos no banco (EscalaData: atestados, spots, adms, eventos incl. backup) editados pelo EscalaModal; painel TV tinha aba "escala" 100% manual (letras diurno/noturno por dia)
+- Criado src/lib/escala-auto.ts: cálculo server-side imune a fuso (datas em string YYYY-MM-DD), replicando as regras do EscalaModal — turno base Lundin (com fallback do ciclo 8 dias fora de mai/2026-jan/2027), atestado→"Atestado", evento férias→"Férias", folga agendada, backup→assume o turno de quem cobre (selo "Cobrindo X"), viagem/treinamento/ADM/spot como selos informativos
+- GET /api/tv/[panel]/content agora devolve escalaAuto (hoje + amanhã + próximos 5 dias) via computarEscalaAutoSeguro (try/catch → null; falha nunca derruba o /content), respeitando ?tz= do navegador da TV (padrão America/Sao_Paulo)
+- painel-tv-goias.html: nova opção na aba escala — checkbox "Puxar automaticamente da escala da plataforma (equipes A/B/C/D)" (def:false; renderer de check generalizado para respeitar def sem quebrar os checks existentes da config) + hint atualizado
+- Novo slide automático na TV: cartões HOJE e AMANHÃ (dia da semana, data, diurno e noturno com letra colorida + nome + horário, selos de cobertura, linha "Fora" com folgas/atestados), próximos 5 dias com letras, e turmas/equipes A-B-C-D com nomes (fallback automático quando não há turmas cadastradas)
+- Fetch do /content passa ?tz= do navegador (TV_TZ) nas duas chamadas (carregarConteudo e refreshContent); virada de dia acontece sozinha pelo polling de 30s
+- Seção "escala" criada no banco com auto:true e horários 07:00–19:00 / 19:00–07:00 (nesting corrigido: conteúdo da seção é {horarios:...}, sem chave externa)
+- Teste E2E real (agent-browser): slide mostra Hoje 21/10 A-Weslley (diurno) e C-Marcos (noturno), amanhã idem, próximos 5 dias batendo com o ciclo Lundin; cenário com A atestado + B cobrindo aplicado no banco → TV refletiu na hora (B no diurno com selo "Cobrindo A — Weslley Siqueira", A em "Fora: Atestado"); estado original do EscalaData restaurado após o teste
+- Checkbox do editor validado (marcado com auto:true do banco, desmarcado com false); lint sem novos erros (31 problemas são preexistentes em outros arquivos)
+
+Stage Summary:
+- TV agora puxa sozinha o técnico do dia e de amanhã da escala da plataforma (nada para digitar na TV)
+- Qualquer atestado/férias/folga/cobertura lançado no EscalaModal da plataforma aparece na TV no próximo polling (30s)
+- Modo manual da aba escala continua disponível (basta desligar o checkbox)
+- Arquivos: src/lib/escala-auto.ts (novo), src/app/api/tv/[panel]/content/route.ts, public/html/painel-tv-goias.html

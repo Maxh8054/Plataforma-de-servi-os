@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido } from '@/lib/tv';
+import { TZ_PADRAO, computarEscalaAutoSeguro } from '@/lib/escala-auto';
 
 function safeJson(str: string | null | undefined): unknown {
   if (!str) return null;
@@ -16,16 +17,17 @@ function safeJson(str: string | null | undefined): unknown {
  * Público: a TV da oficina não precisa de login. Edições pendentes NÃO aparecem aqui.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ panel: string }> }
 ) {
   const { panel } = await params;
   if (!panelValido(panel)) return respostaPanelInvalido();
 
   try {
-    const [secoes, config] = await Promise.all([
+    const [secoes, config, escalaAuto] = await Promise.all([
       db.tvSection.findMany({ where: { panelSlug: panel } }),
       db.tvPanelConfig.findUnique({ where: { panelSlug: panel } }),
+      computarEscalaAutoSeguro(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
     ]);
 
     const secoesObj: Record<string, unknown> = {};
@@ -42,6 +44,9 @@ export async function GET(
       {
         secoes: secoesObj,
         config: (safeJson(config?.data ?? null) as Record<string, unknown> | null) ?? {},
+        // escala de turno automática (equipes A/B/C/D da plataforma) — a TV
+        // mostra sozinha o técnico de hoje e de amanhã; null se falhar
+        escalaAuto,
       },
       { headers: { 'Cache-Control': 'no-store' } }
     );

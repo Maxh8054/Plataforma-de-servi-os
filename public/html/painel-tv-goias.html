@@ -137,6 +137,28 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .turma b{display:block;font-size:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turma span{font-size:20px;color:var(--muted)}
 
+/* Escala automática (puxada da plataforma) */
+.esc-auto{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.esc-day{padding:30px 34px;display:flex;flex-direction:column;gap:10px;border-top:8px solid var(--line);min-width:0}
+.esc-day.hj{border-top-color:var(--accent)}
+.esc-dh{display:flex;align-items:baseline;gap:16px;margin-bottom:8px}
+.esc-dh b{font-family:var(--f-display);font-size:40px;text-transform:uppercase;letter-spacing:.05em}
+.esc-day.hj .esc-dh b{color:var(--accent)}
+.esc-dh span{font-size:24px;color:var(--muted);text-transform:capitalize}
+.esc-row{display:flex;align-items:center;gap:24px;padding:12px 0;border-top:1px solid var(--line)}
+.esc-row .lt3{font-family:var(--f-display);font-size:88px;font-weight:800;line-height:1;width:88px;text-align:center;flex:none}
+.esc-p{min-width:0}
+.esc-p b{display:block;font-size:42px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esc-p .t{font-size:23px;color:var(--muted)}
+.esc-selo{display:inline-flex;margin-top:6px;padding:3px 14px;border:1px solid var(--accent);border-radius:999px;font-size:19px;color:var(--accent)}
+.esc-off{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:21px;color:var(--muted)}
+.esc-off em{font-style:normal;opacity:.85}
+.esc-next{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.esc-nx{padding:12px 10px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.esc-nx .lbl{font-size:18px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.esc-nx .num2{font-family:var(--f-display);font-size:30px;font-weight:700;margin-top:2px}
+.esc-nx .duo{display:flex;justify-content:center;gap:14px;font-family:var(--f-display);font-size:44px;font-weight:800;margin-top:8px;line-height:1}
+
 /* Perdas */
 .s-per{display:grid;grid-template-columns:1fr 440px;gap:56px;height:100%}
 .bars{display:flex;flex-direction:column;justify-content:center;gap:20px}
@@ -565,9 +587,9 @@ const SECTIONS = [
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Horário",ph:"Ex.: 07:30 às 11:30",w:2},
       {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",w:2},
       {k:"participantes",l:"Participantes",t:"textarea",w:5}]}]},
-  {key:"escala", label:"Escala de turno", hint:"Preencha a letra do turno diurno e noturno de cada dia. O dia de hoje é destacado na TV.",
+  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha os técnicos de hoje e de amanhã das equipes A/B/C/D, direto da escala da plataforma — incluindo atestados, férias, folgas e coberturas lançadas na Escala de Turno. Os dias cadastrados aqui ficam de fora da TV enquanto o modo estiver ligado. Modo manual: preencha a letra do turno diurno e noturno de cada dia; o dia de hoje é destacado na TV.",
     parts:[
-      {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
+      {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"auto",l:"Puxar automaticamente da escala da plataforma (equipes A/B/C/D)",t:"check",def:false},{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
       {kind:"list",key:"dias",label:"Dias",newRow:()=>({data:nextDate(),diurno:"",noturno:""}),cols:[
         {k:"data",l:"Data",t:"date",w:2},{k:"diurno",l:"Diurno",t:"select",opts:LETRAS,w:1},{k:"noturno",l:"Noturno",t:"select",opts:LETRAS,w:1}]},
       {kind:"list",key:"turmas",label:"Turmas",cols:[
@@ -667,6 +689,57 @@ const img = v => v ? `<img src="${esc(v)}" alt="" loading="eager" onerror="this.
 function noAr(c){ const t=+today0(), i=pDate(c.inicio), f=pDate(c.fim); return (!i || +i<=t) && (!f || +f>=t); }
 function faltaTxt(d){ const n=Math.round((d-today0())/864e5); return n<=0?"Hoje":n===1?"Amanhã":`Faltam ${n} dias`; }
 const emptyBox = (t,m) => `<div class="empty"><div><b>${esc(t)}</b>${esc(m)}</div></div>`;
+
+/* ---------- escala automática (puxada da plataforma) ---------- */
+const TV_TZ = (()=>{ try{ return encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Sao_Paulo"); }catch(e){ return encodeURIComponent("America/Sao_Paulo"); } })();
+let escalaAuto = null;   // calculada no servidor e entregue junto com o /content
+const HORA_DIURNA = "07:00 – 19:00", HORA_NOTURNA = "19:00 – 07:00";
+const LCLS = {A:"L-A",B:"L-B",C:"L-C",D:"L-D"};
+function escPessoa(x, linha){
+  return `<div class="esc-row"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>
+    <div class="esc-p"><b>${esc(x.nome)}</b><span class="t">${esc(linha)}</span>
+    ${x.selo?`<span class="esc-selo">🔄 ${esc(x.selo)}</span>`:""}</div></div>`;
+}
+function escDiaAuto(d, hd, hn){
+  const dt = pDate(d.data);
+  const off = d.fora.map(f=>`${esc(f.letra)} — ${esc(f.nome)} <em>(${esc(f.motivo||"Folga")})</em>`).join(" · ");
+  const row = (arr, hora, vazio)=>arr.length?arr.map(x=>escPessoa(x,hora)).join("")
+    :`<div class="esc-row"><span class="lt3">–</span><div class="esc-p"><b>${vazio}</b><span class="t">${esc(hora)}</span></div></div>`;
+  return `<div class="card esc-day ${d.destaque==="hoje"?"hj":""}">
+    <div class="esc-dh"><b>${d.destaque==="hoje"?"Hoje":"Amanhã"}</b><span>${esc(d.diaSemana)}${dt?" · "+fmtDM(dt):""}</span></div>
+    ${row(d.diurno,"🌅 Diurno · "+hd,"Sem diurno escalado")}
+    ${row(d.noturno,"🌙 Noturno · "+hn,"Sem noturno escalado")}
+    ${off?`<div class="esc-off">Fora: ${off}</div>`:""}
+  </div>`;
+}
+function renderEscalaAuto(o){
+  if(!escalaAuto || !Array.isArray(escalaAuto.dias) || !escalaAuto.dias.length)
+    return emptyBox("Escala automática carregando","A TV está buscando a escala da plataforma. Se persistir, verifique a conexão.");
+  const h = get(o,"escala","horarios") || {};
+  const hd = String(h.diurno||"").trim() || HORA_DIURNA;
+  const hn = String(h.noturno||"").trim() || HORA_NOTURNA;
+  const hj = escalaAuto.dias.find(d=>d.destaque==="hoje");
+  const am = escalaAuto.dias.find(d=>d.destaque==="amanha");
+  const nx = escalaAuto.dias.filter(d=>!d.destaque);
+  const prox = nx.length?`<div class="esc-next">${nx.map(d=>{const dt=pDate(d.data);
+    const ld=d.diurno.map(x=>`<span class="${LCLS[x.letra]||""}">${esc(x.letra)}</span>`).join("")||"<span>–</span>";
+    const ln=d.noturno.map(x=>`<span class="${LCLS[x.letra]||""}">${esc(x.letra)}</span>`).join("")||"<span>–</span>";
+    return `<div class="esc-nx"><div class="lbl">${dt?wk(dt):""}</div><div class="num2">${dt?fmtDM(dt):""}</div>
+      <div class="duo"><span style="font-size:26px">🌅</span>${ld}<span style="font-size:26px">🌙</span>${ln}</div></div>`;}).join("")}</div>`:"";
+  const tur = list(o,"escala","turmas");
+  /* sem turmas cadastradas, mostra as 4 equipes com os nomes da plataforma */
+  const hjDia = escalaAuto.dias.find(d=>d.destaque==="hoje");
+  const equipes = hjDia ? [...hjDia.diurno,...hjDia.noturno,...hjDia.fora]
+    .sort((a,b)=>a.letra.localeCompare(b.letra))
+    .map(p=>({letra:p.letra,lider:p.nome,obs:p.selo||p.motivo||("Equipe "+p.letra)})) : [];
+  const turmas = tur.length ? tur.slice(0,4)
+    : equipes.slice(0,4).map(x=>`<div class="card turma"><span class="lt2 ${LCLS[x.letra]||"L-"+esc(x.letra)}">${esc(x.letra)}</span><div><b>${esc(x.lider)}</b><span>${esc(x.obs)}</span></div></div>`).join("");
+  return `<div class="s-esc">
+    <div class="esc-auto">${escDiaAuto(hj,hd,hn)}${escDiaAuto(am,hd,hn)}</div>
+    ${prox}
+    ${turmas?`<div class="turmas">${turmas}</div>`:""}
+  </div>`;
+}
 
 /* ---------- renderização dos slides ---------- */
 const R = {
@@ -769,6 +842,7 @@ const R = {
   },
   escala(o){
     const h = get(o,"escala","horarios") || {};
+    if(h.auto) return renderEscalaAuto(o);   // modo automático: técnicos de hoje/amanhã da plataforma
     const dias = list(o,"escala","dias").slice().sort((a,b)=>(a.data||"").localeCompare(b.data||"")).slice(0,7);
     const tur = list(o,"escala","turmas");
     if(!dias.length) return emptyBox("Escala não cadastrada","Preencha os dias e as letras no editor.");
@@ -1147,7 +1221,7 @@ function renderSec(){
       const o = draft[s.key][p.key] = draft[s.key][p.key] || {};
       h += `<div class="fields">` + p.fields.map((f,fi)=>{
         const id=`f-${s.key}-${p.key}-${f.k}`;
-        if(f.t==="check") return `<label class="chk" for="${id}"><input type="checkbox" id="${id}" ${o[f.k]!==false?"checked":""}>${esc(f.l)}</label>`;
+        if(f.t==="check"){ const on = f.def===false ? o[f.k]===true : o[f.k]!==false; return `<label class="chk" for="${id}"><input type="checkbox" id="${id}" ${on?"checked":""}>${esc(f.l)}</label>`; }
         return `<div class="fld ${f.wide||f.t==="textarea"?"wide":""}"><label for="${id}">${esc(f.l)}</label>${input(f,o[f.k],id)}</div>`;
       }).join("") + `</div>`;
     } else {
@@ -1293,8 +1367,8 @@ async function refreshPend(){
 }
 async function refreshContent(){
   try{
-    const j = await api(`/api/tv/${PANEL_SLUG}/content`);
-    secData = j.secoes||{}; cfgData = j.config||{};
+    const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null;
     gotSec = true; gotCfg = true;
     onData();
   }catch(e){}
@@ -1469,9 +1543,9 @@ function maybeOpenFromLink(){
 /* ---------- conexão com a plataforma ---------- */
 async function carregarConteudo(){
   try{
-    const j = await api(`/api/tv/${PANEL_SLUG}/content`);
+    const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
     failStreak = 0;
-    secData = j.secoes||{}; cfgData = j.config||{};
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null;
     gotSec = true; gotCfg = true;
     onData();
     return true;
