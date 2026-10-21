@@ -64,6 +64,20 @@ export default function RootLayout({
             __html: `window.__APP_VERSION="${APP_VERSION}";`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+if(location.pathname.indexOf("/html/")===0)return;
+var q=new URLSearchParams(location.search||"");
+if(q.get("tv")==="0"){try{localStorage.setItem("ztv_optout","1")}catch(e){}return}
+var opt=false;try{opt=localStorage.getItem("ztv_optout")==="1"}catch(e){}
+if(opt)return;
+var ua=navigator.userAgent||"";
+var isTv=/SmartTV|SMART-TV|Tizen|WebOS|Web0S|GoogleTV|CrKey|AppleTV|BRAVIA|AFT[A-Z]*|Netcast|HbbTV|Viera|PhilipsTV|AquosTV|Android TV|Chromecast/i.test(ua)||q.get("tv")==="1";
+if(isTv)location.replace("/html/painel-tv-goias.html");
+}catch(e){}})();`,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
