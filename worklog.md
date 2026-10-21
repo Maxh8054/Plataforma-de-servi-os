@@ -244,3 +244,24 @@ Stage Summary:
 - Sobrescrita entre editores agora é sempre deliberada (409 + confirmação)
 - TV opera 9h+/dia com auto-recuperação (polling 30s + reload após 10 min de falha)
 - Usuário já definira a própria senha do admin via primeiro acesso (confirmado no banco)
+
+---
+Task ID: 16
+Agent: Main
+Task: Commit e push para o GitHub (com proteção de segredos)
+
+Work Log:
+- Push inicial bloqueado pelo GitHub Push Protection: commit automático continha BREVO_API_KEY no .env
+- Investigação revelou risco pior não detectado pelo GitHub: screenshots do dashboard Render com TODAS as credenciais de produção (DATABASE_URL, BREVO_API_KEY, APP_PASSWORD) estavam em upload/ e commitados
+- Histórico reescrito: git reset --soft origin/main; .env devolvido à versão do origin no índice; 3 arquivos de upload com conteúdo sensível removidos dos commits e movidos para /tmp/upload-backup
+- Commits limpos criados: 982a8b1 (feat: Painel TV Goiás v18 completo) + 6ddfe32 (docs: worklog v18)
+- Verificação: git grep nos commits confirmou zero segredos (Brevo, senha do banco, APP_PASSWORD)
+- Push realizado com sucesso: 83ec84a..6ddfe32 main -> main
+- git update-index --skip-worktree .env aplicado: .env local (com segredos reais para rodar localmente) nunca mais será commitado pelo auto-committer
+- origin/main tracking ref sincronizado localmente
+
+Stage Summary:
+- GitHub atualizado com o Painel TV Goiás completo (v18) sem nenhum segredo exposto
+- Repositório no GitHub mantém .env neutro (DATABASE_URL sandbox); produção usa env vars do dashboard Render (confirmado no screenshot do usuário)
+- Token do usuário usado apenas nos comandos de push (nunca salvo em arquivo); usuário orientado a revogar
+- .env local protegido contra commits futuros via skip-worktree
