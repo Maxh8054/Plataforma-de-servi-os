@@ -353,3 +353,25 @@ Stage Summary:
 - Fotos casam mesmo com números/"WhatsApp Image"/"foto 1"/parênteses no nome do arquivo — só precisa do nome da pessoa em algum lugar dele
 - Nada do que o usuário tinha feito se perdeu: banco estava (e está) com as 78 pessoas íntegras
 - Arquivos: public/html/painel-tv-goias.html (parseDataBR + lerLinhasExcel + casarFotoNome + lerColagem + hints)
+
+---
+Task ID: 21
+Agent: Main
+Task: Correção do reporte "não está funcionando" (colagem sem confirmação + fotos em lote não casam) com a dica do usuário: arquivos têm MAIÚSCULAS e sempre extensão (.jpg/.jpeg/.png)
+
+Work Log:
+- Testes unitários com bun das funções extraídas do painel provaram que a lógica do commit e00fecd já passava em maiúsculas + extensão (16/16) — o sintoma do usuário apontava para aba aberta rodando versão velha (cache em memória; o servidor entrega ETag novo a cada navegação, mas aba ABERTA continua com o JS antigo)
+- E2E no agent-browser (login admin real do banco) confirmou: "Ler a tabela" funciona e o feedback aparece com scrollIntoView; então a causa raiz da queixa (a) é a aba velha
+- casarFotoNome endurecido: (1) extensões viram palavra-lixo (jpg/jpeg/png/webp/gif/heic/bmp/jpe/tif/tiff + copy/copia) — "adriana jpg" não polui o casamento; (2) o handler tira TODAS as extensões finais do arquivo (regex /(\.[a-z0-9]+)+$/i, case-insensitive, extensão dupla "foto.jpg.jpg" limpa); (3) NOVA regra 5 — nome abreviado: todas as palavras do arquivo (≥2, ignorando de/da/do/das/dos/e/junior/filho/neto e iniciais de 1 letra) existem no nome completo → "adriana nascimento.jpg" casa com ADRIANA MARA DO NASCIMENTO, "maria fatima.jpg" com MARIA DE FÁTIMA OLIVEIRA; se bater com mais de uma pessoa vira relatório amb como antes
+- Suite nova 21/21 no bun: maiúsculas ✓, .JPG/.JPEG/.PNG ✓, abreviados ✓, inicial do meio ✓, robson leao desambigua entre 3 robsons ✓, robson.jpg → ambíguo ✓, IMG_2041 rejeitado ✓, whatsapp image/foto 2/copia ✓, underscores ✓
+- AUTO-ATUALIZAÇÃO do painel (elimina a classe de bug "versão velha"): checkPanelUpdate() faz fetch HEAD-cache-busted do próprio arquivo, compara ETag com localStorage; se mudou → recarrega a página sozinha (só se editor fechado e sem alterações não salvas; senão mostra toast "salve e atualize F5"); roda no load, a cada 3 min e ao voltar o foco da aba; guarda de loop via sessionStorage (30s)
+- E2E do auto-update provado: ETag gravado no localStorage ✓; com editor aberto e dirty → toast e NÃO recarrega ✓; com editor fechado/limpo + ETag novo → recarrega sozinha (marker em memória sumiu após reload) ✓
+- Relatório de fotos: quando nenhuma casa, mostra dica explícita (maiúsculas/acentos/.jpg/.png não atrapalham; pode ser nome abreviado); hint da aba atualizado com os mesmos exemplos
+- Saneamento: rascunho de teste descartado (Descartar com confirm), banco intacto — TV segue com 78 pessoas, sem "JOÃO DA SILVA TESTE"; arquivos de teste em agent-ctx apagados; lint voltou ao baseline de 31 problemas preexistentes (nenhum novo)
+- Obs.: git diff/rg exibem "itens.i]" mas od -c confirma que os bytes reais são "itens[h.i]" (o display engole o "[h" como se fosse sequência de escape ANSI) — arquivo correto, node --check ok, E2E no navegador ok
+
+Stage Summary:
+- Fotos em lote agora casam de vez com a realidade dos arquivos do usuário: MAIÚSCULAS/minúsculas, acentos, .jpg/.jpeg/.png (até maiúsculo ou duplo), "WhatsApp Image…", "foto 2…", cópias e nome abreviado — sem perder a proteção contra nomes ambíguos (Robson×3 etc.)
+- Painel TV se mantém atualizado sozinho: correções novas chegam ao usuário sem depender de F5 (aba aberta há dias recarrega ao voltar o foco, sem perder edição)
+- Commit 2b61478 local; PUSH PENDENTE (token GitHub não disponível nesta sessão — nunca é gravado em arquivo por segurança; pedir o token clássico ao usuário ou push manual)
+- Arquivos: public/html/painel-tv-goias.html (casarFotoNome + PALAVRAS_LIXO + CONECTIVOS + handler de extensão + hints + dica no relatório + checkPanelUpdate)
