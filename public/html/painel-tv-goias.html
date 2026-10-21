@@ -1216,17 +1216,20 @@ function input(f, val, id){
   }
   return `<input id="${id}" type="${t==="number"?"number":t}" value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:""}>`;
 }
-/* fotos em lote: casa o nome do arquivo com a pessoa (imune a acentos/maiúsculas; ignora números e palavras de câmera/app) */
+/* fotos em lote: casa o nome do arquivo com a pessoa — imune a MAIÚSCULAS/minúsculas, acentos e pontuação;
+   ignora a extensão (.jpg, .jpeg, .png…), números e palavras de câmera/app; aceita nome abreviado
+   (ex.: "adriana nascimento.jpg" casa com ADRIANA MARA DO NASCIMENTO) */
 function normNome(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
-const PALAVRAS_LIXO = new Set(["foto","fotos","img","image","images","whatsapp","zap","at","am","pm","colaborador","col","funcionario","equipe","time","painel","tv"]);
+const PALAVRAS_LIXO = new Set(["foto","fotos","img","image","images","whatsapp","zap","at","am","pm","colaborador","col","funcionario","equipe","time","painel","tv","jpg","jpeg","png","webp","gif","heic","bmp","jpe","tif","tiff","copy","copia"]);
+const CONECTIVOS = new Set(["de","da","do","das","dos","e","junior","jr","filho","filha","neto","neta"]);
 function casarFotoNome(base, itens){
   const sujo = normNome(base);
   if(!sujo) return {idx:-1, motivo:"sem"};
-  /* tira números soltos e palavras de câmera/app: "whatsapp image 2024 01 15 adriana" e "foto 3 - adriana (2)" viram "adriana" */
-  const limpo = sujo.split(" ").filter(w=>!/^(\d+|\d{1,2}h\d{0,2})$/.test(w) && !PALAVRAS_LIXO.has(w)).join(" ");
+  /* tira números soltos e palavras de câmera/app/extensão: "whatsapp image 2024 01 15 adriana", "foto 3 - adriana (2)" e "adriana jpg" viram "adriana" */
+  const limpo = sujo.split(" ").filter(w=>! /^(\d+|\d{1,2}h\d{0,2})$/.test(w) && !PALAVRAS_LIXO.has(w)).join(" ");
+  const cand = itens.map((it,i)=>({n:normNome(it.nome), i}));
   const tentativas=[limpo, sujo].filter((v,i,a)=>v && a.indexOf(v)===i);
   for(const q of tentativas){
-    const cand = itens.map((it,i)=>({n:normNome(it.nome), i}));
     let hits = cand.filter(x=>x.n===q);                                          // 1) nome completo igual
     if(hits.length===1) return {idx:hits[0].i};
     if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
@@ -1237,6 +1240,16 @@ function casarFotoNome(base, itens){
     if(hits.length===1) return {idx:hits[0].i};
     if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
     hits = cand.filter(x=>x.n.length>3 && (q+" ").startsWith(x.n+" "));          // 4) nome é começo do arquivo
+    if(hits.length===1) return {idx:hits[0].i};
+    if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
+  }
+  /* 5) nome abreviado no arquivo: todas as palavras dele existem no nome completo (ignora de/da/do e iniciais do meio)
+        "adriana nascimento" e "adriana m. nascimento" casam com ADRIANA MARA DO NASCIMENTO; se bater com mais de uma pessoa, é reportado */
+  for(const q of tentativas){
+    const ft = q.split(" ").filter(w=>w.length>1 && !CONECTIVOS.has(w));
+    if(ft.length<2) continue;
+    const hits = cand.filter(x=>{ const pt = x.n.split(" ").filter(w=>w.length>1 && !CONECTIVOS.has(w));
+      return pt.length>=ft.length && ft.every(w=>pt.includes(w)); });
     if(hits.length===1) return {idx:hits[0].i};
     if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>itens[h.i].nome)};
   }
@@ -1363,7 +1376,7 @@ function renderSec(){
         SECTIONS.filter(x=>!x.admin).map(x=>{const u=`${PANEL_URL}#editar-${x.key}`;return `<div class="lk"><b>${esc(x.label)}</b><code>${esc(u)}</code><button type="button" class="btn" data-copy="${esc(u)}">Copiar</button></div>`;}).join("") + `</div>`;
     } else if(p.kind==="lote"){
       const total = (draft[s.key].itens||[]).length;
-      h += `<p class="hint">Selecione várias fotos de uma vez (Ctrl+Clique para escolher várias, ou Shift+Clique para um intervalo). O nome da pessoa precisa estar no nome do arquivo — pode ser o nome completo, nome e sobrenome ou só o primeiro nome, com ou sem acento. Números e palavras como "foto", "img" e "WhatsApp" no arquivo são ignorados. Arquivos sem nome de pessoa (ex.: IMG_2041.jpg) e nomes repetidos (ex.: dois Robsons) ficam de fora do relatório para você resolver.</p>
+      h += `<p class="hint">Selecione várias fotos de uma vez (Ctrl+Clique para escolher várias, ou Shift+Clique para um intervalo). O nome da pessoa precisa estar no nome do arquivo — pode ser o nome completo, nome e sobrenome ou só o primeiro nome. MAIÚSCULAS/minúsculas, acentos e o final do arquivo (.jpg, .jpeg, .png…) não atrapalham, e pode ser só parte do nome: "adriana nascimento.jpg" casa com ADRIANA MARA DO NASCIMENTO. Números e palavras como "foto", "img" e "WhatsApp" são ignorados. Arquivos sem nome de pessoa (ex.: IMG_2041.jpg) e nomes repetidos (ex.: dois Robsons) ficam de fora do relatório para você resolver.</p>
         <div class="bk"><label class="btn pri" for="loteFile">Escolher as fotos (${total} pessoas na lista)</label><input type="file" id="loteFile" accept="image/*" multiple class="fileIn"></div>
         <div id="loteOut"></div>`;
     } else if(p.kind==="colar"){
@@ -1430,7 +1443,7 @@ function renderSec(){
     for(let fi=0; fi<files.length; fi++){
       const file=files[fi];
       if(out) out.textContent = `Enviando ${fi+1}/${files.length}: ${file.name}…`;
-      const c = casarFotoNome(file.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," "), itens);
+      const c = casarFotoNome(file.name.replace(/(\.[a-z0-9]+)+$/i,"").replace(/[_-]+/g," "), itens);
       if(c.idx<0){ (c.motivo==="amb"?amb:sem).push({nome:file.name, alvos:c.alvos}); continue; }
       try{
         const blob = await shrink(file);
@@ -1446,6 +1459,7 @@ function renderSec(){
       let html = `<div class="lote-rep"><b>${ok?ok+" foto(s) colocada(s) nas linhas certas.":"Nenhuma foto casou."}</b>`;
       if(fail) html += `<p>${fail} falha(s) de envio — tente de novo com elas.</p>`;
       if(sem.length) html += `<p>Sem casamento (${sem.length}): ${sem.map(x=>`<b>${esc(x.nome)}</b>${x.alvos&&x.alvos.length?" — "+esc(x.alvos.join(" / ")):""}`).join(" · ")}</p>`;
+      if(!ok && files.length) html += `<p class="hint" style="margin:0">Dica: o arquivo só precisa ter o nome da pessoa em algum lugar dele — pode estar em MAIÚSCULAS ou minúsculas, com ou sem acento, com o .jpg/.png no final, ou abreviado ("adriana nascimento" para ADRIANA MARA DO NASCIMENTO).</p>`;
       if(amb.length) html += `<p>Nome com mais de uma pessoa — escolha a foto na linha certa: ${amb.map(x=>`<b>${esc(x.nome)}</b> → ${esc((x.alvos||[]).join(" / "))}`).join(" · ")}</p>`;
       html += `<p class="hint" style="margin:0">Confira as fotos nas linhas acima e clique em Salvar e enviar para a TV.</p></div>`;
       out2.innerHTML = html;
@@ -1766,6 +1780,28 @@ function startPoll(){ clearInterval(pollT); pollT = setInterval(()=>{ if($("edit
   $("bEdit").hidden = false; // sempre visível: sem login abre a tela de entrada
   maybeOpenFromLink();
 })();
+
+/* ---------- auto-atualização do painel: se a versão no servidor mudou (ex.: correção nova),
+   a aba aberta há dias recarrega sozinha ao voltar o foco — nunca no meio de uma edição. ---------- */
+async function checkPanelUpdate(){
+  try{
+    const r = await fetch(location.pathname+"?up="+Date.now(), {cache:"no-store"});
+    const et = r.headers.get("ETag"); if(!et) return;
+    let antigo=null; try{ antigo = localStorage.getItem("zpanel_etag"); }catch(e){}
+    try{ localStorage.setItem("zpanel_etag", et); }catch(e){}
+    if(antigo && antigo!==et){
+      const ultimoRel = +(sessionStorage.getItem("zpanel_rel")||0);
+      if(Date.now()-ultimoRel > 30000){
+        sessionStorage.setItem("zpanel_rel", String(Date.now()));
+        if($("editor").hidden && !dirty){ location.reload(); }
+        else toast("Nova versão do painel disponível. Salve o que está fazendo e atualize a página (F5).");
+      }
+    }
+  }catch(e){}
+}
+checkPanelUpdate();
+setInterval(checkPanelUpdate, 180000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) checkPanelUpdate(); });
 </script>
 
 </body></html>
