@@ -462,3 +462,27 @@ Stage Summary:
 - Dias sem acidentes da TV = contador oficial da plataforma (1542 dias em 21/10/2026), automático: para zerar após um acidente, atualiza-se a data-base em src/lib/contador-seguranca.ts (uma linha) e plataforma + TV se ajustam juntos
 - Escala automática da TV limpa (só hoje e amanhã, sem emojis); Valores no modelo CONTAG fiel ao anexo, editável aba por aba
 - Em produção no ar: valores publicados; TV/rodapé já mostram o contador da plataforma
+
+---
+Task ID: 26 (v20)
+Data: 21/10/2026
+Agent: Main (sessão atual)
+
+Task: Novo organograma da plataforma (botão no rodapé) no layout em cascata do arquivo anexado pelo Max (upload/Pasted Content_1792618990497.txt), com FOTOS PUXADAS DO BANCO PELO NOME (nada de base64 no código) e organograma EDITÁVEL (adicionar/editar/remover pessoas quando a equipe crescer)
+
+Work Log:
+- Fonte das fotos descoberta no banco: aba Aniversariantes do painel TV goias (TvSection) tem os 79 colaboradores com nome completo + foto em TvAsset (servida por /api/tv/assets/[id]); a pasta public/colaboradores/ referenciada pelo modal antigo nem existe no repo (paths quebrados)
+- Prisma: novo model OrganogramaData (id=1 singleton, dados JSON, auditoria) → tabela organograma_data criada no Postgres de produção via db push (só CREATE TABLE, dados intactos)
+- API /api/organograma: GET (usuário autenticado) retorna as pessoas (do banco; sem registro usa o layout padrão em código = as 14 pessoas do anexo) com fotoUrl RESOLVIDA AUTOMATICAMENTE pelo nome (casamento por tokens sem acento: todos os tokens ⊆ nome completo do colaborador; fallback 1º token único; ex.: "Fabricio Cesar" → FABRICIO CEZAR DE ALMEIDA, "Marcelo Gonçalves" com acento casa, "Max Rufino" ⊆ MAX HENRIQUE...RUFINO; 13/13 fotos casadas, vaga sem foto); POST (só admin, isAdminRole) salva a lista com validação (posições enum, fileira 1-24, exige alguém na linha central)
+- Componente src/components/organograma-modal.tsx + organograma.css (porta fiel do CSS do anexo: espinha central com subgrid, cartões acima/abaixo, cards .vaga tracejados, base lateral .on.row, stems/vh contínuos e tracejados) + ajuste fit-to-width (ResizeObserver, piso 0.45 com rolagem horizontal no celular)
+- Editor admin no modal: lista de pessoas com nome/cargo/posição (Linha central/Acima/Abaixo/Base)/fileira/ligação/vaga, adicionar, mover, remover, preview ao vivo (a árvore re-renderiza do rascunho), salvar → POST; ao trocar posição sugere próxima fileira livre; editor mostra se a foto casou pelo nome; fechar o modal descarta rascunho
+- page.tsx: modal antigo (256 linhas hardcoded com paths quebrados) substituído por <OrganogramaModal>; botão "Organograma" do rodapé reativado (estava oculto "temporariamente")
+- Correções durante o desenvolvimento: Prisma Client velho preso no globalThis do dev server (db.organogramaData undefined → 500) resolvido tocando next.config.ts, que faz o next dev reiniciar sozinho e recarregar o client gerado; parsing error do ESLint num onChange gigante extraído para função mudarPosicao; set-state-in-effect eliminado (IIFE no useEffect com cancelamento, setState só pós-await)
+- E2E API (token de sessão do admin lido do banco, nunca impresso): GET 200 com 14 pessoas e 13 fotos resolvidas; asset 200 image/jpeg; POST 200 persiste (autor "Max Rufino"); POST sem linha central → 400; registro de teste removido ao final (estado padrão restaurado)
+- E2E browser (agent-browser, logado como admin): botão Organograma no rodapé abre modal; 14 cartões, 13/13 fotos carregadas, vaga tracejada, base com 4 mecânicos, escala 0.57 em 1600px; editor: 14 cards, adicionar pessoa "Weslley Ferreira" → salvar → 15 cartões e 14 fotos (pessoa NOVA pegou foto do banco pelo nome sozinha), toast de sucesso, autor gravado; mobile 390×844: modal abre, escala 0.45 com rolagem horizontal; zero erros de console/página/servidor
+- Lint: 31 problemas = exatamente o baseline pré-existente (zero novos); state do banco restaurado ao layout padrão (o usuário faz a primeira edição real)
+
+Stage Summary:
+- Organograma da plataforma = layout do anexo (cascata com espinha central + base lateral), fotos dos colaboradores vindas DO BANCO pelo nome (aba Aniversariantes do painel TV) e estrutura editável pelo próprio Max (admin): basta adicionar alguém com o mesmo nome do cadastro que a foto aparece sozinha
+- Persistência nova (tabela organograma_data) sem tocar em dados existentes; layout padrão em código serve de fallback até a primeira edição
+- Em produção: só o botão do rodapé reativado + modal novo; nada mais da plataforma foi alterado

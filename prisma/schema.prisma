@@ -422,3 +422,21 @@ model TvAsset {
 
   @@map("tv_assets")
 }
+
+// ==========================================
+// Organograma da plataforma (botão "Organograma" no rodapé)
+// Lista de pessoas editável (adicionar/editar/remover quando a equipe crescer).
+// As fotos NÃO ficam aqui: são resolvidas automaticamente pelo nome a partir
+// do cadastro de colaboradores do painel TV (aba Aniversariantes → TvAsset).
+// ==========================================
+
+model OrganogramaData {
+  id            Int       @id @default(1)
+  dados         String    // JSON: [{ id, nome, cargo, posicao, fileira, ligacao, vaga }]
+  atualizadoEm  DateTime? @map("atualizadoEm")
+  atualizadoPor String?   @map("atualizadoPor")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("organograma_data")
+}
