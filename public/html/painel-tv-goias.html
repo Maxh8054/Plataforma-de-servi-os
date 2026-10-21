@@ -475,6 +475,9 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .pv-box{position:relative;width:100%;aspect-ratio:1920/856;overflow:hidden;max-width:100%}
 .pv-main{position:absolute;left:0;top:0;width:1920px;height:856px;transform-origin:0 0;background:var(--bg);color:var(--fg);overflow:hidden}
 .bk{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lote-rep{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:10px;display:grid;gap:6px;max-width:900px;line-height:1.5}
+.lote-rep p{margin:0;color:var(--muted)}
+#loteOut{margin-top:10px;color:var(--muted);min-height:0}
 .bk-confirm{margin-top:12px;padding:14px;border:1px solid var(--warn);border-radius:8px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;max-width:820px}
 .bk-confirm p{margin:0;flex:1 1 320px;line-height:1.45}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--line);padding:12px 18px;border-radius:8px;z-index:40;font-size:15px}
@@ -610,9 +613,11 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Eventos",cols:[
       {k:"foto1",l:"Foto principal",t:"image",w:2},{k:"foto2",l:"Foto 2",t:"image",w:2},{k:"foto3",l:"Foto 3",t:"image",w:2},
       {k:"titulo",l:"Evento",w:3},{k:"data",l:"Data",t:"date",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:4}]}]},
-  {key:"aniversarios", label:"Aniversariantes do mês", hint:"Cadastre a equipe inteira uma vez, com dia e mês. A TV mostra sozinha só quem faz aniversário no mês atual, e na virada do mês troca a lista. Quem faz aniversário hoje aparece em destaque. A foto é opcional; sem foto aparecem as iniciais.",
-    parts:[{kind:"list",key:"itens",label:"Aniversariantes",cols:[
-      {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"dia",l:"Dia",t:"number",w:1},{k:"mes",l:"Mês",t:"select",opts:MESES,w:2},{k:"setor",l:"Setor / função",w:3}]}]},
+  {key:"aniversarios", label:"Aniversariantes do mês", hint:"Cadastre a equipe inteira uma vez, com dia e mês. A TV mostra sozinha só quem faz aniversário no mês atual, e na virada do mês troca a lista. Quem faz aniversário hoje aparece em destaque. A foto é opcional; sem foto aparecem as iniciais. Use Fotos em lote para enviar várias de uma vez — o nome do arquivo casa com o nome da pessoa.",
+    parts:[
+      {kind:"list",key:"itens",label:"Aniversariantes",cols:[
+        {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"dia",l:"Dia",t:"number",w:1},{k:"mes",l:"Mês",t:"select",opts:MESES,w:2},{k:"nascimento",l:"Nascimento",t:"date",w:2},{k:"setor",l:"Setor / função",w:3}]},
+      {kind:"lote",label:"Fotos em lote"}]},
   {key:"beneficios", label:"Benefícios da empresa", hint:"Até 6 benefícios por tela.",
     parts:[{kind:"list",key:"itens",label:"Benefícios",cols:[
       {k:"titulo",l:"Benefício",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:5}]}]},
@@ -1204,6 +1209,22 @@ function input(f, val, id){
   }
   return `<input id="${id}" type="${t==="number"?"number":t}" value="${esc(val)}" ${f.ph?`placeholder="${esc(f.ph)}"`:""}>`;
 }
+/* fotos em lote: casa o nome do arquivo com a pessoa pelo nome (imune a acentos/maiúsculas) */
+function normNome(v){ return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+function casarFotoNome(base, itens){
+  const q = normNome(base);
+  if(!q) return {idx:-1, motivo:"sem"};
+  let hits = itens.map((it,i)=>({it,i})).filter(x=>normNome(x.it.nome)===q);          // 1) nome completo igual
+  if(hits.length===1) return {idx:hits[0].i};
+  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
+  hits = itens.map((it,i)=>({it,i})).filter(x=>{const n=normNome(x.it.nome); return n===q||n.startsWith(q+" ");});  // 2) arquivo é começo do nome
+  if(hits.length===1) return {idx:hits[0].i};
+  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
+  hits = itens.map((it,i)=>({it,i})).filter(x=>{const n=normNome(x.it.nome); return n.length>3 && (q+" ").startsWith(n+" ");});  // 3) nome é começo do arquivo
+  if(hits.length===1) return {idx:hits[0].i};
+  if(hits.length>1) return {idx:-1, motivo:"amb", alvos:hits.map(h=>h.it.nome)};
+  return {idx:-1, motivo:"sem"};
+}
 function renderSec(){
   const s = SECTIONS.find(x=>x.key===curSec);
   draft[s.key] = draft[s.key] || {};
@@ -1217,6 +1238,11 @@ function renderSec(){
     } else if(p.kind==="links"){
       h += `<p class="hint">Mande para cada pessoa o link da tela que ela vai cuidar. Ela abre, preenche e salva — e o administrador aprova para entrar na TV. O link só funciona para quem tiver permissão concedida na aba Permissões de edição.</p><div class="links">` +
         SECTIONS.filter(x=>!x.admin).map(x=>{const u=`${PANEL_URL}#editar-${x.key}`;return `<div class="lk"><b>${esc(x.label)}</b><code>${esc(u)}</code><button type="button" class="btn" data-copy="${esc(u)}">Copiar</button></div>`;}).join("") + `</div>`;
+    } else if(p.kind==="lote"){
+      const total = (draft[s.key].itens||[]).length;
+      h += `<p class="hint">Selecione várias fotos de uma vez (Ctrl+Clique para escolher várias, ou Shift+Clique para um intervalo). O nome de cada arquivo é comparado com o nome das pessoas — pode ser o nome completo ou só o primeiro nome, com ou sem acento. Nome que bater com mais de uma pessoa (ex.: dois Robsons) fica de fora para você escolher a foto na linha certa.</p>
+        <div class="bk"><label class="btn pri" for="loteFile">Escolher as fotos (${total} pessoas na lista)</label><input type="file" id="loteFile" accept="image/*" multiple class="fileIn"></div>
+        <div id="loteOut"></div>`;
     } else if(p.kind==="obj"){
       const o = draft[s.key][p.key] = draft[s.key][p.key] || {};
       h += `<div class="fields">` + p.fields.map((f,fi)=>{
@@ -1254,7 +1280,7 @@ function renderSec(){
       setDirty(true);
     });
   });
-  m.querySelectorAll(".fileIn:not(#bkFile)").forEach(el=>el.addEventListener("change", async ()=>{
+  m.querySelectorAll(".fileIn:not(#bkFile):not(#loteFile)").forEach(el=>el.addEventListener("change", async ()=>{
     const f = el.files && el.files[0]; if(!f) return;
     const lb = el.previousElementSibling; lb.textContent = "Enviando…";
     try{
@@ -1267,6 +1293,38 @@ function renderSec(){
       toast(e?.status===413 ? "Imagem grande demais (máx. 3 MB)." : e?.status===415 ? "Formato de imagem não aceito. Use JPG ou PNG." : "Não foi possível enviar a imagem. Tente de novo.");
     }
   }));
+  const loteIn = m.querySelector("#loteFile");
+  if(loteIn) loteIn.addEventListener("change", async ()=>{
+    const files=[...(loteIn.files||[])]; if(!files.length) return;
+    const itens = draft[s.key].itens || [];
+    if(!itens.length){ toast("Cadastre as pessoas primeiro."); loteIn.value=""; return; }
+    loteIn.disabled = true;
+    const out = $("loteOut");
+    let ok=0, fail=0; const sem=[], amb=[];
+    for(let fi=0; fi<files.length; fi++){
+      const file=files[fi];
+      if(out) out.textContent = `Enviando ${fi+1}/${files.length}: ${file.name}…`;
+      const c = casarFotoNome(file.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," "), itens);
+      if(c.idx<0){ (c.motivo==="amb"?amb:sem).push({nome:file.name, alvos:c.alvos}); continue; }
+      try{
+        const blob = await shrink(file);
+        const fd = new FormData(); fd.append("file", blob, "aniversariante.jpg");
+        const r = await api("/api/tv/upload",{method:"POST",headers:tokenHeaders(),body:fd});
+        itens[c.idx].foto = r.url; ok++;
+      }catch(e){ fail++; sem.push({nome:file.name, alvos:[(e&&e.message)||"erro no envio"]}); }
+    }
+    if(ok||fail) setDirty(true);
+    renderSec();
+    const out2 = $("loteOut");
+    if(out2){
+      let html = `<div class="lote-rep"><b>${ok?ok+" foto(s) colocada(s) nas linhas certas.":"Nenhuma foto casou."}</b>`;
+      if(fail) html += `<p>${fail} falha(s) de envio — tente de novo com elas.</p>`;
+      if(sem.length) html += `<p>Sem casamento (${sem.length}): ${sem.map(x=>`<b>${esc(x.nome)}</b>${x.alvos&&x.alvos.length?" — "+esc(x.alvos.join(" / ")):""}`).join(" · ")}</p>`;
+      if(amb.length) html += `<p>Nome com mais de uma pessoa — escolha a foto na linha certa: ${amb.map(x=>`<b>${esc(x.nome)}</b> → ${esc((x.alvos||[]).join(" / "))}`).join(" · ")}</p>`;
+      html += `<p class="hint" style="margin:0">Confira as fotos nas linhas acima e clique em Salvar e enviar para a TV.</p></div>`;
+      out2.innerHTML = html;
+    }
+  });
   m.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{
     try{ await navigator.clipboard.writeText(b.dataset.copy); toast("Link copiado."); }
     catch(e){ const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); toast("Selecionei o link. Copie com Ctrl+C."); }
