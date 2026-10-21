@@ -375,3 +375,22 @@ Stage Summary:
 - Painel TV se mantém atualizado sozinho: correções novas chegam ao usuário sem depender de F5 (aba aberta há dias recarrega ao voltar o foco, sem perder edição)
 - Commit 2b61478 local; PUSH PENDENTE (token GitHub não disponível nesta sessão — nunca é gravado em arquivo por segurança; pedir o token clássico ao usuário ou push manual)
 - Arquivos: public/html/painel-tv-goias.html (casarFotoNome + PALAVRAS_LIXO + CONECTIVOS + handler de extensão + hints + dica no relatório + checkPanelUpdate)
+
+---
+Task ID: 22
+Agent: Main
+Task: TV "carrega html puro, css bugado e não se adequa ao tamanho" — diagnóstico e correção da experiência em TV
+
+Work Log:
+- Diagnóstico do painel (painel-tv-goias.html): CSS usa hex (compatível), já tem meta viewport e script fit() de escala 1920x1080 — mas dependia de fonts.googleapis.com como stylesheet BLOQUEANTE; em rede de fábrica sem acesso ao Google, a renderização fica travada/sem estilo (sintoma "html puro"); além disso `inset:` (Chromium 87+) era usado no #viewport/.slide/.empty/.org/#editor — engine antigo perdia o posicionamento do palco
+- Fontes self-hosted: baixados 8 woff2 (Barlow 400/500/600/700 + Barlow Condensed 500/600/700/800, subset latin cobre PT-BR) para public/html/fonts/ (~177KB); @font-face inline no painel + preload local; ZERO referências a googleapis/gstatic no arquivo (rg confirma 0) — a TV agora depende só do servidor da plataforma
+- charset=utf8 → charset="utf-8" com aspas (parser rigoroso); fallback de inset (top/right/bottom/left antes de inset) nos 5 pontos críticos
+- Plataforma (raiz Next.js) não é feita para engine de TV (Tailwind 4/React moderno): adicionado script no <head> do (platform)/layout.tsx que roda antes da hidratação — se o UA for de TV (SmartTV/Tizen/WebOS/GoogleTV/CrKey/AppleTV/BRAVIA/AFT*/Netcast/HbbTV/Viera/PhilipsTV/AquosTV/Android TV/Chromecast) OU a URL tiver ?tv=1 → location.replace("/html/painel-tv-goias.html"); ?tv=0 grava optout permanente (ztv_optout no localStorage); não roda dentro de /html/
+- Regex do detector testada com 10 UAs reais (Tizen 2017/2022, webOS, Fire TV, Chromecast, Bravia vs desktop/iPhone/Android/tablet): 10/10
+- E2E no agent-browser: fontes locais carregam (document.fonts.check ok nas 2 famílias), stage escala correto (matrix + palco 1920x1080 exato, topo/esquerda 0, sem overflow), screenshot 1080p confere visual (cabeçalho, DDS, rodapé 60 dias, Barlow Condensed renderizada); raiz no desktop NÃO redireciona (title Zamine Plataforma); /?tv=1 REDIRECIONA para o painel (title Painel TV ZAMine · Goiás)
+- Lint: 31 problemas preexistentes (nenhum novo); commit ccb29ac; push pendente (mesma pendência do token)
+
+Stage Summary:
+- Na TV: abrir a plataforma (link normal) agora cai direto no Painel TV em tela cheia, com fontes carregadas do próprio servidor, tudo escalado para a resolução — sem HTML puro, sem CSS quebrado, sem depender da internet
+- Se o navegador da TV não se identificar (alguns boxes Android genéricos): abrir PLATAFORMA/?tv=1 uma vez resolve; para usar a plataforma (login) na TV mesmo assim, abrir com ?tv=0
+- Arquivos: public/html/painel-tv-goias.html, public/html/fonts/ (8 woff2), src/app/(platform)/layout.tsx
