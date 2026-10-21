@@ -355,3 +355,70 @@ model ReportDraft {
   @@unique([userId, reportType])
   @@map("report_drafts")
 }
+
+// ==========================================
+// Painel TV ZAMine (ex.: painel de Goiás)
+// Conteúdo por aba com fluxo de aprovação:
+//  - admin salva direto no ar (data)
+//  - editor com permissão salva em pendingData e o admin aprova para ir à TV
+// ==========================================
+
+// Conteúdo vivo + pendente de cada aba do painel (seguranca, dds, comunicados, ...)
+model TvSection {
+  id                String    @id @default(cuid())
+  panelSlug         String    @map("panelSlug") // "goias"
+  sectionKey        String    @map("sectionKey")
+  data              String    @default("{}") // JSON no ar (aprovado) — é o que a TV mostra
+  atualizadoEm      DateTime? @map("atualizadoEm")
+  atualizadoPorId   String?   @map("atualizadoPorId")
+  atualizadoPorNome String?   @map("atualizadoPorNome")
+  pendingData       String?   @map("pendingData") // JSON aguardando aprovação do admin
+  pendingEm         DateTime? @map("pendingEm")
+  pendingPorId      String?   @map("pendingPorId")
+  pendingPorNome    String?   @map("pendingPorNome")
+  createdAt         DateTime  @default(now()) @map("createdAt")
+  updatedAt         DateTime  @updatedAt @map("updatedAt")
+
+  @@unique([panelSlug, sectionKey])
+  @@map("tv_sections")
+}
+
+// Configurações do painel (rotação, tempos, letreiro, cores) — somente admin
+model TvPanelConfig {
+  id                String    @id @default(cuid())
+  panelSlug         String    @unique @map("panelSlug")
+  data              String    @default("{}")
+  atualizadoEm      DateTime? @map("atualizadoEm")
+  atualizadoPorId   String?   @map("atualizadoPorId")
+  atualizadoPorNome String?   @map("atualizadoPorNome")
+  createdAt         DateTime  @default(now()) @map("createdAt")
+  updatedAt         DateTime  @updatedAt @map("updatedAt")
+
+  @@map("tv_panel_configs")
+}
+
+// Permissão de edição por aba: admin escolhe qual usuário edita qual aba
+model TvPermissao {
+  id           String   @id @default(cuid())
+  panelSlug    String   @map("panelSlug")
+  userEmail    String   @map("userEmail")
+  userName     String?  @map("userName")
+  sectionKey   String   @map("sectionKey")
+  concedidoPor String?  @map("concedidoPor") // email do admin que concedeu
+  createdAt    DateTime @default(now()) @map("createdAt")
+
+  @@unique([panelSlug, userEmail, sectionKey])
+  @@map("tv_permissoes")
+}
+
+// Imagens do painel (fotos de DDS, comunicados, campanhas, aniversariantes, organograma)
+model TvAsset {
+  id          String   @id @default(cuid())
+  mime        String
+  size        Int
+  bytes       Bytes
+  uploadedPor String?  @map("uploadedPor")
+  createdAt   DateTime @default(now()) @map("createdAt")
+
+  @@map("tv_assets")
+}

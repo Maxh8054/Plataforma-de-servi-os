@@ -84,6 +84,7 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
+    { title: 'Painel TV', description: 'Painel de TV - Goiás', icon: 'tv', url: '/html/painel-tv-goias.html' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/sZd7OFBV_z?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
