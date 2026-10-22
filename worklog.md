@@ -584,3 +584,21 @@ Stage Summary:
 - TV: slide de escala em modo automático agora mostra ONTEM + HOJE + AMANHÃ, cada técnico de ontem/hoje com o selo de relatório técnico (entregue/pendente) direto do banco.
 - Plataforma: Escala de Turno → seção "Relatório Técnico — Entrega" com marcação INDIVIDUAL por técnico (ontem/hoje), salva no Postgres — deploy/commit novo não apaga nada (pedido do Max atendido em linha com a Task 29).
 - APIs: /api/relatorio-tecnico (GET público, PUT com sessão); escalaAuto do content agora inclui ontem; relatorios viajam no mesmo payload.
+
+---
+Task ID: 29
+Agent: Z.ai Code (principal)
+Task: Botão "Voltar para plataforma" no Painel TV, visível apenas em dispositivos que NÃO são TV
+
+Work Log:
+- Constatei pelos commits locais que os pedidos anteriores já estavam implementados e commitados: Pedido 7 (escala com ontem + relatório técnico individual no banco, commit cd68dc7) e Pedido 6a/6b + contador de dias sem acidentes no banco (commit cbee2e0); repositório sincronizado após push.
+- Implementei o botão no painel-tv-goias.html: link "Voltar para plataforma" (href="/") com ícone de seta inline SVG, dentro da fileira de controles flutuantes (.ctrls, canto inferior direito), herdando o estilo .btn com pill (border-radius 999px) e sem sublinhado.
+- Detecção de TV por User-Agent (regex: SMART-TV, Tizen, WebOS/WEB0S, HbbTV, GoogleTV, Android TV, CrKey, Apple TV, Viera, BRAVIA, NetCast, Roku, SHIELD, MiBOX/MiTV, PhilipsTV, AFT*, Fire TV): TV ganha classe body.tv (botão display:none — tela limpa); não-TV ganha body.nao-tv (botão inline-flex).
+- .ctrls ganhou flex-wrap + max-width para quebrar em duas linhas em telas estreitas (celular), sem overflow horizontal.
+- Verificação via agent-browser: botão visível em desktop (nao-tv), some em modo TV simulado (display none), regex validada contra 8 UAs reais (4 TVs → true; PC/iPhone/iPad/Android celular → false), clique navega para / (Zamine Plataforma), layouts 1280x720 (16:9 sem cobrir logo) e 390x844 (celular, wrap correto) sem overflow.
+- Commit 6403ce1 + push para origin/main (incluiu o checkpoint pendente b6f00ad); local == remoto.
+
+Stage Summary:
+- Painel TV agora tem botão "Voltar para plataforma" apenas em celular/PC; smart TV fica limpa, sem navegação.
+- Arquivo alterado: public/html/painel-tv-goias.html (apenas +15 linhas; nenhuma outra mudança).
+- Pendências herdadas conhecidas: Pedido 6c completo (migração do restante do conteúdo estático do painel para o banco — comunicados/aniversários/contador já estão no banco) e Pedido 2 antigo (redesign da escala/valores) já cobertos pelos commits anteriores.
