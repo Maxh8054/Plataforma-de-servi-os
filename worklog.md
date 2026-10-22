@@ -486,3 +486,27 @@ Stage Summary:
 - Organograma da plataforma = layout do anexo (cascata com espinha central + base lateral), fotos dos colaboradores vindas DO BANCO pelo nome (aba Aniversariantes do painel TV) e estrutura editável pelo próprio Max (admin): basta adicionar alguém com o mesmo nome do cadastro que a foto aparece sozinha
 - Persistência nova (tabela organograma_data) sem tocar em dados existentes; layout padrão em código serve de fallback até a primeira edição
 - Em produção: só o botão do rodapé reativado + modal novo; nada mais da plataforma foi alterado
+
+---
+Task ID: 27 (v20)
+Data: 21/10/2026
+Agent: Main (sessão atual)
+
+Task: Aniversariantes da plataforma no layout do anexo (upload/Pasted Content_1792620589338.txt — "Aniversariantes do Mês · ZAMine", zm-ani), INTERLIGADO com a lógica da plataforma: dados e fotos vindos do cadastro de colaboradores do Painel TV (aba Aniversariantes), nada de base64 no código, sem digitação duplicada
+
+Work Log:
+- Layout do anexo mapeado por completo (CSS minificado + body + script): header com mês, meta com contagem + logo, banner de festa (bolo SVG, "Hoje é dia de festa", brilho animado), grade de cartões (foto circular com borda laranja, selo do dia "DD MES"/"HOJE", nome, setor), classes hoje/passou, confete canvas (PRNG parado no modo comum; caindo no modo festa), rodapé com mensagem e barra hachurada; PESSOAS = [{nome, dia, setor, foto}] e TESTE_HOJE (demo) descartados — no lugar entra o dado real
+- Fonte de dados descoberta: TvSection goias/aniversarios (dados no ar da TV) — 79 itens {nome, dia, mes ("Outubro"), nascimento, setor, foto ("/api/tv/assets/<cuid>")}; 1 linha vazia no início; 77/78 com foto; nomes em CAIXA ALTA
+- API nova /api/aniversariantes (GET, sessão obrigatória como o organograma): lê a seção no ar do Painel TV, normaliza (nome/dia 1-31/mês por nome sem acento OU fallback do nascimento, foto validada contra /^\/api\/tv\/assets\/[a-z0-9]{20,40}$/i), pula linhas vazias, ordena por dia; "hoje" calculado no SERVIDOR com hojeNoFuso(TZ_PADRAO) de escala-auto (America/Sao_Paulo) — cliente nunca decide o dia; retorna {mesAtual, diaHoje, pessoas (equipe inteira, 12 meses), total, atualizadoEm, atualizadoPor}
+- Componente src/components/aniversariantes-modal.tsx + aniversariantes.css: porta fiel do zm-ani (variáveis, clamps, keyframes zmPulso/zmGira/zmPula/zmBrilho, prefers-reduced-motion, colunas --c com a mesma régua n<=4/6/8/10) escopado e com ajustes .em-modal; fontes Barlow/Barlow Condensed carregadas dos woff2 LOCAIS do painel TV (/html/fonts/) — sem Google, sem base64
+- Modal (mesmo casco do OrganogramaModal): topo com Voltar + logo + info do cadastro + NAVEGAÇÃO DE MESES ‹ › (equipe inteira vem no payload, filtro por mês no cliente) + "Editar no Painel TV" (só admin); nomes CAIXA ALTA viram "Adriana Mara do Nascimento" (conectivos de/dos/da minúsculos); iniciais quando sem foto; estado vazio amigável por mês; confete portado para React (canvas ref, rAF com cancelamento, ResizeObserver, devicePixelRatio)
+- page.tsx: botão "Aniversariantes" no rodapé (antes do Organograma) + estado + render do modal
+- Correção de lint durante o dev: setState síncrono no corpo do effect (react-hooks/set-state-in-effect) removido — reabrir o modal mostra os dados anteriores e atualiza por cima (mesmo padrão do organograma); lint final = 31 problemas, exatamente o baseline pré-existente (zero novos)
+- E2E API (token de sessão lido do banco, nunca impresso): sem token 401; com token 200 mesAtual=10/diaHoje=21/total=78 (77 com foto), Outubro = REINALDO DUARTE DA PAIXAO (15, foto) + VICTOR CARVALHO DE ALMEIDA (28, foto)
+- E2E browser (agent-browser, logado como admin via cookie de sessão): botão do rodapé abre modal; Outubro com título "ANIVERSARIANTES DE OUTUBRO", 2 cartões, 2 fotos do banco, selo "15 OUT"/"28 OUT", Reinaldo esmaecido (passou); navegação Novembro (6/6 fotos), Julho (4, 4 colunas), Maio (12, 6 colunas, todas as fotos carregadas); modo festa validado forçando diaHoje=28 TEMPORARIAMENTE no route (banner "PARABÉNS, VICTOR!", confete caindo, cartão HOJE laranja com raios girando) e REVERTIDO em seguida (diaHoje de volta a 21, confirmado na API); mobile 390×844 sem scroll horizontal, coluna única; zero erros de console/página; dev.log só com 200
+- Git: commit 6634b71 com só o delta (page.tsx + 3 arquivos novos); nenhum dado de produção alterado (API é somente leitura; a edição continua sendo no Painel TV, que é a fonte única)
+
+Stage Summary:
+- Aniversariantes da plataforma = layout zm-ani do anexo, 100% interligado: dados e fotos vêm do cadastro do Painel TV (aba Aniversariantes) pela API /api/aniversariantes — para adicionar/editar/remover alguém (equipe crescendo), basta atualizar o cadastro no Painel TV e a plataforma + TV refletirão sozinhas
+- "Hoje" e mês atual calculados no fuso de São Paulo no servidor; banner de festa + confete disparam sozinhos no dia do aniversário; navegação de meses permite ver os 12 meses do cadastro
+- Zero base64 no código, zero digitação duplicada, API somente leitura (produção intocada)
