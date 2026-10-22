@@ -510,3 +510,30 @@ Stage Summary:
 - Aniversariantes da plataforma = layout zm-ani do anexo, 100% interligado: dados e fotos vêm do cadastro do Painel TV (aba Aniversariantes) pela API /api/aniversariantes — para adicionar/editar/remover alguém (equipe crescendo), basta atualizar o cadastro no Painel TV e a plataforma + TV refletirão sozinhas
 - "Hoje" e mês atual calculados no fuso de São Paulo no servidor; banner de festa + confete disparam sozinhos no dia do aniversário; navegação de meses permite ver os 12 meses do cadastro
 - Zero base64 no código, zero digitação duplicada, API somente leitura (produção intocada)
+
+---
+Task ID: 28 (v20)
+Data: 22/10/2026
+Agent: Main (sessão atual)
+
+Task: Correção de rota pedida pelo Max — aniversariantes e organograma são coisa do PAINEL TV, não da plataforma: (1) substituir o slide de aniversariantes da TV pelo layout zm-ani do anexo e (2) MOVER o organograma (que estava como botão/modal no rodapé da plataforma) para o painel TV. Rodapé da plataforma fica sem os dois botões.
+
+Work Log:
+- Painel TV mapeado: SECTIONS (abas do editor), renderers R[key](data), data = {...secData, config}, helpers (list/img/esc/num/emptyBox), fitOrg, editor genérico de listas (kind:"list" + cols via input(); sem t:"check" em colunas), PUT /api/tv/goias/secoes/[key] (admin grava direto no ar)
+- Aniversariantes (TV): CSS .s-ani reescrito inteiro com o layout zm-ani (header ZAMine · Alto Horizonte + mês, meta com contagem + logo reaproveitada do cabeçalho LOGO_TV, banner de festa com bolo SVG e brilho, cartões com foto circular + selo "DD MES"/"HOJE", hoje/passou, raios girando, barra hachurada; clamp adaptado ao palco 1920×~860) e renderer R.aniversarios reescrito (filtro do mês por nome OU nascimento, bonito() para nomes em caixa alta, colunas --c com a régua do anexo)
+- Confete na TV: nova aniDots(slide) (mesmo PRNG do anexo) — parado no dia comum, caindo no dia de festa; hook no renderFrame (roda após inserir o html; cancela o rAF ao sair do slide); prefers-reduced-motion respeitado
+- Modo festa validado SEM tocar nos dados: tvHoje global setado no browser ("2026-10-28") + renderFrame → banner "PARABÉNS, VICTOR!", selo HOJE, cartão laranja com raios, confete caindo (screenshot)
+- Data correta na TV: content API agora retorna "hoje" (YYYY-MM-DD no fuso pedido, via hojeNoFuso); painel guarda em tvHoje (refreshContent + carregarConteudo) e o slide usa a data do SERVIDOR com fallback para o relógio do aparelho — protege contra relógio errado do aparelho/perto da meia-noite (descoberto ao ver o browser UTC adiantado 2h em relação a SP)
+- Organograma (TV): CSS da cascata antiga (.cas/.cmid/.cr/.cb + .tree ul) substituído pela ÁRVORE do anexo (espinha central + colunas acima/abaixo por fileira + base lateral; tudo escopado em .org; classe .vh renomeada .vc para não colidir com o cabeçalho do slide de valores); R.organograma reescrito: modelo Linha central/Acima/Abaixo/Base (mapeia os antigos Centro/Esquerda/Direita), 3 na linha + 4 colunas + 4 na base, fitOrg escala sozinho
+- FOTOS PELO NOME na TV: orgFotoDe() casa o nome da pessoa com o cadastro de Aniversariantes (data.aniversarios global — funciona no slide, na prévia do editor e na prévia das aprovações; mesmas regras: todos os tokens ⊆ cadastro, empate = nome mais curto, fallback 1º token único); "Vaga..." no início do nome = cartão de vaga (tracejado, sem foto)
+- Editor aba Organograma reescrito: campos Nome (igual ao cadastro de Aniversariantes)/Cargo/Posição (Linha central|Acima|Abaixo|Base)/Fileira/Linha (Contínua|Tracejada); removidos Foto (upload manual) e Responde a (modo árvore antigo); hint novo explica o modelo e o truque do "Vaga"
+- Dados semeados: PUT admin /api/tv/goias/secoes/organograma com as 14 pessoas do layout padrão → noAr:true (12 linhas mapeadas; Ranielly/Marlon fileiras 2/3 etc. igual ao padrão do modal antigo)
+- Plataforma limpa: botões "Aniversariantes" e "Organograma" removidos do rodapé (só ficou "Sobre"); deletados organograma-modal.tsx/organograma.css/aniversariantes-modal.tsx/aniversariantes.css e as rotas /api/organograma + /api/aniversariantes; page.tsx sem referências; prisma/schema.prisma: OrganogramaData marcado [OBSOLETO] no comentário (model mantido para não mexer no banco)
+- Correções durante o E2E: TypeError "reading 'nome'" no slide de aniversariantes — quem= era computado com festas vazio (festas[-1]); guardado com ternário; sintaxe do <script> da TV validada com bun build (extração python)
+- E2E agent-browser: TV slide aniversariantes (Outubro: 2 cartões, 2 fotos, selos 15/28 OUT, Reinaldo passou, confete parado, rodapé da TV intacto); TV slide organograma (14 cartões, 13 fotos casadas pelo nome, vaga tracejada, base lateral, escala 0.79); editor logado com token: aba Organograma com 14 linhas e campos novos, "No ar: 22/10 02:53 por Max Rufino", prévia mostra a árvore completa com fotos; plataforma logada: rodapé sem os dois botões; zero erros de página; lint = 31 problemas (baseline exato, zero novos)
+- Git: commit 70b629d (delta: painel TV + content API + page.tsx + schema comment; 6 arquivos deletados); produção: só a seção organograma ganhou dados (14 pessoas no ar), resto intocado
+
+Stage Summary:
+- Aniversariantes: só no PAINEL TV, no layout zm-ani do anexo — a fonte continua sendo a aba Aniversariantes do editor (fotos, Excel, lote); festa e confete disparam sozinhos no dia; "hoje" vem do servidor no fuso de São Paulo
+- Organograma: movido para o PAINEL TV (slide na rotação da TV + aba no editor); fotos casadas PELO NOME no cadastro de Aniversariantes (sem upload manual); para crescer a equipe, edita na aba Organograma do painel
+- Plataforma: rodapé limpo (sem os dois botões); APIs/modais da tentativa anterior removidos
