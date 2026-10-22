@@ -641,3 +641,24 @@ Stage Summary:
 - Fotos mandam no layout: cada foto aparece inteira, na proporção real, com o encaixe escolhido por tamanho (nada de moldura fixa).
 - Controle em tempo real exclusivo com override de admin e auto-recuperação — estado no banco, à prova de deploy.
 - Arquivos: public/html/painel-tv-goias.html, src/app/api/tv/[panel]/control/route.ts (novo), prisma/schema.prisma (TvControl).
+
+---
+Task ID: 32
+Agent: Z.ai Code (principal)
+Task: Painel TV — lista de melhorias do usuário: clima+relógio, contador 01/08/2022, expiração/janela de horário, histórico/auditoria, multi-upload com capa, Parabéns automático, modo offline, log de erros da TV, backup JSON
+
+Work Log:
+- Herdei da sessão anterior a implementação quase completa (working tree não commitado): clima (Open-Meteo), offline (tv-sw.js), galeria multi-upload, aba Histórico, rotas auditoria/erros, audit nos PUTs de seção e no controle da TV, backup, Parabéns do dia, janela de horário (janelaHora) em comunicados/campanhas/eventos/engage.
+- BUG 1 corrigido: climaLoop() nunca era chamado — o chip de previsão do tempo jamais apareceria. Chamada no boot (após carregarConteudo/startPoll). Confirmado E2E: chip renderizou com DADOS REAIS da Open-Meteo (🌦️ 29° Goiânia · máx 34° · mín 22°) no rodapé, entre o contador e o letreiro.
+- BUG 2 corrigido: fitOrg recebia o EVENTO do addEventListener("load", fitOrg) das fotos do organograma → TypeError a cada foto carregada (e o erro era reportado ao banco). Guard root.nodeType===1; caller da prévia do editor continua passando o elemento.
+- DDS ganhou janela de HORÁRIO (horaInicio/horaFim no editor + expandSlides): fora da janela a aba sai da rotação sozinha. Testado: 13:00–14:00 às 20h43 → DDS ausente (14 telas); 20:00–23:00 → volta (16 telas). Regex de janela era /^^…/ (duplicado, inofensivo) — normalizada.
+- Rodapé da TV trocado de grid (4 colunas — quebraria com o chip escondido) para flex (.msg flex:1 min-width:0, .pos flex:none) — layout estável com e sem chip de clima.
+- Prisma: sem mudanças de schema (AuditLog já existia; conteúdo via JSON das TvSections). Banco verificado: contador segurancaAuto {dias:1543, desde 2022-08-01}; tv_erro REAL gravado pela TV durante o teste (pipeline TV→editor funcionando ponta a ponta); linhas de erro causadas pelos testes removidas depois para o Histórico do usuário começar limpo.
+- Verificação E2E (agent-browser 1920×1080, conteúdo real + injeção de dados de teste via eval, mocks apenas para /me(admin)/auditoria — removidos no fim): slide Parabéns (confete, foto, tema claro/escuro) sobe para a 2ª tela; evento com mosaico 2+1 fotos inteiras; galeria do editor com selo Capa, input multiple e drag que trocou a capa de verdade; aba Histórico com banner "⚠ A TV reportou 2 problema(s) nas últimas 24h", itens de erro em vermelho, filtros Tudo/Edições/Aprovações/Controles/Erros; backup (bkDown/bkFile) e campo Cidade da previsão presentes nas Configurações; ctlBar oculta (CSS [hidden] correto — o "corrompido" era artefato do terminal), offTag oculta, contador 1543 no slide e no rodapé; console limpo após ciclo de poll (só 401 pré-existentes de navegador sem sessão). Lint: mesmos 31 problemas pré-existentes.
+- Sintaxe validada (node new Function) para o JS do painel e tv-sw.js; commit 5daabaa + push origin/main (adba09d..5daabaa).
+
+Stage Summary:
+- TV: rodapé com contador 1543 (desde 01/08/2022), previsão do tempo real da cidade (configurável) e relógio/data; comunicados/eventos/campanhas/DDS/Engage com expiração (entra/sai do ar) e janela de horário; Parabéns automático no dia de festa; offline com service worker (fotos/conteúdo/página) e recuperação automática.
+- Editor: aba Histórico (auditoria + erros da TV em vermelho com banner 24h), galeria multi-upload com arrastar-para-capa, backup exportar/importar JSON, datas/horário em todas as abas de aviso.
+- Bugs corrigidos: clima nunca iniciado; fitOrg(evento) logando erro a cada foto do organograma; rodapé flex.
+- Arquivos: painel-tv-goias.html, tv-sw.js (novo), api/tv/[panel]/auditoria (novo), api/tv/[panel]/erros (novo), control/route.ts, secoes/[key]/route.ts. Commit 5daabaa no GitHub.
