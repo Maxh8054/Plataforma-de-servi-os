@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import EpiAuditModal from "@/components/epi-audit-modal";
 import EscalaModal from "@/components/escala-modal";
+import AniversariantesModal from "@/components/aniversariantes-modal";
 import OrganogramaModal from "@/components/organograma-modal";
 import ZabFlowModal from "@/components/zab-flow-modal";
 import BrazilMap from "@/components/brazil-map";
@@ -270,6 +271,7 @@ export default function Home() {
   const [readModalContent, setReadModalContent] = useState<{ title: string; content: string } | null>(null);
   // Organogram modal state
   const [showOrganogramModal, setShowOrganogramModal] = useState(false);
+  const [showAniversariantesModal, setShowAniversariantesModal] = useState(false);
   // EPI Audit modal state
   const [showEpiAuditModal, setShowEpiAuditModal] = useState(false);
   const [showEscalaModal, setShowEscalaModal] = useState(false);
@@ -1197,6 +1199,12 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4">
                   <button 
+                    onClick={() => setShowAniversariantesModal(true)}
+                    className="text-[10px] sm:text-xs text-white/60 hover:text-orange-500 transition-colors"
+                  >
+                    Aniversariantes
+                  </button>
+                  <button 
                     onClick={() => setShowOrganogramModal(true)}
                     className="text-[10px] sm:text-xs text-white/60 hover:text-orange-500 transition-colors"
                   >
@@ -1663,6 +1671,7 @@ export default function Home() {
 
       {/* Organogram Modal — layout em cascata, fotos do banco pelo nome, editável (admin) */}
       <OrganogramaModal open={showOrganogramModal} onClose={() => setShowOrganogramModal(false)} isAdmin={isAdmin} />
+      <AniversariantesModal open={showAniversariantesModal} onClose={() => setShowAniversariantesModal(false)} isAdmin={isAdmin} />
 
       {/* EPI Audit Modal */}
       <EpiAuditModal
