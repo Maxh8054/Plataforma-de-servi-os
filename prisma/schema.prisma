@@ -411,6 +411,27 @@ model TvPermissao {
   @@map("tv_permissoes")
 }
 
+// Controle em tempo real do painel TV: uma pessoa por vez assume o comando do que a TV
+// mostra (pausar, avançar, voltar, escolher tela) — ex.: conduzir o DDS com o slide parado.
+// Quem tem permissão de editar alguma aba pode assumir; o controle é EXCLUSIVO e outras
+// pessoas recebem "em uso por ...". Admin pode assumir por cima ou encerrar e voltar ao
+// normal. Sem heartbeat (PC dormiu/fechou), o lock expira e a TV volta à rotação sozinha.
+model TvControl {
+  id        String    @id @default(cuid())
+  panelSlug String    @unique @map("panelSlug")
+  donoEmail String?   @map("donoEmail")
+  donoNome  String?   @map("donoNome")
+  donoAdmin Boolean   @default(false) @map("donoAdmin")
+  pausado   Boolean   @default(true)
+  slide     String    @default("") // tela no ar (key ou key#sub); vazia = mantém a atual
+  rev       Int       @default(0)  // incrementa a cada mudança — TVs sabem quando aplicar
+  beatAt    DateTime? @map("beatAt") // heartbeat de quem controla (lock expira sem ele)
+  desde     DateTime? @map("desde") // quando o controle foi assumido
+  updatedAt DateTime  @updatedAt @map("updatedAt")
+
+  @@map("tv_controls")
+}
+
 // Contador oficial de "dias sem afastamento" por regional — data-base editável
 // pelo admin na plataforma (substitui a data fixa em src/lib/contador-seguranca.ts,
 // que continua como fallback/seed). Assim o contador sobrevive a qualquer deploy:

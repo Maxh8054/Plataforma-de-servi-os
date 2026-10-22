@@ -620,3 +620,24 @@ Stage Summary:
 - TV e prévia do editor: comunicados (importantes primeiro), campanhas de segurança (ordem do cadastro) e eventos (mais recente primeiro) entram UM POR SLIDE; demais abas seguem com um slide só; rodapé conta telas por slide; duração por aba continua valendo para todos os slides da aba.
 - Arquivo alterado: public/html/painel-tv-goias.html (+CSS ev-solo, +campSlide, +campanhasSeg no expandSlides, hints atualizados).
 - Dados reais intactos (mock removido); branch a ahead de origin (54a6a82 worklog + commit desta task).
+
+---
+Task ID: 31
+Agent: Z.ai Code (principal)
+Task: Painel TV — fotos com tamanho real + controle em tempo real (pausar/controlar a TV pelo PC, exclusivo, admin assume)
+
+Work Log:
+- FOTOS COM TAMANHO REAL: novo ajustarFotos/aplicarProporcao roda na TV e na prévia do editor; mede o w×h real de cada foto (memo/comunicados, feat/campanhas, dds-img, mosaico do evento, eg-img/Engage) e dimensiona a coluna pela proporção (contain — nada de corte nem esticamento). Escolhe automaticamente entre "ao lado do texto" e "em cima (largura inteira)" pela maior área exibida (areaLado vs areaEmpilhada). Mosaico de 2–3 fotos: planejarMosaico testa 1 fileira vs [2+1] vs [1+2] vs separadas e monta a que mostra cada foto INTEIRA maior (montarMosaico). object-fit contain nas fotos de conteúdo; avatares continuam circulares. Bugs corrigidos no caminho: max-width circular do CSS (JS agora zera min/max), reduce somando índices em vez de razões, W do slide inteiro em vez da coluna do mosaico, dupla execução do empacotador (guard dataset.montado).
+- CONTROLE EM TEMPO REAL: modelo TvControl no banco (panelSlug único, dono, pausado, slide, rev, beatAt, desde) + rota /api/tv/[panel]/control (GET público; POST acquire/release/goto/beat com tvUser). Polling leve de 2,5s — funciona no deploy Next padrão do usuário (sem serviço extra).
+  • Quem pode: admin ou quem tem permissão de editar alguma aba do painel.
+  • EXCLUSIVO: uma pessoa por vez — outras recebem 409 "em uso por ...".
+  • ADMIN assume por cima (confirm) ou encerra; PC fechou/dormiu → heartbeat expira em 70s e a TV volta sozinha; fechar/recarregar a página libera (pagehide keepalive).
+  • UI: botão "Controlar TV" na fileira de controles (escondido em smart TV), selo laranja no topo "Controle manual · nome · pausado/no ar" em todas as telas, barra de comando no PC (Pausar/Continuar, Anterior, Próxima, seletor "ir para tela", Encerrar controle).
+  • restartTimer respeita lock+pausado; ◀/▶ locais viram passo() (bloqueado com toast para não-dono; dono sincroniza via goto).
+- Verificação E2E (agent-browser, 2 sessões com sessões de teste mintadas no banco — removidas depois): flyer Outubro Rosa inteiro na coluna exata (507×761 = proporção 0,667); campanha 5S deitada inteira; evento 1 foto e mosaico 3 fotos empacotado; controle admin (badge, barra, timer parado), ir-para-tela, play/pause, Fabricio bloqueado ("em uso por Max Rufino"), navegação remota sincronizando as duas sessões, takeover do admin via confirm, liberação e volta à rotação automática; prévia do editor ajusta foto igual. Lint: mesmos 31 problemas pré-existentes.
+- Dev server reiniciado para pegar o Prisma Client regenerado (db.tvControl).
+
+Stage Summary:
+- Fotos mandam no layout: cada foto aparece inteira, na proporção real, com o encaixe escolhido por tamanho (nada de moldura fixa).
+- Controle em tempo real exclusivo com override de admin e auto-recuperação — estado no banco, à prova de deploy.
+- Arquivos: public/html/painel-tv-goias.html, src/app/api/tv/[panel]/control/route.ts (novo), prisma/schema.prisma (TvControl).
