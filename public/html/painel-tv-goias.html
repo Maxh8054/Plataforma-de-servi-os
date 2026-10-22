@@ -283,6 +283,11 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .ev-main .per{font-size:24px;color:var(--accent);font-weight:600;letter-spacing:.1em}
 .ev-main h2{margin:0;font-family:var(--f-display);font-size:72px;line-height:.98;text-transform:uppercase;font-weight:800;text-wrap:balance}
 .ev-main p{margin:0;font-size:28px;line-height:1.4}
+/* evento sem fotos: texto ocupa o slide (centralizado e maior) */
+.s-ev.ev-solo{grid-template-columns:1fr;align-items:stretch}
+.s-ev.ev-solo .ev-side{justify-content:center}
+.s-ev.ev-solo .ev-main h2{font-size:120px}
+.s-ev.ev-solo .ev-main p{font-size:38px}
 .ev-list{margin-top:auto;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:20px}
 .ev-it{display:flex;align-items:center;gap:18px;min-width:0}
 .ev-th{width:120px;height:76px;border-radius:6px;overflow:hidden;flex:none;background:var(--panel2)}
@@ -515,6 +520,9 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .pv-bar b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-right:auto}
 .pv-bar .btn{padding:6px 12px;font-size:13px;flex:none;width:auto}
 .pv-bar .btn.on{border-color:var(--accent);color:var(--accent)}
+.pv-nav{display:inline-flex;align-items:center;gap:6px}
+.pv-nav .btn{padding:4px 11px;font-size:14px;width:auto}
+.pv-n{font-size:13px;color:var(--muted);min-width:44px;text-align:center}
 .pv-box{position:relative;width:100%;aspect-ratio:1920/856;overflow:hidden;max-width:100%}
 .pv-main{position:absolute;left:0;top:0;width:1920px;height:856px;transform-origin:0 0;background:var(--bg);color:var(--fg);overflow:hidden}
 .bk{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -622,7 +630,7 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"DDS",cols:[
       {k:"foto",l:"Imagem (opcional)",t:"image",w:2},{k:"data",l:"Data",t:"date",w:2},{k:"tema",l:"Tema",w:3},
       {k:"mensagem",l:"Mensagem principal",t:"textarea",w:5},{k:"responsavel",l:"Quem conduz",w:2}]}]},
-  {key:"comunicados", label:"Comunicados", hint:"Avisos oficiais para a equipe. O primeiro comunicado no ar aparece grande; os outros ficam ao lado (até 3). Marque como Importante para ele subir para o destaque com faixa vermelha. Use as datas para agendar a entrada e a saída automática.",
+  {key:"comunicados", label:"Comunicados", hint:"Avisos oficiais para a equipe. Cada comunicado no ar ganha um slide próprio na rotação da TV — um depois do outro, importantes primeiro. Marque como Importante para o slide entrar com faixa vermelha. Use as datas para agendar a entrada e a saída automática.",
     parts:[{kind:"list",key:"itens",label:"Comunicados",cols:[
       {k:"foto",l:"Imagem (opcional)",t:"image",w:2},{k:"titulo",l:"Título",w:3},{k:"mensagem",l:"Texto",t:"textarea",w:5},
       {k:"assinatura",l:"Quem assina",ph:"Ex.: Gestão de Serviços",w:2},{k:"nivel",l:"Tipo",t:"select",opts:["Normal","Importante"],w:2},
@@ -653,7 +661,7 @@ const SECTIONS = [
     parts:[
       {kind:"obj",key:"dados",fields:[{k:"periodo",l:"Período",ph:"Ex.: Semana 42 · 12 a 18/10"},{k:"horasProgramadas",l:"Horas programadas no período",t:"number"}]},
       {kind:"list",key:"itens",label:"Causas",cols:[{k:"causa",l:"Causa",w:4},{k:"horas",l:"Horas",t:"number",w:1}]}]},
-  {key:"campanhasSeg", label:"Campanhas de segurança", hint:"A primeira campanha no ar aparece em destaque, com a imagem grande. As outras ficam ao lado. Use as datas para agendar: a campanha só aparece a partir do dia de entrada e some sozinha depois do dia de saída. Sem datas, fica sempre no ar.",
+  {key:"campanhasSeg", label:"Campanhas de segurança", hint:"Cada campanha no ar ganha um slide próprio na rotação da TV, na ordem do cadastro, com a imagem grande. Use as datas para agendar: a campanha só aparece a partir do dia de entrada e some sozinha depois do dia de saída. Sem datas, fica sempre no ar.",
     parts:[{kind:"list",key:"itens",label:"Campanhas",cols:[
       {k:"foto",l:"Imagem",t:"image",w:2},{k:"tema",l:"Tema",w:2},{k:"mensagem",l:"Mensagem",t:"textarea",w:4},{k:"periodo",l:"Período (texto na tela)",w:2},
       {k:"inicio",l:"Entra no ar em",t:"date",def:"",w:2},{k:"fim",l:"Sai do ar depois de",t:"date",def:"",w:2}]}]},
@@ -661,7 +669,7 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Campanhas",cols:[
       {k:"foto",l:"Imagem",t:"image",w:2},{k:"titulo",l:"Título",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:4},{k:"periodo",l:"Período (texto na tela)",w:2},{k:"progresso",l:"Progresso %",t:"number",w:1},
       {k:"inicio",l:"Entra no ar em",t:"date",def:"",w:2},{k:"fim",l:"Sai do ar depois de",t:"date",def:"",w:2}]}]},
-  {key:"eventos", label:"Eventos realizados", hint:"O evento mais recente aparece em destaque com até 3 fotos. Os anteriores aparecem na lista ao lado.",
+  {key:"eventos", label:"Eventos realizados", hint:"Cada evento ganha um slide próprio na rotação da TV, do mais recente para o mais antigo, com as fotos do evento (até 3 por evento).",
     parts:[{kind:"list",key:"itens",label:"Eventos",cols:[
       {k:"foto1",l:"Foto principal",t:"image",w:2},{k:"foto2",l:"Foto 2",t:"image",w:2},{k:"foto3",l:"Foto 3",t:"image",w:2},
       {k:"titulo",l:"Evento",w:3},{k:"data",l:"Data",t:"date",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:4}]}]},
@@ -1114,6 +1122,54 @@ function aniDots(slide){
 }
 const TITLES = Object.fromEntries(SECTIONS.map(s=>[s.key,s.label]));
 
+/* ---------- slides individuais (um comunicado / uma campanha / um evento por tela) ---------- */
+function comSlide(c){
+  const imp = c.nivel==="Importante";
+  const di = pDate(c.inicio); const q = di ? fmtDMY(di) : "";
+  return `<div class="s-com" style="grid-template-columns:1fr">
+    <div class="card memo ${imp?"imp":""} ${c.foto?"has-img":""}">
+      <div class="memo-t"><div class="memo-k"><span>${imp?"Comunicado importante":"Comunicado"}</span>${q?`<em class="num">${q}</em>`:""}</div>
+        <h2>${esc(c.titulo)}</h2><p class="clamp3" style="-webkit-line-clamp:${c.foto?6:9}">${esc(c.mensagem)}</p>
+        ${c.assinatura?`<div class="memo-s">${esc(c.assinatura)}</div>`:""}</div>
+      ${c.foto?`<div class="memo-img">${img(c.foto)}</div>`:""}
+    </div></div>`;
+}
+function campSlide(f){
+  /* mesmo visual do destaque de campanhas: card com faixa listrada e imagem grande */
+  return `<div class="s-cs" style="grid-template-columns:1fr">
+    <div class="card feat ${f.foto?"has-img":""}">
+      <div class="ft-txt">${f.periodo?`<div class="per">${esc(f.periodo)}</div>`:""}<h2>${esc(f.tema)}</h2>
+        <p class="clamp3" style="-webkit-line-clamp:${f.foto?5:9}${f.foto?"":";max-width:52ch"}">${esc(f.mensagem)}</p></div>
+      ${f.foto?`<div class="ft-img">${img(f.foto)}</div>`:""}
+    </div></div>`;
+}
+function evSlide(e){
+  const fotos=[e.foto1,e.foto2,e.foto3].filter(Boolean);
+  const d=pDate(e.data);
+  const mos = fotos.length ? `<div class="mos m${fotos.length}">${fotos.map(x=>`<div>${img(x)}</div>`).join("")}</div>` : "";
+  return `<div class="s-ev ${fotos.length?"":"ev-solo"}" style="${fotos.length?"":"grid-template-columns:1fr"}">
+    ${mos}
+    <div class="ev-side"><div class="ev-main">${d?`<div class="per">${fmtDMY(d)}</div>`:""}<h2>${esc(e.titulo)}</h2><p class="clamp3" style="-webkit-line-clamp:${fotos.length?6:9}">${esc(e.descricao)}</p></div></div>
+  </div>`;
+}
+/* filas por aba (mesma regra da TV e da prévia do editor): devolve uma função que rende cada slide.
+   Comunicados, campanhas de segurança e eventos entram UM POR SLIDE — comunicados importantes
+   primeiro, campanhas na ordem do cadastro, eventos do mais recente para o mais antigo.
+   As demais abas continuam com um slide só. */
+function expandSlides(o, sec){
+  if(sec==="comunicados"){
+    const all = list(o,"comunicados").filter(c=>c.titulo && noAr(c));
+    return all.filter(c=>c.nivel==="Importante").concat(all.filter(c=>c.nivel!=="Importante")).map(c=>()=>comSlide(c));
+  }
+  if(sec==="campanhasSeg"){
+    return list(o,"campanhasSeg").filter(f=>f.tema && noAr(f)).map(f=>()=>campSlide(f));
+  }
+  if(sec==="eventos"){
+    return list(o,"eventos").filter(e=>e.titulo).slice().sort((a,b)=>(b.data||"").localeCompare(a.data||"")).map(e=>()=>evSlide(e));
+  }
+  return null;
+}
+
 /* ---------- estado e rotação ---------- */
 let data = null, canEdit = false, canContrib = false, state = "loading";
 let tvHoje = null;   // data de hoje (YYYY-MM-DD) calculada no servidor no fuso da operação
@@ -1136,12 +1192,21 @@ async function api(path, opts){
 const stripMeta = o => { const c = clone(o); delete c.atualizadoEm; delete c.atualizadoPor; return c; };
 let idx = 0, timer = null;
 
+/* telas da rotação: cada aba vira uma tela; comunicados, campanhas de segurança e eventos viram UM slide por item */
 function activeSlides(){
   const a = get(data,"config","ativos");
-  return SLIDE_KEYS.filter(k => !a || a[k] !== false);
+  const on = k => !a || a[k] !== false;
+  const out = [];
+  SLIDE_KEYS.forEach(k=>{
+    if(!on(k)) return;
+    const exp = expandSlides(data,k);
+    if(exp) exp.forEach((fn,i)=>out.push({key:k,sub:i,fn}));
+    else out.push({key:k});
+  });
+  return out;
 }
 function duration(){
-  const sl = activeSlides(); const key = sl[((idx % sl.length)+sl.length)%sl.length];
+  const sl = activeSlides(); const key = sl[((idx % sl.length)+sl.length)%sl.length].key;
   const own = num(get(data,"config","duracoes")?.[key]);
   const def = num(get(data,"config","geral")?.duracao);
   const d = own>=5 ? own : def>=5 ? def : 15;
@@ -1159,14 +1224,15 @@ function renderFrame(animate){
     return;
   }
   const sl = activeSlides();
-  if(!sl.length){ main.innerHTML = emptyBox("Nenhuma tela ativa","Ative as telas em Configurações."); return; }
+  if(!sl.length){ main.innerHTML = emptyBox("Nada no ar agora","Ative as telas em Configurações e cadastre conteúdo (comunicados, eventos…) no editor."); return; }
   idx = ((idx % sl.length)+sl.length)%sl.length;
-  const key = sl[idx];
+  const ent = sl[idx], key = ent.key;
   $("title").textContent = TITLES[key];
   $("eyb").textContent = `Tela ${idx+1} de ${sl.length}`;
-  let html; try{ html = R[key](data); }catch(e){ html = emptyBox("Erro nesta tela","Revise os dados no editor."); console.error(e); }
-  if(animate || !main.firstElementChild || main.dataset.key!==key){
-    main.dataset.key = key;
+  let html; try{ html = ent.sub==null ? R[key](data) : ent.fn(); }catch(e){ html = emptyBox("Erro nesta tela","Revise os dados no editor."); console.error(e); }
+  const viewKey = ent.sub==null ? key : key+"#"+ent.sub;
+  if(animate || !main.firstElementChild || main.dataset.key!==viewKey){
+    main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
   } else {
@@ -1535,9 +1601,11 @@ function renderSec(){
   if(s.key==="aprovacoes") h += aprovHtml();
   if(s.key==="permissoes") h += permHtml();
   const m=$("edMain"); m.innerHTML = (pvOn && R[s.key] ? `<div class="pv"><div class="pv-bar"><b>Prévia de como vai ficar na TV</b>
+      <span class="pv-nav" id="pvNav" hidden><button type="button" class="btn" data-pvgo="-1" aria-label="Slide anterior da prévia">‹</button><b class="pv-n" id="pvN"></b><button type="button" class="btn" data-pvgo="1" aria-label="Próximo slide da prévia">›</button></span>
       <button type="button" class="btn ${pvTheme==="th-dark"?"on":""}" data-pvt="th-dark">Preto</button><button type="button" class="btn ${pvTheme==="th-light"?"on":""}" data-pvt="th-light">Branco</button></div>
       <div class="pv-box" id="pvBox"><div class="pv-main ${pvTheme}" id="pvMain"></div></div></div>` : "") + h;
   m.querySelectorAll("[data-pvt]").forEach(b=>b.onclick=()=>{ pvTheme=b.dataset.pvt; renderSec(); });
+  m.querySelectorAll("[data-pvgo]").forEach(b=>b.onclick=()=>{ pvSlide+=+b.dataset.pvgo; renderPreview(); });
   if(s.key==="config") wireBackup();
   if(s.key==="aprovacoes") wireAprov();
   if(s.key==="permissoes") wirePerm();
@@ -1640,12 +1708,23 @@ async function showWho(key){
 }
 function fmtWhen(d){ return d ? new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "?"; }
 /* prévia */
-let pvOn = false, pvTheme = "th-dark", pvT = null; const lastQ = {};
+let pvOn = false, pvTheme = "th-dark", pvT = null, pvSlide = 0; const lastQ = {};
 function schedulePreview(){ if(!pvOn) return; clearTimeout(pvT); pvT = setTimeout(renderPreview, 250); }
 function renderPreview(){
   const pm = document.getElementById("pvMain"), box = document.getElementById("pvBox");
   if(!pm || !box || !draft) return;
-  let html; try{ html = R[curSec](draft); }catch(e){ html = emptyBox("Erro na prévia","Revise os dados."); }
+  /* comunicados/eventos entram na TV um slide por item — a prévia folheia esses slides */
+  const exp = expandSlides(draft, curSec);
+  const nav = document.getElementById("pvNav"), pvN = document.getElementById("pvN");
+  let html;
+  if(exp){
+    const n = exp.length;
+    if(nav && pvN){ if(n>1){ nav.hidden=false; pvSlide=((pvSlide%n)+n)%n; pvN.textContent=(pvSlide+1)+" / "+n; } else nav.hidden=true; }
+    html = n ? exp[Math.max(0,Math.min(pvSlide,n-1))]() : emptyBox("Nada no ar com as datas de hoje","Ajuste as datas de entrada/saída ou cadastre itens.");
+  } else {
+    if(nav) nav.hidden = true;
+    try{ html = R[curSec](draft); }catch(e){ html = emptyBox("Erro na prévia","Revise os dados."); }
+  }
   pm.innerHTML = `<div class="slide" style="animation:none">${html}</div>`;
   const sc = box.clientWidth/1920; pm.style.transform = `scale(${sc})`;
   if(curSec==="organograma") fitOrg(pm);

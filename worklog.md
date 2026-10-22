@@ -602,3 +602,21 @@ Stage Summary:
 - Painel TV agora tem botão "Voltar para plataforma" apenas em celular/PC; smart TV fica limpa, sem navegação.
 - Arquivo alterado: public/html/painel-tv-goias.html (apenas +15 linhas; nenhuma outra mudança).
 - Pendências herdadas conhecidas: Pedido 6c completo (migração do restante do conteúdo estático do painel para o banco — comunicados/aniversários/contador já estão no banco) e Pedido 2 antigo (redesign da escala/valores) já cobertos pelos commits anteriores.
+
+---
+Task ID: 30
+Agent: Z.ai Code (principal)
+Task: Painel TV — um slide por comunicado, um slide por evento realizado e um slide por campanha de segurança cadastrada
+
+Work Log:
+- Herdei do contexto anterior a implementação parcial do Pedido 8 (comunicados + eventos com slide próprio, não commitada): comSlide/evSlide/expandSlides, activeSlides expandindo entradas {key,sub,fn}, renderFrame com viewKey key#sub e prévia do editor com navegação ‹ › (pvSlide/pv-nav).
+- Adicionei campanhas de segurança (campanhasSeg) ao expandSlides: um slide por campanha no ar (filtro tema + noAr), na ordem do cadastro, reutilizando o visual do destaque (card feat com faixa listrada e imagem grande, texto centralizado e maior quando sem imagem).
+- Novo campSlide(f) + CSS já existente (.s-cs/.feat) reaproveitado; hint da aba "Campanhas de segurança" atualizado para explicar o novo comportamento.
+- Melhorei o evento sem fotos (classe ev-solo): texto centralizado verticalmente com título 120px, ocupando o slide inteiro (antes ficava vazio no topo).
+- Verificação via agent-browser com API interceptada (network route) injetando 2 campanhas + 2 eventos + 2 comunicados MOCK — sem tocar nos dados reais do Render: rotação 18 telas com campanhasSeg#0/#1 e eventos#0/#1; screenshots dos 4 slides + 2 comunicados; prévia do editor testada via eval (contador 1/2→2/2, wrap, eventos mais recente primeiro, comunicado importante primeiro); estado real restaurado após unroute (14 telas, 5S fora do ar até 23/10, 0 eventos).
+- Lint: mesmos 31 problemas pré-existentes (mudanças só em public/html, fora do escopo do ESLint).
+
+Stage Summary:
+- TV e prévia do editor: comunicados (importantes primeiro), campanhas de segurança (ordem do cadastro) e eventos (mais recente primeiro) entram UM POR SLIDE; demais abas seguem com um slide só; rodapé conta telas por slide; duração por aba continua valendo para todos os slides da aba.
+- Arquivo alterado: public/html/painel-tv-goias.html (+CSS ev-solo, +campSlide, +campanhasSeg no expandSlides, hints atualizados).
+- Dados reais intactos (mock removido); branch a ahead de origin (54a6a82 worklog + commit desta task).
