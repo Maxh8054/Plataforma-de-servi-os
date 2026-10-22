@@ -6,11 +6,15 @@
  * outra integração puxam daqui, para que o número seja sempre idêntico ao da
  * plataforma, sem ninguém precisar lançar data em lugar nenhum.
  *
- * Quando houver um novo acidente com afastamento, atualize a data-base aqui
- * (um único lugar): a plataforma e os painéis de TV se ajustam sozinhos.
+ * As datas-base vivem NO BANCO DE DADOS (tabela contador_seguranca) e o admin
+ * atualiza pela tela inicial da plataforma — nada se perde em deploy/commit
+ * novo. As constantes abaixo funcionam apenas como fallback/seed enquanto não
+ * houver registro no banco (ou se o banco estiver indisponível).
  */
 
-/** Datas-base por regional (YYYY-MM-DD) — iguais às da tela inicial */
+import { db } from '@/lib/db';
+
+/** Fallback/seed por regional (YYYY-MM-DD) — usado só se o banco não tiver a linha */
 export const DATA_BASE_SEGURANCA: Record<string, string> = {
   goias: '2022-08-01',
   minas: '2024-07-11',
@@ -18,6 +22,20 @@ export const DATA_BASE_SEGURANCA: Record<string, string> = {
 
 /** Fuso da operação (mesmo padrão da escala automática) */
 export const TZ_SEGURANCA = 'America/Sao_Paulo';
+
+/** Data-base da regional lida DO BANCO; cai no fallback se não houver registro */
+export async function dataBaseDeAsync(regional: string): Promise<string | null> {
+  try {
+    const row = await db.contadorSeguranca.findUnique({
+      where: { regional },
+      select: { dataBase: true },
+    });
+    if (row && /^\d{4}-\d{2}-\d{2}$/.test(row.dataBase)) return row.dataBase;
+  } catch {
+    // banco indisponível — segue no fallback
+  }
+  return dataBaseDe(regional);
+}
 
 /** Data de hoje (YYYY-MM-DD) no fuso informado */
 export function hojeSeguranca(tz: string = TZ_SEGURANCA): string {

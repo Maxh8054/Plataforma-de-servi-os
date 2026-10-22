@@ -25,15 +25,15 @@ export async function GET(
   if (!panelValido(panel)) return respostaPanelInvalido();
 
   try {
-    const [secoes, config, escalaAuto] = await Promise.all([
+    const [secoes, config, escalaAuto, segurancaAuto] = await Promise.all([
       db.tvSection.findMany({ where: { panelSlug: panel } }),
       db.tvPanelConfig.findUnique({ where: { panelSlug: panel } }),
       computarEscalaAutoSeguro(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
+      // dias sem afastamento automáticos — mesmo contador da tela inicial da
+      // plataforma (data-base lida DO BANCO); a TV mostra sozinha, sem
+      // lançamento de data no editor
+      computarSegurancaAuto(panel, request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
     ]);
-
-    // dias sem afastamento automáticos — mesmo contador da tela inicial da
-    // plataforma; a TV mostra sozinha, sem lançamento de data no editor
-    const segurancaAuto = computarSegurancaAuto(panel, request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO);
 
     const secoesObj: Record<string, unknown> = {};
     for (const s of secoes) {

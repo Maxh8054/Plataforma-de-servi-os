@@ -244,6 +244,13 @@ export default function Home() {
   const [showSecurityContent, setShowSecurityContent] = useState(false);
   const [counter, setCounter] = useState({ mg: { days: 0, hours: 0, minutes: 0, seconds: 0 }, go: { days: 0, hours: 0, minutes: 0, seconds: 0 } });
   const [stateCounter, setStateCounter] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  // Datas-base do contador "dias sem afastamento" — DO BANCO (sobrevive a deploy
+  // e commit novo; o admin edita aqui mesmo). Constantes do código = fallback inicial.
+  const [dataBaseSeg, setDataBaseSeg] = useState<Record<string, string>>({ ...DATA_BASE_SEGURANCA });
+  const [editContador, setEditContador] = useState(false);
+  const [contadorNovaData, setContadorNovaData] = useState('');
+  const [contadorSalvando, setContadorSalvando] = useState(false);
+  const [contadorErro, setContadorErro] = useState('');
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
   
   // Equipment states
@@ -566,15 +573,16 @@ export default function Home() {
     const updateCounters = () => {
       const now = new Date();
       
-      // datas-base do contador oficial — fonte única em src/lib/contador-seguranca.ts
-      const mgStart = new Date(DATA_BASE_SEGURANCA.minas);
+      // datas-base do contador oficial — DO BANCO via /api/contador-seguranca
+      // (fallback: constantes em src/lib/contador-seguranca.ts)
+      const mgStart = new Date(dataBaseSeg.minas || DATA_BASE_SEGURANCA.minas);
       const mgDiff = now.getTime() - mgStart.getTime();
       const mgDays = Math.floor(mgDiff / (1000 * 60 * 60 * 24));
       const mgHours = Math.floor((mgDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const mgMinutes = Math.floor((mgDiff % (1000 * 60 * 60)) / (1000 * 60));
       const mgSeconds = Math.floor((mgDiff % (1000 * 60)) / 1000);
       
-      const goStart = new Date(DATA_BASE_SEGURANCA.goias);
+      const goStart = new Date(dataBaseSeg.goias || DATA_BASE_SEGURANCA.goias);
       const goDiff = now.getTime() - goStart.getTime();
       const goDays = Math.floor(goDiff / (1000 * 60 * 60 * 24));
       const goHours = Math.floor((goDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -596,7 +604,21 @@ export default function Home() {
     updateCounters();
     const interval = setInterval(updateCounters, 1000);
     return () => clearInterval(interval);
-  }, [selectedState, isAuthenticated]);
+  }, [selectedState, isAuthenticated, dataBaseSeg]);
+
+  // Datas-base do contador vindas DO BANCO (rota pública; admin edita via PUT)
+  useEffect(() => {
+    let ativo = true;
+    fetch('/api/contador-seguranca')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (ativo && d && typeof d === 'object' && !Array.isArray(d)) {
+          setDataBaseSeg(prev => ({ ...prev, ...d }));
+        }
+      })
+      .catch(() => {});
+    return () => { ativo = false; };
+  }, [isAuthenticated]);
 
   const handleMarkerClick = (state: StateType) => setSelectedState(state);
 
@@ -875,11 +897,79 @@ export default function Home() {
                 {/* Counter - Bottom Left Corner */}
                 {(selectedState === 'mg' || selectedState === 'go') && (
                   <div className="absolute bottom-10 sm:bottom-16 left-2 sm:left-4 z-30 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1.5 border border-white/20" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-white/70 text-[9px] sm:text-xs font-medium mb-0.5">DIAS SEM AFASTAMENTO</div>
+                    <div className="flex items-center gap-1">
+                      <div className="text-white/70 text-[9px] sm:text-xs font-medium mb-0.5">DIAS SEM AFASTAMENTO</div>
+                      {isAdmin && (
+                        <button
+                          onClick={() => {
+                            setContadorNovaData(dataBaseSeg[selectedState === 'go' ? 'goias' : 'minas'] || '');
+                            setContadorErro('');
+                            setEditContador(true);
+                          }}
+                          className="text-white/40 hover:text-white p-0.5 min-h-[24px] min-w-[24px] rounded hover:bg-white/10 transition-colors mb-0.5"
+                          title="Alterar data-base do contador (salva no banco de dados)"
+                          aria-label="Alterar data-base do contador"
+                        >
+                          <span className="material-icons text-[11px] sm:text-sm">edit</span>
+                        </button>
+                      )}
+                    </div>
                     <div className="flex items-baseline gap-0.5">
                       <span className="text-base sm:text-2xl font-bold text-white">{stateCounter.days}</span>
                       <span className="text-white/70 text-[10px] sm:text-xs">dias</span>
                       <span className="text-white/50 text-[10px] sm:text-sm ml-0.5">{stateCounter.hours}:{String(stateCounter.minutes).padStart(2, '0')}:{String(stateCounter.seconds).padStart(2, '0')}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Modal — editar data-base do contador de segurança (admin) */}
+                {editContador && selectedState && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" onClick={() => !contadorSalvando && setEditContador(false)}>
+                    <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 w-full max-w-sm border border-white/10" onClick={(e) => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                      <h3 className="text-base sm:text-lg font-bold text-orange-500 mb-1">Contador de segurança</h3>
+                      <p className="text-gray-400 text-xs sm:text-sm mb-4">
+                        Data do último acidente com afastamento — {stateNames[selectedState] || ''}. Fica salva no banco de dados: a plataforma e as TVs se ajustam sozinhas (nada se perde no deploy).
+                      </p>
+                      <label htmlFor="contador-data-base" className="block text-xs text-gray-400 mb-1">Data-base (AAAA-MM-DD)</label>
+                      <input
+                        id="contador-data-base"
+                        type="date"
+                        value={contadorNovaData}
+                        onChange={(e) => setContadorNovaData(e.target.value)}
+                        className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm mb-3 focus:border-orange-500 outline-none"
+                      />
+                      {contadorErro && <p className="text-red-400 text-xs mb-3">{contadorErro}</p>}
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => setEditContador(false)} disabled={contadorSalvando} className="px-3 py-2 rounded-lg text-gray-300 hover:text-white text-sm min-h-[40px] disabled:opacity-50">Cancelar</button>
+                        <button
+                          disabled={contadorSalvando || !contadorNovaData}
+                          onClick={async () => {
+                            setContadorSalvando(true);
+                            setContadorErro('');
+                            try {
+                              const res = await authFetch('/api/contador-seguranca', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ regional: selectedState, dataBase: contadorNovaData }),
+                              });
+                              const d = await res.json().catch(() => null);
+                              if (!res.ok) {
+                                setContadorErro(d?.error || 'Falha ao salvar');
+                                return;
+                              }
+                              if (d?.contadores) setDataBaseSeg((prev) => ({ ...prev, ...d.contadores }));
+                              setEditContador(false);
+                            } catch {
+                              setContadorErro('Falha de conexão');
+                            } finally {
+                              setContadorSalvando(false);
+                            }
+                          }}
+                          className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-semibold min-h-[40px] disabled:opacity-50 transition-colors"
+                        >
+                          {contadorSalvando ? 'Salvando…' : 'Salvar'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

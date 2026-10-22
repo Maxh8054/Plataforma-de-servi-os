@@ -411,6 +411,21 @@ model TvPermissao {
   @@map("tv_permissoes")
 }
 
+// Contador oficial de "dias sem afastamento" por regional — data-base editável
+// pelo admin na plataforma (substitui a data fixa em src/lib/contador-seguranca.ts,
+// que continua como fallback/seed). Assim o contador sobrevive a qualquer deploy:
+// quem atualiza é o admin na tela inicial, sem precisar de commit novo.
+model ContadorSeguranca {
+  regional          String   @id // "goias", "minas", ...
+  dataBase          String // YYYY-MM-DD — dia do último acidente com afastamento
+  atualizadoEm      DateTime @default(now()) @updatedAt @map("atualizadoEm")
+  atualizadoPorId   String?  @map("atualizadoPorId")
+  atualizadoPorNome String?  @map("atualizadoPorNome")
+  createdAt         DateTime @default(now()) @map("createdAt")
+
+  @@map("contador_seguranca")
+}
+
 // Imagens do painel (fotos de DDS, comunicados, campanhas, aniversariantes, organograma)
 model TvAsset {
   id          String   @id @default(cuid())

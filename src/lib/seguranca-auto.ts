@@ -8,7 +8,7 @@
  * A aritmética de datas é feita em strings "YYYY-MM-DD" (imune a fuso),
  * no mesmo padrão da escala automática.
  */
-import { dataBaseDe, diasDesde, TZ_SEGURANCA } from '@/lib/contador-seguranca';
+import { dataBaseDeAsync, diasDesde, TZ_SEGURANCA } from '@/lib/contador-seguranca';
 
 export interface SegurancaAuto {
   modo: 'auto';
@@ -20,12 +20,12 @@ export interface SegurancaAuto {
   geradoEm: string; // ISO
 }
 
-/** Contador automático da regional; null se o painel não tiver data-base. */
-export function computarSegurancaAuto(
+/** Contador automático da regional (data-base DO BANCO); null se não houver contador. */
+export async function computarSegurancaAuto(
   panelSlug: string,
   tz: string = TZ_SEGURANCA,
-): SegurancaAuto | null {
-  const desde = dataBaseDe(panelSlug);
+): Promise<SegurancaAuto | null> {
+  const desde = await dataBaseDeAsync(panelSlug);
   if (!desde) return null;
   return {
     modo: 'auto',
