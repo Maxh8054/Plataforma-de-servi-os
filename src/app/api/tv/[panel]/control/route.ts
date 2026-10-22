@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { auditLog } from '@/lib/audit-log';
 import { panelValido, respostaPanelInvalido, tvUser, tvAdmin, permissoesDoUsuario } from '@/lib/tv';
 
 /**
@@ -142,6 +143,7 @@ export async function POST(
         { status: 409 }
       );
     }
+    const assumiuPorCima = !!dono && !ehDono;
     const upd = await db.tvControl.upsert({
       where: { panelSlug: panel },
       update: {
@@ -166,6 +168,16 @@ export async function POST(
         rev: 1,
       },
     });
+    // histórico: quem assumiu o comando da TV (e se foi admin por cima)
+    if (!ehDono) {
+      auditLog({
+        action: 'tv_controle_assumido',
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.name,
+        details: `painel=${panel} controle=TV${assumiuPorCima ? ' assumiu por cima de ' + dono!.nome : ''}`,
+      });
+    }
     return NextResponse.json(estadoDe(upd));
   }
 
@@ -181,6 +193,15 @@ export async function POST(
       update: { ...LIVRE, rev: { increment: 1 } },
       create: { panelSlug: panel },
     });
+    if (dono) {
+      auditLog({
+        action: 'tv_controle_liberado',
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.name,
+        details: `painel=${panel} controle=TV liberado por ${user.name || user.email}${dono.email !== user.email ? ` (estava com ${dono.nome})` : ''}`,
+      });
+    }
     return NextResponse.json(estadoDe(upd));
   }
 

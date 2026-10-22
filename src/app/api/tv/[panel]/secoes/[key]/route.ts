@@ -22,6 +22,18 @@ function safeJson(str: string | null | undefined): unknown {
   }
 }
 
+/** nº de itens cadastrados na aba (para o histórico: "comunicados 2→3") */
+function contaItens(o: unknown): number | null {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  const itens = (o as Record<string, unknown>).itens;
+  return Array.isArray(itens) ? itens.length : null;
+}
+function resumoItens(antes: unknown, depois: unknown): string {
+  const a = contaItens(antes), d = contaItens(depois);
+  if (a === null || d === null || a === d) return d !== null ? `itens=${d}` : '';
+  return `itens ${a}→${d}`;
+}
+
 /** GET — conteúdo completo da aba (no ar + pendente, com quem/ quando) */
 export async function GET(
   request: NextRequest,
@@ -158,7 +170,7 @@ export async function PUT(
       userId: user.id,
       userEmail: user.email,
       userName: user.name,
-      details: `painel=${panel} aba=${key}`,
+      details: `painel=${panel} aba=${key}${resumoItens(safeJson(antes?.data ?? null), body)}${force ? ' forçado' : ''}`,
     });
     return NextResponse.json({ ok: true, noAr: true, atualizadoEm: agora.toISOString() });
   }
@@ -187,7 +199,7 @@ export async function PUT(
     userId: user.id,
     userEmail: user.email,
     userName: user.name,
-    details: `painel=${panel} aba=${key}`,
+    details: `painel=${panel} aba=${key} ${resumoItens(null, body)} (aguardando aprovação)`,
   });
   return NextResponse.json({ ok: true, noAr: false, pending: true });
 }
