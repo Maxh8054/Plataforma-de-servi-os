@@ -561,3 +561,26 @@ Stage Summary:
 - Deploy-safe: atualizar o contador não exige commit novo; deploy não apaga mais nada do que o admin digitou (tudo no Postgres do Render).
 - TV: fotos de aniversariantes grandes e circulares em qualquer browser (sem depender de aspect-ratio); comunicados nunca corta imagem (contain; paisagem vira destaque de largura total).
 - Pendências/quirks documentados: recycle do sandbox recria template src/app/{page,layout}.tsx,globals.css (deletar de novo se acontecer) e apaga node_modules (rodar bun .zscripts/zdb-guard.mjs após bun install).
+
+---
+Task ID: 30
+Agent: Z.ai Code (principal)
+Task: Escala de turno — mostrar também o dia de ONTEM na TV e adicionar marcação individual do RELATÓRIO TÉCNICO (entregue/não) por técnico, persistida no banco.
+
+Work Log:
+- Schema: novo model RelatorioTecnico (data+letra únicos, entregue, atualizadoEm/Por) → db:push aplicado no Postgres do Render (tabela relatorio_tecnico).
+- src/lib/relatorio-tecnico.ts (novo): carregarRelatorios(de,ate) → mapa {data:{letra:{entregue,atualizadoEm,atualizadoPor}}}, nunca lança; janelaPadrao(tz) = ontem..amanhã via hojeNoFuso.
+- Nova API /api/relatorio-tecnico: GET público (janela ontem..amanhã padrão, aceita ?de/?ate), PUT com sessão (validateSession; grava atualizadoPor) e upsert por (data,letra); 401 sem sessão, 400 letra/data/entregue inválidos.
+- escala-auto.ts: computarEscalaAuto agora gera de -1 a +5 dias (destaque 'ontem' adicionado ao tipo DiaEscala); content route entrega relatorios junto (Promise.all, falha não derruba a TV).
+- Painel TV (painel-tv-goias.html): CSS do slide reescrito para 3 colunas (--esc-n; ontem com borda tracejada .ot, tamanhos compactados); relatoriosAuto global carregado nos 2 pontos de fetch; relBadge() desenha selo "✓ Relatório entregue" (verde) / "✗ Relatório pendente" (laranja) com quem marcou, SOMENTE em ontem/hoje (amanhã não tem o que entregar); hint do editor atualizado.
+- Plataforma (escala-modal.tsx): nova seção "Relatório Técnico — Entrega" logo abaixo do Status em Tempo Real — abas Ontem/Hoje (datas no fuso America/Sao_Paulo, independem do navegador) e cartão por técnico A–D; quem trabalhou no dia (getShiftForDay + atestado/férias/folga/backup) ganha toggle "✓ Entregue"/"✗ Pendente" com update otimista; quem está de folga mostra "Folga — sem relatório" sem toggle; falha de rede reverte e mostra erro.
+- Lint: 31 problemas = baseline exato (2 erros novos durante o desenvolvimento corrigidos: efetivoNoDia movido para depois de getOverrides; fetch de relatórios incorporado ao fetchData existente para não criar novo setState-in-effect).
+- E2E agent-browser (APIs + TV + plataforma): GET 200; PUT grava com atualizadoPor (token temporário no banco); 401 sem token; 400 letra inválida; TV mostrando 3 colunas "Ontem (Quarta 21/10) | HOJE (laranja) | Amanhã" e selo verde "✓ Relatório entregue · Max" no técnico de ontem; plataforma: seção renderiza com 2 toggles (só quem trabalha hoje) + 2 cartões de folga; toggle vira ✓ Entregue (verde); reload+reabrir manteve do BANCO; aba Ontem com 2 toggles e folgas certas; zero erros novos no dev.log.
+- Git: commit cd68dc7 pushado (cbee2e0..cd68dc7); remote tinha perdido o token no recycle — repositor com git remote set-url (token embutido). Auto-commit 021171a do ambiente (só worklog) subiu junto.
+- Dados de teste APAGADOS (deleteMany em relatorio_tecnico + sessões temporárias nulas) — o Max começa com a lista limpa para marcar de verdade.
+- Quirks do ambiente: dev server morto entre chamadas de bash (sandbox recolhe órfãos) — E2E precisa rodar em UM comando só; SVGPathElement não tem .click() — usar dispatchEvent(new MouseEvent('click')); splash "CARREGANDO SISTEMA" + mapa do Brasil antes dos serviços (clicar path[data-uf="GO"] e depois botão Serviços).
+
+Stage Summary:
+- TV: slide de escala em modo automático agora mostra ONTEM + HOJE + AMANHÃ, cada técnico de ontem/hoje com o selo de relatório técnico (entregue/pendente) direto do banco.
+- Plataforma: Escala de Turno → seção "Relatório Técnico — Entrega" com marcação INDIVIDUAL por técnico (ontem/hoje), salva no Postgres — deploy/commit novo não apaga nada (pedido do Max atendido em linha com a Task 29).
+- APIs: /api/relatorio-tecnico (GET público, PUT com sessão); escalaAuto do content agora inclui ontem; relatorios viajam no mesmo payload.
