@@ -426,6 +426,24 @@ model ContadorSeguranca {
   @@map("contador_seguranca")
 }
 
+// Entrega do RELATÓRIO TÉCNICO por técnico e por dia da escala de turno.
+// O responsável marca na plataforma (Escala de Turno → Status em Tempo Real),
+// individualmente para cada técnico (letras A–D), se o relatório do dia foi
+// entregue ou não. A TV mostra o status no slide da escala (ontem/hoje).
+// Tudo no banco: sobrevive a deploy/commit novo.
+model RelatorioTecnico {
+  id            Int      @id @default(autoincrement())
+  data          String // YYYY-MM-DD — dia da escala a que o relatório se refere
+  letra         String // A | B | C | D (técnico da escala)
+  entregue      Boolean  @default(false)
+  atualizadoEm  DateTime @default(now()) @updatedAt @map("atualizadoEm")
+  atualizadoPor String?  @map("atualizadoPor")
+  createdAt     DateTime @default(now()) @map("createdAt")
+
+  @@unique([data, letra])
+  @@map("relatorio_tecnico")
+}
+
 // Imagens do painel (fotos de DDS, comunicados, campanhas, aniversariantes, organograma)
 model TvAsset {
   id          String   @id @default(cuid())

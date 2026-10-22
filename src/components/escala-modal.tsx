@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { getLundinShift } from '@/data/escala-lundin';
+import { authFetch } from '@/store/auth-store';
 
 // Types
 type PersonKey = 'A' | 'B' | 'C' | 'D' | 'E';
@@ -130,6 +131,37 @@ function getDaysInMonth(month: number, year: number): number {
   return new Date(year, month + 1, 0).getDate();
 }
 
+// ===== Relatório técnico (entrega individual por técnico) =====
+interface EntregaRel {
+  entregue: boolean;
+  atualizadoEm: string;
+  atualizadoPor: string | null;
+}
+
+// Datas no fuso da operação (America/Sao_Paulo) — não depende do relógio/fuso
+// do navegador; o mesmo dia "hoje" que a plataforma e a TV consideram.
+const FUSO_OPERACAO = 'America/Sao_Paulo';
+function dataNoFuso(offsetDias: number): string {
+  const opts: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: FUSO_OPERACAO, ...opts }).format(new Date(Date.now() + offsetDias * 86400000));
+  } catch {
+    return new Intl.DateTimeFormat('en-CA', opts).format(new Date(Date.now() + offsetDias * 86400000));
+  }
+}
+
+/** "YYYY-MM-DD" → Date local (mesma convenção usada pela tabela do mês) */
+function dataDeStr(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+/** DD/MM a partir de "YYYY-MM-DD" */
+function dataCurta(s: string): string {
+  const p = s.split('-');
+  return p.length === 3 ? `${p[2]}/${p[1]}` : s;
+}
+
 function generateId(): string {
   return Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
 }
@@ -225,6 +257,14 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const [personFilter, setPersonFilter] = useState<string>('');
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Relatório técnico — entrega marcada individualmente por técnico (ontem/hoje)
+  const [relatorios, setRelatorios] = useState<Record<string, Record<string, EntregaRel>>>({});
+  const [relDia, setRelDia] = useState<'ontem' | 'hoje'>('hoje');
+  const [relSaving, setRelSaving] = useState('');
+  const [relErro, setRelErro] = useState('');
+  const hojeStr = useMemo(() => dataNoFuso(0), []);
+  const ontemStr = useMemo(() => dataNoFuso(-1), []);
+
   // Modal states
   const [atestadoModal, setAtestadoModal] = useState<{ open: boolean; person: PersonKey | null }>({ open: false, person: null });
   const [spotModal, setSpotModal] = useState<{ open: boolean; person: PersonKey | null }>({ open: false, person: null });
@@ -291,11 +331,60 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     } finally {
       setLoading(false);
     }
+    // Entregas do relatório técnico (ontem..amanhã) — falha não derruba a escala
+    try {
+      const res = await fetch('/api/relatorio-tecnico');
+      if (res.ok) {
+        const j = await res.json();
+        setRelatorios(j.relatorios || {});
+      }
+    } catch {
+      // silencioso: sem rede, a seção mostra o estado atual do cache
+    }
   }, []);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Marca/desmarca a entrega de UM técnico num dia — individual, no banco
+  const alternarRelatorio = useCallback(async (person: PersonKey, dia: string) => {
+    const anterior = relatorios[dia]?.[person]?.entregue ?? false;
+    const chave = `${dia}_${person}`;
+    setRelErro('');
+    setRelSaving(chave);
+    // otimista: mostra na hora
+    setRelatorios((prev) => ({
+      ...prev,
+      [dia]: { ...(prev[dia] || {}), [person]: { entregue: !anterior, atualizadoEm: new Date().toISOString(), atualizadoPor: null } },
+    }));
+    try {
+      const res = await authFetch('/api/relatorio-tecnico', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: dia, letra: person, entregue: !anterior }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => null);
+        setRelErro(j?.error || 'Falha ao salvar a entrega do relatório');
+        setRelatorios((prev) => ({
+          ...prev,
+          [dia]: { ...(prev[dia] || {}), [person]: { entregue: anterior, atualizadoEm: prev[dia]?.[person]?.atualizadoEm || '', atualizadoPor: prev[dia]?.[person]?.atualizadoPor ?? null } },
+        }));
+        return;
+      }
+      const j = await res.json();
+      if (j.relatorios) setRelatorios(j.relatorios);
+    } catch {
+      setRelErro('Falha de conexão ao salvar a entrega do relatório');
+      setRelatorios((prev) => ({
+        ...prev,
+        [dia]: { ...(prev[dia] || {}), [person]: { entregue: anterior, atualizadoEm: prev[dia]?.[person]?.atualizadoEm || '', atualizadoPor: prev[dia]?.[person]?.atualizadoPor ?? null } },
+      }));
+    } finally {
+      setRelSaving('');
+    }
+  }, [relatorios]);
 
   // Save data - optimistic update: always update local state, then persist to server
   const saveData = useCallback(async (newData: EscalaData): Promise<boolean> => {
@@ -330,6 +419,18 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
 
     return { atestado, spot, adm, evento };
   }, [data]);
+
+  // Turno efetivo do técnico num dia (considera atestado/férias/folga/backup)
+  const efetivoNoDia = useCallback((person: PersonKey, date: Date): { turno: ShiftType; obs?: string } => {
+    const o = getOverrides(person, date);
+    if (o.atestado) return { turno: 'Folga', obs: 'Atestado' };
+    if (o.evento?.tipo === 'férias') return { turno: 'Folga', obs: 'Férias' };
+    if (o.evento?.tipo === 'folga') return { turno: 'Folga', obs: 'Folga agendada' };
+    if (o.evento?.tipo === 'backup' && o.evento.backupOf) {
+      return { turno: getShiftForDay(o.evento.backupOf, date), obs: `Cobrindo ${o.evento.backupOf}` };
+    }
+    return { turno: getShiftForDay(person, date) };
+  }, [getOverrides]);
 
   // Get who person is backing up on a given date
   const getBackupTarget = useCallback((person: PersonKey, date: Date): PersonKey | null => {
@@ -1686,6 +1787,136 @@ Arquivo: ${file.name}`);
                     <span style={{ color: '#2c3e50', fontWeight: 600, marginLeft: 8 }}>Total: {formatSeconds(hoursInfo.totalWorkSeconds > 0 ? hoursInfo.totalWorkSeconds : 0)}</span>
                   </div>
                 </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ===== RELATÓRIO TÉCNICO — entrega individual por técnico (ontem/hoje) ===== */}
+      <div style={{
+        background: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        boxShadow: '0 2px 15px rgba(0,0,0,0.1)',
+        marginBottom: 20,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap' as const, gap: 10 }}>
+          <div>
+            <h3 style={{ margin: 0, color: '#2c3e50', fontSize: '1.2rem', fontWeight: 600 }}>
+              Relatório Técnico — Entrega
+            </h3>
+            <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.8rem' }}>
+              Marque individualmente para cada técnico se o relatório técnico do dia foi entregue.
+              Fica salvo no banco (nada se perde no deploy) e aparece na TV, no slide da escala.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {([['ontem', ontemStr] as const, ['hoje', hojeStr] as const]).map(([k, s]) => (
+              <button
+                key={k}
+                onClick={() => setRelDia(k)}
+                style={{
+                  padding: '7px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  transition: 'all 0.2s',
+                  background: relDia === k ? '#f97316' : '#f0f4f8',
+                  color: relDia === k ? 'white' : '#2c3e50',
+                  boxShadow: relDia === k ? '0 2px 8px rgba(249,115,22,0.45)' : 'none',
+                }}
+              >
+                {k === 'ontem' ? 'Ontem' : 'Hoje'} · {dataCurta(s)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {relErro && (
+          <p style={{ color: '#e74c3c', fontSize: '0.8rem', margin: '0 0 10px', fontWeight: 600 }}>{relErro}</p>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 12 }}>
+          {PEOPLE.map(person => {
+            const diaStr = relDia === 'ontem' ? ontemStr : hojeStr;
+            const dia = dataDeStr(diaStr);
+            const info = efetivoNoDia(person.key, dia);
+            const trabalhou = info.turno !== 'Folga';
+            const entrega = relatorios[diaStr]?.[person.key];
+            const entregue = entrega?.entregue ?? false;
+            const saving = relSaving === `${diaStr}_${person.key}`;
+
+            return (
+              <div
+                key={person.key}
+                style={{
+                  background: !trabalhou ? '#f1f5f9' : entregue ? '#f0fdf4' : '#fffbeb',
+                  border: `2px solid ${!trabalhou ? '#e2e8f0' : entregue ? '#22c55e' : '#fbbf24'}`,
+                  borderRadius: 10,
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  opacity: saving ? 0.7 : 1,
+                  transition: 'all 0.25s ease',
+                }}
+              >
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  background: PERSON_HIGHLIGHT[person.key] || '#e2e8f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'monospace',
+                  fontWeight: 700,
+                  fontSize: '1.1rem',
+                  color: '#2c3e50',
+                  flexShrink: 0,
+                }}>
+                  {person.key}
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2c3e50' }}>{person.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>
+                    {trabalhou
+                      ? `${info.turno === 'Manhã' ? 'Diurno' : 'Noturno'} · ${info.turno === 'Manhã' ? '07:00–19:00' : '19:00–07:00'}${info.obs ? ` · ${info.obs}` : ''}`
+                      : `Folga${info.obs ? ` · ${info.obs}` : ''} — sem relatório`}
+                  </div>
+                </div>
+
+                {trabalhou ? (
+                  <button
+                    onClick={() => alternarRelatorio(person.key, diaStr)}
+                    disabled={saving}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 8,
+                      border: 'none',
+                      cursor: saving ? 'wait' : 'pointer',
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                      minWidth: 118,
+                      transition: 'all 0.2s',
+                      background: entregue ? '#22c55e' : '#f59e0b',
+                      color: 'white',
+                      boxShadow: entregue ? '0 2px 8px rgba(34,197,94,0.4)' : '0 2px 8px rgba(245,158,11,0.4)',
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                  >
+                    {saving ? 'Salvando…' : entregue ? '✓ Entregue' : '✗ Pendente'}
+                  </button>
+                ) : (
+                  <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600, minWidth: 118, textAlign: 'center' as const }}>
+                    —
+                  </span>
+                )}
               </div>
             );
           })}

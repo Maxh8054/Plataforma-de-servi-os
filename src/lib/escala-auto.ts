@@ -38,7 +38,7 @@ export interface StatusPessoaDia extends PessoaEscala {
 export interface DiaEscala {
   data: string; // YYYY-MM-DD
   diaSemana: string;
-  destaque: 'hoje' | 'amanha' | null;
+  destaque: 'hoje' | 'amanha' | 'ontem' | null;
   diurno: StatusPessoaDia[];
   noturno: StatusPessoaDia[];
   fora: StatusPessoaDia[]; // folga/atestado/férias
@@ -49,7 +49,7 @@ export interface EscalaAuto {
   tz: string;
   hoje: string; // YYYY-MM-DD
   geradoEm: string; // ISO
-  dias: DiaEscala[]; // hoje + amanhã + próximos 5 dias
+  dias: DiaEscala[]; // ontem + hoje + amanhã + próximos 4 dias
 }
 
 /* ---------- pessoas (mesma atribuição do EscalaModal) ---------- */
@@ -232,7 +232,7 @@ function statusDePessoa(
 
 /* ---------- montagem do dia ---------- */
 
-function montarDia(dataStr: string, destaque: 'hoje' | 'amanha' | null, lanc: EscalaParsed): DiaEscala {
+function montarDia(dataStr: string, destaque: 'hoje' | 'amanha' | 'ontem' | null, lanc: EscalaParsed): DiaEscala {
   const status = PESSOAS.map((p) => statusDePessoa(p.letra, dataStr, lanc));
   return {
     data: dataStr,
@@ -246,14 +246,16 @@ function montarDia(dataStr: string, destaque: 'hoje' | 'amanha' | null, lanc: Es
 
 export const TZ_PADRAO = 'America/Sao_Paulo';
 
-/** Calcula a escala automática de hoje até hoje+6 no fuso informado. */
+/** Calcula a escala automática de ONTEM até hoje+5 no fuso informado.
+ *  A TV mostra ontem/hoje/amanhã (o relatório técnico do turno de ontem é
+ *  entregue na manhã seguinte — por isso ontem continua relevante). */
 export async function computarEscalaAuto(tz: string = TZ_PADRAO): Promise<EscalaAuto> {
   const hoje = hojeNoFuso(tz || TZ_PADRAO);
   const lanc = await carregarLancamentos();
   const dias: DiaEscala[] = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = -1; i < 6; i++) {
     const dataStr = addDias(hoje, i);
-    dias.push(montarDia(dataStr, i === 0 ? 'hoje' : i === 1 ? 'amanha' : null, lanc));
+    dias.push(montarDia(dataStr, i === -1 ? 'ontem' : i === 0 ? 'hoje' : i === 1 ? 'amanha' : null, lanc));
   }
   return {
     modo: 'auto',

@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido } from '@/lib/tv';
 import { TZ_PADRAO, computarEscalaAutoSeguro, hojeNoFuso } from '@/lib/escala-auto';
 import { computarSegurancaAuto } from '@/lib/seguranca-auto';
+import { carregarRelatorios, janelaPadrao } from '@/lib/relatorio-tecnico';
 
 function safeJson(str: string | null | undefined): unknown {
   if (!str) return null;
@@ -25,14 +26,18 @@ export async function GET(
   if (!panelValido(panel)) return respostaPanelInvalido();
 
   try {
-    const [secoes, config, escalaAuto, segurancaAuto] = await Promise.all([
+    const tz = request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO;
+    const [secoes, config, escalaAuto, segurancaAuto, relatorios] = await Promise.all([
       db.tvSection.findMany({ where: { panelSlug: panel } }),
       db.tvPanelConfig.findUnique({ where: { panelSlug: panel } }),
       computarEscalaAutoSeguro(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
       // dias sem afastamento automáticos — mesmo contador da tela inicial da
       // plataforma (data-base lida DO BANCO); a TV mostra sozinha, sem
       // lançamento de data no editor
-      computarSegurancaAuto(panel, request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
+      computarSegurancaAuto(panel, tz),
+      // entregas do relatório técnico (por técnico/dia) marcadas na plataforma —
+      // janela ontem..amanhã; a TV usa no slide da escala. Falha não derruba o painel
+      carregarRelatorios(janelaPadrao(tz).ontem, janelaPadrao(tz).amanha),
     ]);
 
     const secoesObj: Record<string, unknown> = {};
@@ -54,8 +59,10 @@ export async function GET(
         // que o relógio do aparelho esteja errado
         hoje: hojeNoFuso(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
         // escala de turno automática (equipes A/B/C/D da plataforma) — a TV
-        // mostra sozinha o técnico de hoje e de amanhã; null se falhar
+        // mostra sozinha os técnicos de ontem, hoje e amanhã; null se falhar
         escalaAuto,
+        // entregas do relatório técnico por dia/técnico (marcadas na plataforma)
+        relatorios,
         // dias sem afastamento automáticos (contador oficial da plataforma)
         segurancaAuto,
       },

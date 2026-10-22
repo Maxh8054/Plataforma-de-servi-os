@@ -151,22 +151,27 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .turma b{display:block;font-size:28px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .turma span{font-size:20px;color:var(--muted)}
 
-/* Escala automática (puxada da plataforma) — tela limpa: só hoje e amanhã */
+/* Escala automática (puxada da plataforma) — ontem, hoje e amanhã + status do relatório técnico */
 .s-esc.esc-only{display:grid;height:100%;grid-template-rows:100%}
-.esc-auto{display:grid;grid-template-columns:1fr 1fr;gap:40px;height:100%}
-.esc-day{padding:44px 48px;display:flex;flex-direction:column;gap:12px;border-top:8px solid var(--line);min-width:0;height:100%}
+.esc-auto{display:grid;grid-template-columns:repeat(var(--esc-n,3),1fr);gap:26px;height:100%}
+.esc-day{padding:34px 36px;display:flex;flex-direction:column;gap:10px;border-top:8px solid var(--line);min-width:0;height:100%}
 .esc-day.hj{border-top-color:var(--accent)}
-.esc-dh{display:flex;align-items:baseline;gap:16px;margin-bottom:10px}
-.esc-dh b{font-family:var(--f-display);font-size:46px;text-transform:uppercase;letter-spacing:.05em}
+.esc-day.ot{border-top-style:dashed;opacity:.94}
+.esc-dh{display:flex;align-items:baseline;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.esc-dh b{font-family:var(--f-display);font-size:38px;text-transform:uppercase;letter-spacing:.05em}
 .esc-day.hj .esc-dh b{color:var(--accent)}
-.esc-dh span{font-size:26px;color:var(--muted);text-transform:capitalize}
-.esc-row{display:flex;align-items:center;gap:28px;padding:22px 0;border-top:1px solid var(--line)}
-.esc-row .lt3{font-family:var(--f-display);font-size:108px;font-weight:800;line-height:1;width:108px;text-align:center;flex:none}
+.esc-dh span{font-size:21px;color:var(--muted);text-transform:capitalize}
+.esc-row{display:flex;align-items:center;gap:20px;padding:15px 0;border-top:1px solid var(--line)}
+.esc-row .lt3{font-family:var(--f-display);font-size:82px;font-weight:800;line-height:1;width:84px;text-align:center;flex:none}
 .esc-p{min-width:0}
-.esc-p b{display:block;font-size:50px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.esc-p .t{font-size:25px;color:var(--muted)}
-.esc-selo{display:inline-flex;margin-top:8px;padding:4px 16px;border:1px solid var(--accent);border-radius:999px;font-size:20px;color:var(--accent)}
-.esc-off{margin-top:auto;padding-top:18px;border-top:1px dashed var(--line);font-size:23px;color:var(--muted)}
+.esc-p b{display:block;font-size:34px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.esc-p .t{font-size:20px;color:var(--muted)}
+.esc-selo{display:inline-flex;margin-top:7px;padding:3px 14px;border:1px solid var(--accent);border-radius:999px;font-size:17px;color:var(--accent)}
+.esc-rel{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:3px 14px;border-radius:999px;font-size:17px;font-weight:600;width:max-content}
+.esc-rel.ok{background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.8);color:#4ade80}
+.esc-rel.no{background:rgba(255,102,0,.12);border:1px solid rgba(255,102,0,.55);color:var(--accent)}
+.esc-rel .dt{font-weight:500;opacity:.75}
+.esc-off{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:19px;color:var(--muted)}
 .esc-off em{font-style:normal;opacity:.85}
 .esc-next{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .esc-nx{padding:12px 10px;text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:10px}
@@ -627,7 +632,7 @@ const SECTIONS = [
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Horário",ph:"Ex.: 07:30 às 11:30",w:2},
       {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",w:2},
       {k:"participantes",l:"Participantes",t:"textarea",w:5}]}]},
-  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha os técnicos de hoje e de amanhã das equipes A/B/C/D, direto da escala da plataforma — incluindo atestados, férias, folgas e coberturas lançadas na Escala de Turno. Os dias cadastrados aqui ficam de fora da TV enquanto o modo estiver ligado. Modo manual: preencha a letra do turno diurno e noturno de cada dia; o dia de hoje é destacado na TV.",
+  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha os técnicos de ONTEM, hoje e de amanhã das equipes A/B/C/D, direto da escala da plataforma — incluindo atestados, férias, folgas e coberturas lançadas na Escala de Turno, além do status do RELATÓRIO TÉCNICO (entregue/pendente) marcado na aba Escala de Turno da plataforma, individual para cada técnico. Os dias cadastrados aqui ficam de fora da TV enquanto o modo estiver ligado. Modo manual: preencha a letra do turno diurno e noturno de cada dia; o dia de hoje é destacado na TV.",
     parts:[
       {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"auto",l:"Puxar automaticamente da escala da plataforma (equipes A/B/C/D)",t:"check",def:false},{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
       {kind:"list",key:"dias",label:"Dias",newRow:()=>({data:nextDate(),diurno:"",noturno:""}),cols:[
@@ -734,21 +739,37 @@ const emptyBox = (t,m) => `<div class="empty"><div><b>${esc(t)}</b>${esc(m)}</di
 /* ---------- escala automática (puxada da plataforma) ---------- */
 const TV_TZ = (()=>{ try{ return encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Sao_Paulo"); }catch(e){ return encodeURIComponent("America/Sao_Paulo"); } })();
 let escalaAuto = null;   // calculada no servidor e entregue junto com o /content
+let relatoriosAuto = null; // entregas do relatório técnico (por dia/técnico) marcadas na plataforma
 let segurancaAuto = null; // dias sem afastamento automáticos (contador oficial da plataforma)
 const HORA_DIURNA = "07:00 – 19:00", HORA_NOTURNA = "19:00 – 07:00";
 const LCLS = {A:"L-A",B:"L-B",C:"L-C",D:"L-D"};
-function escPessoa(x, linha){
+function relBadge(letra, dataStr){
+  /* selo do relatório técnico (entregue/pendente) — só para dias que já rolaram
+     ou o de hoje; amanhã ainda não tem relatório para mostrar */
+  if(!relatoriosAuto || typeof relatoriosAuto!=='object') return "";
+  const d = relatoriosAuto[dataStr]; if(!d || typeof d!=='object') return "";
+  const e = d[letra]; if(!e || typeof e.entregue!=="boolean") return "";
+  const when = e.atualizadoPor ? `<span class="dt">· ${esc(String(e.atualizadoPor).split(" ")[0])}</span>` : "";
+  return e.entregue
+    ? `<span class="esc-rel ok">✓ Relatório entregue${when}</span>`
+    : `<span class="esc-rel no">✗ Relatório pendente${when}</span>`;
+}
+function escPessoa(x, linha, dataStr, comRel){
   return `<div class="esc-row"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>
     <div class="esc-p"><b>${esc(x.nome)}</b><span class="t">${esc(linha)}</span>
-    ${x.selo?`<span class="esc-selo">${esc(x.selo)}</span>`:""}</div></div>`;
+    ${x.selo?`<span class="esc-selo">${esc(x.selo)}</span>`:""}
+    ${comRel?relBadge(x.letra,dataStr):""}</div></div>`;
 }
 function escDiaAuto(d, hd, hn){
   const dt = pDate(d.data);
   const off = d.fora.map(f=>`${esc(f.letra)} <em>(${esc(f.motivo||"Folga")})</em>`).join(" · ");
-  const row = (arr, hora, vazio)=>arr.length?arr.map(x=>escPessoa(x,hora)).join("")
+  const tit = d.destaque==="ontem"?"Ontem":d.destaque==="hoje"?"Hoje":"Amanhã";
+  /* relatório técnico aparece em ontem e hoje (amanhã não tem o que entregar) */
+  const comRel = d.destaque==="ontem" || d.destaque==="hoje";
+  const row = (arr, hora, vazio)=>arr.length?arr.map(x=>escPessoa(x,hora,d.data,comRel)).join("")
     :`<div class="esc-row"><span class="lt3">–</span><div class="esc-p"><b>${vazio}</b><span class="t">${esc(hora)}</span></div></div>`;
-  return `<div class="card esc-day ${d.destaque==="hoje"?"hj":""}">
-    <div class="esc-dh"><b>${d.destaque==="hoje"?"Hoje":"Amanhã"}</b><span>${esc(d.diaSemana)}${dt?" · "+fmtDM(dt):""}</span></div>
+  return `<div class="card esc-day ${d.destaque==="hoje"?"hj":d.destaque==="ontem"?"ot":""}">
+    <div class="esc-dh"><b>${tit}</b><span>${esc(d.diaSemana)}${dt?" · "+fmtDM(dt):""}</span></div>
     ${row(d.diurno,"Diurno · "+hd,"Sem diurno escalado")}
     ${row(d.noturno,"Noturno · "+hn,"Sem noturno escalado")}
     ${off?`<div class="esc-off">Fora: ${off}</div>`:""}
@@ -760,12 +781,13 @@ function renderEscalaAuto(o){
   const h = get(o,"escala","horarios") || {};
   const hd = String(h.diurno||"").trim() || HORA_DIURNA;
   const hn = String(h.noturno||"").trim() || HORA_NOTURNA;
+  const otm = escalaAuto.dias.find(d=>d.destaque==="ontem");
   const hj = escalaAuto.dias.find(d=>d.destaque==="hoje");
   const am = escalaAuto.dias.find(d=>d.destaque==="amanha");
   if(!hj || !am) return emptyBox("Escala automática carregando","A TV está buscando a escala da plataforma. Se persistir, verifique a conexão.");
-  /* tela limpa: só hoje e amanhã — sem previsão dos próximos dias nem cartões de equipe */
+  const dias = [otm,hj,am].filter(Boolean);
   return `<div class="s-esc esc-only">
-    <div class="esc-auto">${escDiaAuto(hj,hd,hn)}${escDiaAuto(am,hd,hn)}</div>
+    <div class="esc-auto" style="--esc-n:${dias.length}">${dias.map(d=>escDiaAuto(d,hd,hn)).join("")}</div>
   </div>`;
 }
 
@@ -1661,7 +1683,7 @@ async function refreshPend(){
 async function refreshContent(){
   try{
     const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
-    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; relatoriosAuto = j.relatorios||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
     gotSec = true; gotCfg = true;
     onData();
   }catch(e){}
@@ -1838,7 +1860,7 @@ async function carregarConteudo(){
   try{
     const j = await api(`/api/tv/${PANEL_SLUG}/content?tz=${TV_TZ}`);
     failStreak = 0;
-    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
+    secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; relatoriosAuto = j.relatorios||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
     gotSec = true; gotCfg = true;
     onData();
     return true;
