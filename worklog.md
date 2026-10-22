@@ -537,3 +537,27 @@ Stage Summary:
 - Aniversariantes: só no PAINEL TV, no layout zm-ani do anexo — a fonte continua sendo a aba Aniversariantes do editor (fotos, Excel, lote); festa e confete disparam sozinhos no dia; "hoje" vem do servidor no fuso de São Paulo
 - Organograma: movido para o PAINEL TV (slide na rotação da TV + aba no editor); fotos casadas PELO NOME no cadastro de Aniversariantes (sem upload manual); para crescer a equipe, edita na aba Organograma do painel
 - Plataforma: rodapé limpo (sem os dois botões); APIs/modais da tentativa anterior removidos
+
+---
+Task ID: 29
+Agent: Z.ai Code (principal)
+Task: Fotos dos aniversariantes (maior/circular), flayer horizontal sem corte nos comunicados e mover dados inputáveis para o BANCO (contador de dias sem acidentes)
+
+Work Log:
+- RECUPERAÇÃO PÓS-RECYCLE (antes de tudo): o ambiente sandbox foi reciclado entre mensagens — git local re-inicializado (1 commit "Initial commit" com 11 arquivos), código do projeto desrastreado, public/html e node_modules perdidos. GitHub estava intacto (main = 96487e6). Recuperado com git remote add + fetch + reset --hard origin/main (245 arquivos).
+- .env real PERDIDO no reset --hard (estava como modificação não commitada) — RECUPERADO da imagem anexada upload/pasted_image_1792609946809.png (painel de configuração com todas as env vars) + hostname externo oregon já validado. Reescrito e testado (banco acessível, dados intactos: 25 usuários, 78 aniversariantes).
+- Guard ZDB re-injetado no node_modules (next/dist/bin/next + prisma/build/index.js). BUG descoberto: injetar guard APÓS a 1ª instrução de bundle minificado cai DENTRO de expressão multiline (texto vira string, não executa). Fix: injetar ENTRE a shebang e a 1ª instrução. Injector idempotente salvo em .zscripts/zdb-guard.mjs (gitignored).
+- QUirk novo do recycle: o template recria src/app/page.tsx + layout.tsx + globals.css do scaffold — eles CONFLITAM com (platform)/page.tsx (a "/" servia o logo do template). Removidos; layouts de grupo já são root layouts (repo não tem layout raiz e está correto).
+- FOTO ANIVERSARIANTES: a "oval" vinha de aspect-ratio:1 não suportado em browsers antigos de TV (container colapsava para a proporção intrínseca da foto). Fix: .ani-ph com width E height explícitos via --ani-av:clamp(150px,11vw,224px) + border-radius:50% — círculo garantido em qualquer browser. Foto até 224px (era 150px máx). Iniciais maiores.
+- FLYER COMUNICADOS: .memo-img img agora object-fit:contain (NUNCA corta, qualquer orientação). Flyer horizontal/paisagem (naturalWidth>=0.95*altura, via onload no helper img()) ganha classe .img-land no .memo: layout empilhado — imagem em cima ocupando a largura total, texto embaixo (h2 56px, clamp 3 linhas). Vertical (cartaz) continua ao lado do texto. Verificado no browser com o flyer real do Outubro Rosa (1024x1536 — inteiro) e com um 16:9 sintético (empilhado).
+- CONTADOR NO BANCO: novo model ContadorSeguranca (regional PK, dataBase, atualizadoEm/Por) — schema aplicado no Render (db push aditivo) e SEED com os valores atuais (goias 2022-08-01, minas 2024-07-11). contador-seguranca.ts: dataBaseDeAsync() lê o BANCO com fallback nas constantes; computarSegurancaAuto agora async; content route aguarda via Promise.all. NOVA API /api/contador-seguranca: GET público (mapa plano) + PUT admin (upsert, aceita go/mg).
+- UI: tela inicial da plataforma — lápis (só admin) no bloco "DIAS SEM AFASTAMENTO" abre modal para editar a data-base do estado selecionado; salva no banco; contador da home e o segurancaAuto da TV se ajustam sozinhos. Home passa a buscar /api/contador-seguranca no mount (fallback: constantes).
+- E2E no browser (agent-browser, 1920x1080, sessão admin temporária criada via Prisma e REMOVIDA após o teste): contador 1543 dias na home E na TV (iguais, do banco); edição 2022-08-01 → 2026-10-20 → voltou; TV refletiu dias=2 na hora; revert OK. Slides aniversarios (fotos grandes circulares) e comunicados (flyer inteiro) verificados por screenshot.
+- Lint: 31 problemas PRÉ-EXISTENTES do repo (baseline sem as mudanças = idêntico), zero novos. Removeu 2 erros que zdb-guard.cjs (CJS/require) introduziria — convertido para ESM.
+- Commit cbee2e0 pushado para origin/main (96487e6..cbee2e0).
+
+Stage Summary:
+- Nada inputável ficou em código: TV sections/fotos/organograma/config já em banco; contador de segurança AGORA também (tabela contador_seguranca + API + UI admin na home). Constantes do código = só fallback/seed.
+- Deploy-safe: atualizar o contador não exige commit novo; deploy não apaga mais nada do que o admin digitou (tudo no Postgres do Render).
+- TV: fotos de aniversariantes grandes e circulares em qualquer browser (sem depender de aspect-ratio); comunicados nunca corta imagem (contain; paisagem vira destaque de largura total).
+- Pendências/quirks documentados: recycle do sandbox recria template src/app/{page,layout}.tsx,globals.css (deletar de novo se acontecer) e apaga node_modules (rodar bun .zscripts/zdb-guard.mjs após bun install).
