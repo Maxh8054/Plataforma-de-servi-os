@@ -444,6 +444,12 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 /* controles flutuantes */
 .ctrls{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:20;transition:opacity .3s}
 .ctrls.hide{opacity:0;pointer-events:none}
+/* voltar para a plataforma — entra na fileira de controles flutuantes; só aparece em
+   dispositivos que não são TV (JS marca a classe no body pela detecção de smart TV) */
+.ctrls{flex-wrap:wrap;max-width:calc(100vw - 40px)}
+.btn.voltar{display:none;align-items:center;gap:7px;border-radius:999px;text-decoration:none}
+body.nao-tv .btn.voltar{display:inline-flex}
+.btn.voltar svg{width:15px;height:15px;flex:none}
 .btn{font:600 15px var(--f-body);border:1px solid var(--line);background:var(--panel2);color:var(--fg);padding:10px 16px;border-radius:8px;cursor:pointer}
 .btn:hover{border-color:var(--muted)}
 .btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -573,6 +579,10 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 </div>
 
 <div class="ctrls" id="ctrls">
+  <a class="btn voltar" id="voltar" href="/">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/><path d="M4 12h16"/></svg>
+    Voltar para plataforma
+  </a>
   <button class="btn ghost" id="bPrev" aria-label="Slide anterior">◀</button>
   <button class="btn ghost" id="bNext" aria-label="Próximo slide">▶</button>
   <button class="btn" id="bFull">Tela cheia</button>
@@ -1213,6 +1223,11 @@ function fit(){
   st.style.transform = `translate(${(vw-1920*s)/2}px,${(vh-1080*s)/2}px) scale(${s})`;
 }
 addEventListener("resize", fit); fit();
+
+/* voltar para a plataforma: em TV fica limpo, sem botão; em celular/PC aparece no canto.
+   Detecção pelo User-Agent dos navegadores de smart TV (Tizen/WebOS/Android TV/Fire TV/Apple TV…). */
+const UA_TV = /SMART[-_ ]?TV|SmartTV|Tizen|Web0S|WebOS|HbbTV|GoogleTV|Android\s*TV|CrKey|Apple\s*TV|AppleTV|Viera|BRAVIA|NetCast|Roku|SHIELD|MiBOX|MiTV|PhilipsTV|AFT[BGSZ]|Fire\s*TV/i.test(navigator.userAgent||"");
+if(UA_TV){ document.body.classList.add("tv"); } else { document.body.classList.add("nao-tv"); }
 
 /* controles */
 let idleT;
