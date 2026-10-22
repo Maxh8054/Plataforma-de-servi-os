@@ -424,10 +424,10 @@ model TvAsset {
 }
 
 // ==========================================
-// Organograma da plataforma (botão "Organograma" no rodapé)
-// Lista de pessoas editável (adicionar/editar/remover quando a equipe crescer).
-// As fotos NÃO ficam aqui: são resolvidas automaticamente pelo nome a partir
-// do cadastro de colaboradores do painel TV (aba Aniversariantes → TvAsset).
+// [OBSOLETO] Organograma da plataforma via modal no rodapé — desativado.
+// O organograma agora vive no PAINEL TV (aba Organograma → TvSection
+// "organograma"), com as fotos casadas PELO NOME no cadastro de
+// Aniversariantes. Modelo mantido só para preservar a tabela existente.
 // ==========================================
 
 model OrganogramaData {

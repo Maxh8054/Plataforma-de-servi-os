@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido } from '@/lib/tv';
-import { TZ_PADRAO, computarEscalaAutoSeguro } from '@/lib/escala-auto';
+import { TZ_PADRAO, computarEscalaAutoSeguro, hojeNoFuso } from '@/lib/escala-auto';
 import { computarSegurancaAuto } from '@/lib/seguranca-auto';
 
 function safeJson(str: string | null | undefined): unknown {
@@ -49,6 +49,10 @@ export async function GET(
       {
         secoes: secoesObj,
         config: (safeJson(config?.data ?? null) as Record<string, unknown> | null) ?? {},
+        // data de hoje (YYYY-MM-DD) no fuso pedido — a TV usa no slide de
+        // aniversariantes para o "HOJE" bater com o fuso da operação, mesmo
+        // que o relógio do aparelho esteja errado
+        hoje: hojeNoFuso(request.nextUrl.searchParams.get('tz') ?? TZ_PADRAO),
         // escala de turno automática (equipes A/B/C/D da plataforma) — a TV
         // mostra sozinha o técnico de hoje e de amanhã; null se falhar
         escalaAuto,
