@@ -70,7 +70,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hid
 @media (prefers-reduced-motion:reduce){.slide{animation:none}.bar i{animation:none!important}}
 
 .ft{display:flex;align-items:stretch;border-top:1px solid var(--line);position:relative}
-.ft .dsa{background:var(--accent);color:var(--on-accent);display:flex;align-items:center;gap:16px;padding:0 40px 0 56px}
+.ft .dsa{background:var(--accent);color:#fff;display:flex;align-items:center;gap:16px;padding:0 40px 0 56px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 .ft .dsa b{font-family:var(--f-display);font-size:60px;font-weight:800;line-height:1}
 .ft .dsa span{font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;line-height:1.1}
 .ft .msg{flex:1;min-width:0;display:flex;align-items:center;padding:0 40px;font-size:26px;color:var(--fg);overflow:hidden;white-space:nowrap}
@@ -224,13 +224,19 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .s-ani .ani-meta{display:flex;align-items:center;gap:22px}
 .s-ani .ani-meta p{margin:0;text-align:right;color:var(--muted);font-size:24px;line-height:1.3}
 .s-ani .ani-meta p b{display:block;color:var(--fg);font-family:var(--f-display);font-size:54px;line-height:1}
-.s-ani .ani-logo{height:62px;width:auto;display:block}
 .s-ani .ani-grid{position:relative;list-style:none;margin:30px 0 0;padding:0;display:grid;grid-template-columns:repeat(var(--c,4),minmax(0,1fr));gap:20px;align-content:start;flex:1;min-height:0;overflow:auto}
 .s-ani .ani-card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 16px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;min-width:0}
-.s-ani .ani-ph{position:relative;--ani-av:clamp(150px,11vw,224px);width:var(--ani-av);height:var(--ani-av);aspect-ratio:1;margin-bottom:30px}
+/* foto GRANDE: o tamanho se adapta à largura da coluna (nº de pessoas por linha)
+   e cresce até 300px — sem estourar o cartão em meses cheios */
+.s-ani .ani-ph{position:relative;--ani-av:min(calc((1808px - (var(--c,4) - 1)*20px)/var(--c,4) - 44px),300px);width:var(--ani-av);height:var(--ani-av);aspect-ratio:1;margin-bottom:34px}
+/* modo festa: o banner ocupa espaço — foto um pouco menor e a linha final sai,
+   para os nomes nunca ficarem cortados */
+.s-ani.festa .ani-ph{--ani-av:min(calc((1808px - (var(--c,4) - 1)*20px)/var(--c,4) - 44px),240px);margin-bottom:26px}
+.s-ani.festa .ani-card{padding-top:16px}
+.s-ani.festa .ani-ft{display:none}
 .s-ani .ani-av{width:100%;height:100%;border-radius:50%;overflow:hidden;border:4px solid var(--accent);background:var(--panel2);display:grid;place-items:center}
 .s-ani .ani-av img{width:100%;height:100%;object-fit:cover;display:block}
-.s-ani .ani-av span{font-family:var(--f-display);font-weight:700;font-size:clamp(44px,3.4vw,66px);color:var(--muted)}
+.s-ani .ani-av span{font-family:var(--f-display);font-weight:700;font-size:clamp(52px,5vw,96px);color:var(--muted)}
 .s-ani .ani-day{position:absolute;left:50%;bottom:-17px;transform:translateX(-50%);background:var(--accent);color:var(--on-accent);border-radius:999px;padding:4px 16px 3px;font-family:var(--f-display);font-weight:800;font-size:24px;letter-spacing:.04em;white-space:nowrap;font-variant-numeric:tabular-nums}
 .s-ani .ani-card b{font-size:clamp(19px,1.35vw,26px);line-height:1.15;overflow-wrap:anywhere}
 .s-ani .ani-card small{color:var(--accent);font-weight:600;font-size:clamp(13px,1vw,18px)}
@@ -1087,7 +1093,7 @@ const R = {
     const mes = mesNomes[mAt-1];
     if(!it.length) return emptyBox("Sem aniversariantes neste mês","Adicione os aniversariantes de "+mes+" no editor (aba Aniversariantes).");
     const festas = it.filter(a=>a._d===dHoje);
-    const n=it.length, c=n<=4?Math.max(n,1):n<=6?3:n<=8?4:n<=10?5:6;
+    const n=it.length, c=n<=4?Math.max(n,1):n<=6?n:n<=8?4:n<=10?5:6;
     const ini = v => String(v||"").trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();
     const bonito = v => String(v||"").toLowerCase().split(/\s+/).filter(Boolean).map((w,i)=>(i&&["de","da","do","dos","das","e"].includes(w))?w:w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
     const primeiro = a => bonito(a.nome).split(" ")[0];
@@ -1096,7 +1102,7 @@ const R = {
       <canvas class="ani-dots" aria-hidden="true"></canvas>
       <header class="ani-hd">
         <div><small>ZAMine · Alto Horizonte</small><h1>Aniversariantes<br>de <em>${esc(mes)}</em></h1></div>
-        <div class="ani-meta"><p><b>${it.length}</b>aniversariante${it.length===1?"":"s"}<br>no mês</p>${LOGO_TV?`<img class="ani-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}</div>
+        <div class="ani-meta"><p><b>${it.length}</b>aniversariante${it.length===1?"":"s"}<br>no mês</p></div>
       </header>
       ${festas.length?`<div class="ani-festa" aria-live="polite"><svg class="bolo" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="30" width="44" height="24" rx="4" fill="currentColor"/><path d="M10 38c5 4 9 4 14 0s9-4 14 0 9 4 14 0" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/><rect x="20" y="18" width="4" height="12" rx="2" fill="currentColor"/><rect x="30" y="16" width="4" height="14" rx="2" fill="currentColor"/><rect x="40" y="18" width="4" height="12" rx="2" fill="currentColor"/><path d="M22 10c2 3 2 5 0 7-2-2-2-4 0-7zM32 8c2 3 2 5 0 7-2-2-2-4 0-7zM42 10c2 3 2 5 0 7-2-2-2-4 0-7z" fill="#fff"/></svg><div><small>Hoje é dia de festa</small><b>Parabéns, ${esc(quem)}!</b></div></div>`:""}
       <ol class="ani-grid" style="--c:${c}">${it.map(a=>{const hj2=a._d===dHoje, passou=a._d<dHoje;

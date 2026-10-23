@@ -662,3 +662,23 @@ Stage Summary:
 - Editor: aba Histórico (auditoria + erros da TV em vermelho com banner 24h), galeria multi-upload com arrastar-para-capa, backup exportar/importar JSON, datas/horário em todas as abas de aviso.
 - Bugs corrigidos: clima nunca iniciado; fitOrg(evento) logando erro a cada foto do organograma; rodapé flex.
 - Arquivos: painel-tv-goias.html, tv-sw.js (novo), api/tv/[panel]/auditoria (novo), api/tv/[panel]/erros (novo), control/route.ts, secoes/[key]/route.ts. Commit 5daabaa no GitHub.
+
+---
+Task ID: 33
+Agent: Z.ai Code (principal)
+Task: Ajustes na tela de Aniversariantes do mês (pedido do usuário): dias do rodapé em branco, tirar a logo ao lado da contagem do mês, fotos das pessoas maiores
+
+Work Log:
+- Sandbox foi resetado (arquivos locais perdidos); projeto restaurado clonando o GitHub (Maxh8054/Plataforma-de-servi-os, HEAD 4ff04d2) e reinstalando dependências. Turbopack apresentou panic por cache .next velho do sandbox — resolvido removendo .next e reiniciando o dev server. pptxgenjs re-instalado (bun add).
+- Rodapé: contador "X dias sem acidentes" trocado de --on-accent (quase preto #120800) para BRANCO #fff com sombra sutil — legível nos temas escuro e claro (bg laranja nos dois).
+- Tela de aniversariantes: removida a logo (ani-logo) ao lado de "N aniversariantes no mês" (a logo do cabeçalho da TV continua; LOGO_TV segue usado pelo vh-logo). Regra CSS .ani-logo apagada.
+- Fotos maiores: avatar agora é calculado pela largura da coluna (--c) com teto de 300px (antes clamp 150–224, ~211px na TV). Iniciais (sem foto) também maiores (até 96px).
+- Corrigido de quebra: com 5–6 aniversariantes o grid quebrava em 2 linhas e a SEGUNDA LINHA ficava invisível na TV (ninguém rola a tela). Nova lógica de colunas: 1–4 → N colunas, 5 → 5, 6 → 6 (linha única, todos visíveis, fotos 240–300px); 7–8 → 4 colunas, 9–10 → 5, 11+ → 6 (igual antes).
+- Modo festa (aniversário hoje): banner comprimia o grid e cortava os nomes. Foto cap 240px + padding/margem menores do cartão + linha "Parabéns a todos" oculta no modo festa → banner + 6 cartões com nomes inteiros, zero scroll.
+- Verificação E2E (agent-browser 1920×1080, conteúdo injetado via aplicarConteudo com 6 aniversariantes e fotos SVG): foto medida 300px (4 pessoas) e 241px (6 pessoas), todas visíveis scroll 0; festa com "PARABÉNS, GIOVANA!", destaque HOJE e nomes completos; rodapé branco confirmado nos temas dark (rgb(255,255,255) sobre #ff6600) e light (sobre #f26100); sem logo na contagem; JS validado (new Function OK); console sem erros novos. Lint: mesmos 31 problemas pré-existentes. Nota: network route do agent-browser não interceptou nesta sessão — mock aplicado por eval direto.
+- Prisma/DB: nada alterado (só CSS/JS do HTML e 1 linha de colunas). Commit + push origin/main.
+
+Stage Summary:
+- Rodapé da TV: dias sem acidentes em BRANCO (dark e light).
+- Aniversariantes: sem logo ao lado da contagem do mês; fotos até 300px (eram ~211px), todos os aniversariantes do mês sempre visíveis (até 6 em linha única), modo festa sem cortar nomes.
+- Arquivo: public/html/painel-tv-goias.html.
