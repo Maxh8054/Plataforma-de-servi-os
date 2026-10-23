@@ -819,3 +819,15 @@ Stage Summary:
 - Sino na plataforma: TV offline, pendências de aprovação, backup concluído, conteúdo expirando (badge + dropdown, marca lido).
 - QR da plataforma: pequeno (56px) no canto do rodapé da TV, configurável (vazio = esconde) — sem poluir a tela.
 - Arquivos: prisma/schema.prisma, src/lib/tv-monitor.ts (novo), api/tv/[panel]/{heartbeat,dispositivos,backups} (novos), api/tv/monitor (novo), api/ia/rascunho (novo), api/notificacoes{,/lido} (novos), api/tv/[panel]/{secoes/[key],config} (gancho pré-edição), src/app/(platform)/page.tsx (sino + card + filtro), public/tv-extras.js (novo), public/tv-qrcode.js (novo, lib MIT), public/tv-sw.js (scripts no cache offline), public/html/{painel-tv-goias,painel-tv-minas}.html, public/html/tvs-monitor.html (novo), eslint.config.mjs (ignores).
+
+---
+Task ID: 38-push
+Agent: Z.ai Code (principal)
+Task: Push do commit a65f0a5 (pacote "TV inteligente" — heartbeat, dashboard admin, backup automático, IA, prévia, marcos, sino, QR) para o GitHub
+
+Work Log:
+- Usuário autorizou reuso do token antigo (vai revogá-lo ele mesmo no fim do projeto).
+- Push origin main executado (ac3d72f..a65f0a5 main -> main); token removido do remote imediatamente após (git remote -v sem credenciais).
+
+Stage Summary:
+- a65f0a5 no GitHub → Render fará deploy automático do pacote TV inteligente (as novas tabelas TvDispositivo/TvBackup/NotificacaoLeitura nascem via CREATE TABLE IF NOT EXISTS no primeiro acesso, sem passo manual).
