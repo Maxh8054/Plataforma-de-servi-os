@@ -831,3 +831,18 @@ Work Log:
 
 Stage Summary:
 - a65f0a5 no GitHub → Render fará deploy automático do pacote TV inteligente (as novas tabelas TvDispositivo/TvBackup/NotificacaoLeitura nascem via CREATE TABLE IF NOT EXISTS no primeiro acesso, sem passo manual).
+
+---
+Task ID: 39
+Agent: Z.ai Code (principal)
+Task: Corrigir "IA indisponível agora" no Render — a IA não funcionava em produção
+
+Work Log:
+- Causa raiz: z-ai-web-dev-sdk NÃO usa env vars; ZAI.create() procura o arquivo .z-ai-config (cwd → ~ → /etc). Esse arquivo só existe no sandbox (/etc/.z-ai-config, credenciais internas por sessão — NUNCA commitar). No Render não há arquivo → loadConfig lança "Configuration file not found" → rota caía no catch genérico → "IA indisponível agora."
+- src/lib/ia.ts (NOVO): gerarTextoIA(system, user) — 1) se IA_API_KEY existir, chama fetch direto em endpoint OpenAI-compatível (IA_BASE_URL, padrão https://api.z.ai/api/paas/v4; IA_MODEL, padrão glm-4.5-flash; thinking disabled só para hosts z.ai/bigmodel; timeout 45s; erros detalhados); 2) sem env var, cai no SDK (dev/sandbox). Erros tipados: IaNaoConfiguradaError (503, permanente) × IaFalhouError (502, transitório).
+- route.ts: usa o helper; 503 com instrução explícita ("administrador precisa definir IA_API_KEY no Render → Environment") e 502 amigável para falha momentânea; causa real logada no console.
+- Validação: bun /tmp/teste-ia.ts → SDK path gerou frase real; curl POST /api/ia/rascunho → 401 sem login (rota compila); lint 31 baseline.
+- Commit + push (token antigo autorizado pelo usuário; removido do remote após).
+
+Stage Summary:
+- Para a IA funcionar no Render: criar chave em z.ai (API keys) e definir no Render → Environment: IA_API_KEY=<chave> (opcional IA_BASE_URL/IA_MODEL para outro provedor OpenAI-compatível). O push dispara deploy; depois de deployar, o botão ✨ passa a funcionar. Sem a chave, o modal mostra exatamente o que falta (503).

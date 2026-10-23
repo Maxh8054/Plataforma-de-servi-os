@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import { gerarTextoIA, IaFalhouError, IaNaoConfiguradaError } from '@/lib/ia';
 import { tvUser } from '@/lib/tv';
 
 /**
@@ -52,20 +52,22 @@ export async function POST(request: NextRequest) {
     `Tema: ${tema}.` +
     (detalhes ? ` Detalhes que devem ser considerados: ${detalhes}.` : '');
 
+  const SISTEMA =
+    'Você redige conteúdo para painéis de TV de segurança do trabalho de uma indústria brasileira. ' +
+    'Responda SOMENTE com o texto pedido, sem introdução, sem explicação e sem markdown.';
+
   try {
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'assistant', content: 'Você redige conteúdo para painéis de TV de segurança do trabalho de uma indústria brasileira. Responda SOMENTE com o texto pedido, sem introdução, sem explicação e sem markdown.' },
-        { role: 'user', content: `${instrucao}\n\n${pedido}` },
-      ],
-      thinking: { type: 'disabled' },
-    });
-    const texto = (completion.choices[0]?.message?.content || '').trim();
-    if (!texto) return NextResponse.json({ error: 'A IA não devolveu texto. Tente de novo.' }, { status: 502 });
+    const texto = await gerarTextoIA(SISTEMA, `${instrucao}\n\n${pedido}`);
     return NextResponse.json({ texto: texto.slice(0, 4000) });
   } catch (e) {
-    console.error('[ia/rascunho] erro:', (e as Error)?.message?.slice(0, 200));
+    if (e instanceof IaNaoConfiguradaError) {
+      console.error('[ia/rascunho] não configurada:', (e as Error).message);
+      return NextResponse.json(
+        { error: 'IA não configurada neste servidor. O administrador precisa definir IA_API_KEY nas variáveis de ambiente do Render (Environment).' },
+        { status: 503 }
+      );
+    }
+    console.error('[ia/rascunho] erro:', (e instanceof IaFalhouError ? e.message : (e as Error)?.message || e)?.slice(0, 300));
     return NextResponse.json({ error: 'IA indisponível agora. Escreva manualmente e tente de novo depois.' }, { status: 502 });
   }
 }
