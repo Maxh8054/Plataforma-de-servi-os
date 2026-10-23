@@ -774,3 +774,20 @@ Work Log:
 
 Stage Summary:
 - Menu: Minas Gerais → [R&D | Araxá | Usiminas]; dentro de Araxá → [Segurança | Painel TV | Literaturas | Criar Relatórios]; idem Usiminas. Cada Painel TV abre o painel daquele local, visível só para quem tem permissão.
+
+---
+Task ID: 37
+Agent: Z.ai Code (principal)
+Task: Contador de dias sem acidentes — SÓ Goiás puxa automático da plataforma; demais painéis (Minas, Araxá, Usiminas e futuros) usam data editada no próprio painel, com contagem automática (hoje menos a data)
+
+Work Log:
+- src/lib/seguranca-auto.ts reescrito: constante PAINEL_SEGURANCA_AUTO = 'goias'; computarSegurancaAuto retorna null para qualquer outro painel (removido o fallback por estado da Task 35 — Minas/locais não puxam mais a data-base da plataforma). Goias segue idêntico (data-base da tela inicial → dias).
+- public/html/painel-tv-minas.html: aba "Dias sem acidentes" ganhou o campo "Contando desde (data do último acidente com afastamento)" (t:"date", grava seguranca.dados.ultimoAcidente — o mesmo campo do fallback antigo da TV); hint reescrito (colocar a DATA, contagem sobe sozinha, trocar a data quando houver novo acidente); mensagem do slide sem contador trocada de "A contagem automática da plataforma ainda não carregou" para instrução de preencher a data no editor.
+- NADA mudou na TV para renderizar: R.seguranca já usa segurancaAuto quando existe (goias) e cai em diasSemAcidente(o) (= hoje - ultimoAcidente, aritmética imune a fuso) quando não existe; o rodapé segue o mesmo número (linha 1530). Goiás intocado (painel-tv-goias.html sem alteração — campo não aparece lá, puxa da plataforma).
+- ContadorSeguranca regional=minas no banco fica órfão do PAINEL TV (a tela inicial da plataforma continua usando normalmente — não foi pedido mudança lá).
+- E2E (agent-browser, painel minas-araxa): mock com ultimoAcidente = hoje-100 dias → slide exatamente "100", card "Contando desde <data>", recorde 500/meta 800/mensagem, rodapé "100"; sem data e sem auto → rodapé "–" e slide com aviso instrutivo. JS validado (new Function OK). Lint: 31 baseline. Sem mudança de schema.
+- Commit + push (token enviado pelo usuário; removido do remote após o push).
+
+Stage Summary:
+- Goiás: contador automático da plataforma (como era).
+- Minas/Araxá/Usiminas (e todo painel novo): admin coloca a data no editor do painel; TV conta sozinha os dias e sobe um por dia; sem data mostra "–" com aviso de como configurar.

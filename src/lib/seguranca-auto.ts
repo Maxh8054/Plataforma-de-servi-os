@@ -1,15 +1,17 @@
 /**
  * Dias sem afastamento automáticos para o painel da TV.
  *
- * Puxa o contador oficial da plataforma (src/lib/contador-seguranca.ts —
- * a mesma data-base do contador exibido na tela inicial), de modo que a TV
- * mostre sozinha o número certo, sem ninguém cadastrar data no editor.
- *
- * A aritmética de datas é feita em strings "YYYY-MM-DD" (imune a fuso),
- * no mesmo padrão da escala automática.
+ * REGRA: SÓ o painel de Goiás puxa o contador OFICIAL da plataforma
+ * (src/lib/contador-seguranca.ts — a mesma data-base do contador exibido na
+ * tela inicial). Todos os demais painéis (estados e locais, ex.: minas,
+ * minas-araxa) NÃO recebem o contador daqui: neles o admin coloca a DATA do
+ * último acidente no próprio painel (aba "Dias sem acidentes" →
+ * "Contando desde") e a TV calcula sozinha os dias (hoje menos a data).
  */
 import { dataBaseDeAsync, diasDesde, TZ_SEGURANCA } from '@/lib/contador-seguranca';
-import { estadoDoPainel } from '@/lib/tv-panels';
+
+/** Painéis que puxam o contador automático da tela inicial da plataforma. */
+export const PAINEL_SEGURANCA_AUTO = 'goias';
 
 export interface SegurancaAuto {
   modo: 'auto';
@@ -21,20 +23,15 @@ export interface SegurancaAuto {
   geradoEm: string; // ISO
 }
 
-/** Contador automático da regional (data-base DO BANCO); null se não houver contador.
- *  Painéis por LOCAL (ex.: "minas-araxa") caem por padrão na linha do ESTADO
- *  ("minas") enquanto não existir data-base própria do local — assim todo local
- *  novo já nasce com o contador certo, e o admin pode criar uma linha específica
- *  por local no banco quando quiser números separados. */
+/** Contador automático da regional (data-base DO BANCO); null quando o painel
+ *  não é Goiás ou não há data-base — nesse caso a TV usa a data editada no
+ *  próprio painel e calcula os dias localmente. */
 export async function computarSegurancaAuto(
   panelSlug: string,
   tz: string = TZ_SEGURANCA,
 ): Promise<SegurancaAuto | null> {
-  let desde = await dataBaseDeAsync(panelSlug);
-  if (!desde) {
-    const estado = estadoDoPainel(panelSlug);
-    if (estado && estado !== panelSlug) desde = await dataBaseDeAsync(estado);
-  }
+  if (panelSlug !== PAINEL_SEGURANCA_AUTO) return null;
+  const desde = await dataBaseDeAsync(panelSlug);
   if (!desde) return null;
   return {
     modo: 'auto',

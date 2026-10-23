@@ -736,8 +736,9 @@ const LETRAS = ["","A","B","C","D"];
 
 const MESES = ["","Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 const SECTIONS = [
-  {key:"seguranca", label:"Dias sem acidentes", hint:"O contador é automático, puxado direto da plataforma — o mesmo número mostrado na tela inicial (o contador de Minas usa a data-base definida na plataforma pelo administrador). Ninguém cadastra data aqui: quando houver um acidente com afastamento, a data-base é atualizada na plataforma e a TV se ajusta sozinha. Nesta aba você só ajusta recorde, meta e mensagem.",
+  {key:"seguranca", label:"Dias sem acidentes", hint:"Coloque a DATA do último acidente com afastamento (não o número de dias): a TV calcula sozinha a contagem — hoje menos a data — e o número sobe um por dia. Quando houver um novo acidente, troque a data aqui e a contagem recomeça. Nesta aba você também ajusta recorde, meta e mensagem.",
     parts:[{kind:"obj",key:"dados",fields:[
+      {k:"ultimoAcidente",l:"Contando desde (data do último acidente com afastamento)",t:"date"},
       {k:"recorde",l:"Recorde anterior (dias)",t:"number"},
       {k:"meta",l:"Meta (dias)",t:"number"},
       {k:"mensagem",l:"Mensagem de segurança",t:"textarea",wide:true}]}]},
@@ -1040,11 +1041,12 @@ const fotosDe = e => (Array.isArray(e.fotos) && e.fotos.length ? e.fotos : [e.fo
 const R = {
   seguranca(o){
     const s = get(o,"seguranca","dados") || {};
-    /* contador automático: puxado da plataforma (mesmo número da tela inicial).
-       Fallback: data manual antiga, caso o servidor não tenha entregue o contador. */
+    /* Goiás: contador automático da plataforma (segurancaAuto). Demais locais:
+       data editada na aba “Dias sem acidentes” (ultimoAcidente) — a TV calcula
+       sozinha os dias (hoje menos a data). */
     const auto = (segurancaAuto && segurancaAuto.dias!=null) ? segurancaAuto : null;
     const dias = auto ? auto.dias : diasSemAcidente(o);
-    if(dias===null) return emptyBox("Contador chegando","A contagem automática da plataforma ainda não carregou.");
+    if(dias===null) return emptyBox("Contador ainda não configurado","Coloque a data do último acidente com afastamento na aba “Dias sem acidentes” do editor — a contagem passa a subir sozinha a partir daí.");
     const recField = num(s.recorde);
     const rec = recField>0 ? Math.max(recField, dias) : dias;
     const novoRec = recField>0 && dias>recField;
