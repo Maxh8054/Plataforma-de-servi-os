@@ -744,3 +744,16 @@ Stage Summary:
 - Um local novo leva ~2 linhas (registro backend + LOCAIS do HTML) e nasce funcionando com o contador do estado por padrão.
 - Menu da plataforma mostra um card por painel, só para quem tem permissão naquele painel; admin vê todos.
 - Arquivos: src/lib/tv-panels.ts (novo), src/lib/tv.ts, src/lib/seguranca-auto.ts, src/app/api/tv/panels/route.ts, src/app/(platform)/page.tsx, public/html/painel-tv-minas.html, public/tv-sw.js. Sem mudança de schema Prisma.
+
+---
+Task ID: 35-push
+Agent: Z.ai Code (principal)
+Task: Push do commit f9b32a1 (painéis de TV por local) para o GitHub
+
+Work Log:
+- Token fornecido pelo usuário no chat; push origin main executado (9e6ee05..f9b32a1 main -> main).
+- Token removido do remote imediatamente após o push (git remote set-url sem credenciais; verificado em git remote -v). main e origin/main sincronizados.
+- Nota: o usuário reutilizou o MESMO token da Task 33 — orientado novamente a revogá-lo no GitHub e gerar um novo na próxima vez.
+
+Stage Summary:
+- f9b32a1 no GitHub → Render fará deploy automático (painéis por local: minas-araxa, minas-usiminas).
