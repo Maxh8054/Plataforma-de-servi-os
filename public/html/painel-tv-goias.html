@@ -636,6 +636,28 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .perm-item b{min-width:200px}
 .perm-item .tags{display:flex;gap:6px;flex-wrap:wrap;flex:1}
 .perm-item .tagx{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
+/* canais da TV: seletor no aparelho + chip no rodapé + aba do editor */
+#canalSel{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:grid;place-items:center;padding:24px}
+#canalSel[hidden]{display:none}
+#canalSel .cs-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 28px;max-width:560px;width:100%;max-height:86vh;overflow:auto}
+#canalSel h3{margin:0 0 6px;font-family:var(--f-display);font-size:30px;text-transform:uppercase}
+#canalSel .cs-hint{margin:0 0 18px;color:var(--muted);font-size:15px}
+#canalSel .cs-item{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:16px 18px;font-size:19px;font-weight:600;cursor:pointer;margin-bottom:10px;min-height:56px}
+#canalSel .cs-item:hover{border-color:var(--accent)}
+#canalSel .cs-item.on{border-color:var(--accent);background:var(--accent-soft)}
+#canalSel .cs-item small{margin-left:auto;color:var(--muted);font-weight:500;font-size:14px;text-align:right}
+#canalSel .cs-item .cs-ck{color:var(--accent);font-weight:800;width:16px}
+#canalSel .cs-foot{display:flex;justify-content:flex-end;margin-top:8px}
+.ft .canal-chip{display:flex;align-items:center;gap:8px;padding:0 22px;border-left:1px solid var(--line);color:var(--muted);font-size:17px;white-space:nowrap}
+.ft .canal-chip b{color:var(--fg);font-weight:700}
+.cn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
+.cn-row{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+.cn-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cn-info b{font-size:17px;text-transform:uppercase}
+.cn-info span{font-size:13px;color:var(--muted)}
+.cn-b{display:flex;gap:8px;flex:none}
+.cn-form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px}
+.cn-form h4{margin:0 0 12px;font-size:16px}
 </style>
 
 <div id="viewport">
@@ -650,6 +672,7 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
       <div class="bar"><i id="prog"></i></div>
       <div class="dsa"><b class="num" id="ftDias">–</b><span>dias sem<br>acidentes</span></div>
       <div class="wthr" id="wthr" hidden></div>
+      <div class="canal-chip" id="ftCanal" hidden></div>
       <div class="msg"><span id="ftMsg">Segurança em primeiro lugar.</span></div>
       <div class="pos" id="ftPos"></div>
     </footer>
@@ -665,8 +688,18 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
   <button class="btn ghost" id="bPrev" aria-label="Slide anterior">◀</button>
   <button class="btn ghost" id="bNext" aria-label="Próximo slide">▶</button>
   <button class="btn" id="bFull">Tela cheia</button>
+  <button class="btn" id="bCanal" title="Escolher quais telas esta TV toca">Canal da TV</button>
   <button class="btn" id="bCtl">Controlar TV</button>
   <button class="btn pri" id="bEdit">Editar conteúdo</button>
+</div>
+
+<div id="canalSel" hidden>
+  <div class="cs-box" role="dialog" aria-label="Escolher o canal desta TV">
+    <h3>Canal desta TV</h3>
+    <p class="cs-hint">A escolha fica salva no aparelho: desligou, ligou — continua no mesmo canal.</p>
+    <div id="csLista"></div>
+    <div class="cs-foot"><button type="button" class="btn ghost" id="csFechar">Fechar</button></div>
+  </div>
 </div>
 
 <div id="ctlBar" hidden>
@@ -780,21 +813,72 @@ const SECTIONS = [
       {k:"ligacao",l:"Linha",t:"select",opts:["Contínua","Tracejada"],w:2}]}]},
   {key:"config", label:"Configurações", admin:true, hint:"Tempo de cada tela, letreiro do rodapé, previsão do tempo, quais telas entram na rotação, links para os responsáveis e cópia de segurança.",
     parts:[
-      {kind:"obj",key:"geral",fields:[{k:"duracao",l:"Tempo padrão por tela (segundos)",t:"number"},{k:"climaCidade",l:"Cidade da previsão do tempo no rodapé (ex.: Goiânia; vazio = Goiânia)"},{k:"rodape",l:"Frase fixa do rodapé (aparece quando não há avisos no letreiro)",wide:true}]},
+      {kind:"obj",key:"geral",fields:[{k:"duracao",l:"Tempo padrão por tela (segundos)",t:"number"},{k:"climaCidade",l:"Cidade da previsão do tempo no rodapé (ex.: Goiânia; vazio = Goiânia)"},{k:"rodape",l:"Frase fixa do rodapé (aparece quando não há avisos no letreiro)",wide:true},{k:"unidade",l:"Nome da unidade no topo da TV (ex.: Alto Horizonte; vazio usa o padrão do estado)"}]},
       {kind:"list",key:"avisos",label:"Letreiro do rodapé (avisos passando em rolagem)",cols:[{k:"texto",l:"Aviso curto",w:6},{k:"ate",l:"Mostrar até (opcional)",t:"date",def:"",w:2}]},
       {kind:"obj",key:"ativos",label:"Telas na rotação",fields:[]},
       {kind:"obj",key:"duracoes",label:"Tempo de cada tela (segundos, vazio usa o padrão)",fields:[]},
       {kind:"obj",key:"cores",label:"Cor de cada tela (Automático sorteia a cada volta)",fields:[]},
       {kind:"links",label:"Links para os responsáveis"},
       {kind:"backup",label:"Cópia de segurança"}]},
+  {key:"canais", label:"Canais de TV", admin:true, hint:"Crie recortes da rotação para TVs diferentes (ex.: Recepção, Refeitório): cada canal tem um nome e as telas que tocam nele. Na TV, o botão “Canal da TV” escolhe o canal daquele aparelho — e a escolha fica salva nele. TV sem canal (ou no canal Tudo) mostra todas as telas, como sempre.", parts:[]},
   {key:"aprovacoes", label:"Aprovações (TV)", admin:true, hint:"Alterações enviadas pelos editores ficam aqui até você aprovar. Sem aprovação do admin, nada novo entra na TV.", parts:[]},
   {key:"permissoes", label:"Permissões de edição", admin:true, hint:"Escolha qual usuário da plataforma pode editar cada aba do painel. Quem não tiver permissão não edita nada.", parts:[]},
   {key:"historico", label:"Histórico", admin:true, hint:"Quem editou, aprovou e publicou o quê — com data e hora. Os PROBLEMAS que as TVs reportaram sozinhas (erro na tela, queda de conexão) aparecem em vermelho no topo. Bom para rastrear “quem apagou meu comunicado”.", parts:[]}
 ];
 const PANEL_SLUG = "goias";
 const PANEL_URL = "/html/painel-tv-goias.html";
+/* nome da unidade no topo da TV e nas telas — trocado sozinho se o admin
+   preencher “Nome da unidade” nas Configurações */
+let UNIDADE_TXT = "Alto Horizonte";
+const UF_TXT = "GO";
+function aplicarUnidade(){
+  const u = String((cfgData && cfgData.geral && cfgData.geral.unidade)||"").trim();
+  if(u) UNIDADE_TXT = u;
+  const b = document.querySelector(".brand small");
+  if(b) b.textContent = (UNIDADE_TXT+" "+UF_TXT).toUpperCase();
+}
+/* ---------- canais da TV: recortes da rotação por aparelho ----------
+   O admin cria canais com nome e telas (aba Canais de TV). Cada aparelho
+   escolhe o canal dele uma vez (botão “Canal da TV”) e fica salvo no
+   localStorage — desligou, ligou, continua. Sem canal (ou canal apagado),
+   a TV toca Tudo, como sempre. */
+function canaisDoPainel(){
+  const l = get(data,"config","canais");
+  return Array.isArray(l) ? l.filter(c=>c && c.id && String(c.nome||"").trim() && Array.isArray(c.telas)) : [];
+}
+function canalIdSalvo(){ try{ const v = localStorage.getItem("ztv-canal-"+PANEL_SLUG); return v && v!=="tudo" ? v : ""; }catch(e){ return ""; } }
+function salvarCanalId(v){ try{ if(v) localStorage.setItem("ztv-canal-"+PANEL_SLUG, String(v)); else localStorage.removeItem("ztv-canal-"+PANEL_SLUG); }catch(e){} }
+function canalAtivo(){
+  const id = canalIdSalvo(); if(!id) return null;
+  const c = canaisDoPainel().find(x=>x.id===id);
+  return (c && c.telas.length) ? c : null; // canal apagado/esvaziado = volta para Tudo
+}
+/* chip discreto no rodapé mostrando o canal em uso */
+function atualizarChipCanal(){
+  const el = $("ftCanal"); if(!el) return;
+  const cn = canalAtivo();
+  el.hidden = !cn;
+  if(cn) el.innerHTML = `Canal <b>${esc(cn.nome)}</b>`;
+}
+function abrirCanalSel(){
+  const cn = canalAtivo(), lista = canaisDoPainel();
+  const itens = [{id:"", nome:"Tudo", desc:"Todas as telas da rotação (padrão)"}]
+    .concat(lista.map(c=>({id:c.id, nome:String(c.nome).trim(), desc:c.telas.length+(c.telas.length===1?" tela":" telas")})));
+  const box = $("csLista");
+  box.innerHTML = itens.map(it=>{
+    const on = it.id ? (cn && cn.id===it.id) : !cn;
+    return `<button type="button" class="cs-item ${on?"on":""}" data-canal="${esc(it.id)}"><span class="cs-ck">${on?"✓":""}</span>${esc(it.nome)}<small>${esc(it.desc)}</small></button>`;
+  }).join("") || `<p class="cs-hint">Nenhum canal criado ainda. Crie canais no editor (aba Canais de TV).</p>`;
+  box.querySelectorAll("[data-canal]").forEach(b=>b.onclick=()=>{
+    salvarCanalId(b.dataset.canal);
+    idx = 0; renderFrame(true); restartTimer();
+    toast(b.dataset.canal ? "Canal alterado. Fica salvo neste aparelho." : "Canal Tudo — todas as telas. Fica salvo neste aparelho.");
+    abrirCanalSel();
+  });
+  $("canalSel").hidden = false;
+}
 /* abas administrativas: exclusivas de admins, nunca entram na rotação da TV */
-const ADMIN_TOOLS = new Set(["config","aprovacoes","permissoes","historico"]);
+const ADMIN_TOOLS = new Set(["config","canais","aprovacoes","permissoes","historico"]);
 const SLIDE_KEYS = SECTIONS.filter(s=>!ADMIN_TOOLS.has(s.key)).map(s=>s.key);
 const cfgPart = k => SECTIONS.find(s=>s.key==="config").parts.find(p=>p.key===k);
 cfgPart("ativos").fields = SLIDE_KEYS.map(k=>({k,l:SECTIONS.find(s=>s.key===k).label,t:"check"}));
@@ -1101,7 +1185,7 @@ const R = {
     return `<div class="s-ani${festas.length?" festa":""}" data-ani="${festas.length?1:0}">
       <canvas class="ani-dots" aria-hidden="true"></canvas>
       <header class="ani-hd">
-        <div><small>ZAMine · Alto Horizonte</small><h1>Aniversariantes<br>de <em>${esc(mes)}</em></h1></div>
+        <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>Aniversariantes<br>de <em>${esc(mes)}</em></h1></div>
         <div class="ani-meta"><p><b>${it.length}</b>aniversariante${it.length===1?"":"s"}<br>no mês</p></div>
       </header>
       ${festas.length?`<div class="ani-festa" aria-live="polite"><svg class="bolo" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="30" width="44" height="24" rx="4" fill="currentColor"/><path d="M10 38c5 4 9 4 14 0s9-4 14 0 9 4 14 0" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/><rect x="20" y="18" width="4" height="12" rx="2" fill="currentColor"/><rect x="30" y="16" width="4" height="14" rx="2" fill="currentColor"/><rect x="40" y="18" width="4" height="12" rx="2" fill="currentColor"/><path d="M22 10c2 3 2 5 0 7-2-2-2-4 0-7zM32 8c2 3 2 5 0 7-2-2-2-4 0-7zM42 10c2 3 2 5 0 7-2-2-2-4 0-7z" fill="#fff"/></svg><div><small>Hoje é dia de festa</small><b>Parabéns, ${esc(quem)}!</b></div></div>`:""}
@@ -1125,7 +1209,7 @@ R.valores = function(o){
   const sig = it.map(v=>String(v.letra||"").trim().charAt(0).toUpperCase()).join("");
   return `<div class="s-val">
     <header class="vh">
-      <div class="vh-t"><small>ZAMine · Alto Horizonte</small><h1>Nossos valores</h1>${sig?`<div class="sig" aria-label="${esc(sig.split("").join(" "))}">${esc(sig)}</div>`:""}</div>
+      <div class="vh-t"><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>Nossos valores</h1>${sig?`<div class="sig" aria-label="${esc(sig.split("").join(" "))}">${esc(sig)}</div>`:""}</div>
       ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
     </header>
     <ol class="vlz">${it.map(v=>`<li class="vr"><span class="lt3" aria-hidden="true">${esc(String(v.letra||"").trim().charAt(0).toUpperCase()||"•")}</span><h2>${esc(v.titulo)}</h2><p>${esc(v.descricao)}</p></li>`).join("")}</ol>
@@ -1336,7 +1420,10 @@ let idx = 0, timer = null;
 /* telas da rotação: cada aba vira uma tela; comunicados, campanhas de segurança e eventos viram UM slide por item */
 function activeSlides(){
   const a = get(data,"config","ativos");
-  const on = k => !a || a[k] !== false;
+  /* canal da TV: quando há canal escolhido, toca só o que está nele (e que
+     o admin deixou ativo em “Telas na rotação”); sem canal, tudo como sempre */
+  const cn = canalAtivo();
+  const on = k => cn ? (cn.telas.includes(k) && (!a || a[k] !== false)) : (!a || a[k] !== false);
   const out = [];
   SLIDE_KEYS.forEach(k=>{
     if(!on(k)) return;
@@ -1363,6 +1450,7 @@ function duration(){
 
 function renderFrame(animate){
   const main = $("main");
+  atualizarChipCanal();
   if(state!=="ready"){
     $("title").textContent = state==="nodb"?"Sem conexão":state==="empty"?"Painel vazio":"Carregando";
     main.innerHTML = state==="nodb"
@@ -1372,7 +1460,11 @@ function renderFrame(animate){
     return;
   }
   const sl = activeSlides();
-  if(!sl.length){ main.innerHTML = emptyBox("Nada no ar agora","Ative as telas em Configurações e cadastre conteúdo (comunicados, eventos…) no editor."); return; }
+  if(!sl.length){ const cn = canalAtivo();
+    main.innerHTML = emptyBox("Nada no ar agora", cn
+      ? `O canal “${esc(cn.nome)}” está sem nenhuma tela no ar agora (o conteúdo pode ter expirado ou estar fora do horário). Use o botão “Canal da TV” para escolher outro canal.`
+      : "Ative as telas em Configurações e cadastre conteúdo (comunicados, eventos…) no editor.");
+    return; }
   idx = ((idx % sl.length)+sl.length)%sl.length;
   const ent = sl[idx], key = ent.key;
   $("title").textContent = TITLES[key];
@@ -1476,6 +1568,7 @@ function guardarCache(j){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({t
 function pegaCache(){ try{ const p = JSON.parse(localStorage.getItem(CACHE_KEY)||"null"); return p && p.j ? p : null; }catch(e){ return null; } }
 function aplicarConteudo(j){
   secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; relatoriosAuto = j.relatorios||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
+  aplicarUnidade();
   gotSec = true; gotCfg = true; onData();
 }
 function mostrarOffline(motivo){
@@ -1525,6 +1618,9 @@ function showCtrls(){ $("ctrls").classList.remove("hide"); clearTimeout(idleT); 
 ["mousemove","touchstart","keydown"].forEach(e=>addEventListener(e, showCtrls, {passive:true}));
 showCtrls();
 $("bPrev").onclick=()=>passo(-1); $("bNext").onclick=()=>passo(1);
+$("bCanal").onclick=()=>abrirCanalSel();
+$("csFechar").onclick=()=>{ $("canalSel").hidden = true; };
+$("canalSel").addEventListener("click", e=>{ if(e.target.id==="canalSel") $("canalSel").hidden = true; });
 $("bFull").onclick=async()=>{
   try{ if(document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); }catch(e){ toast("Use a tecla F11 do navegador para tela cheia."); }
 };
@@ -1736,7 +1832,7 @@ function saveDraftLocal(){ if(!draft) return; clearTimeout(draftSaveT); draftSav
 function loadDraftLocal(){ try{ const raw = localStorage.getItem(DRAFT_KEY); if(!raw) return null; const p = JSON.parse(raw); return (p && p.bySec && typeof p.bySec === "object") ? p : null; }catch(e){ return null; } }
 function clearDraftLocal(keys){ try{ const p = loadDraftLocal(); if(!p) return; (keys || Object.keys(p.bySec)).forEach(k=>{ delete p.bySec[k]; delete (p.baseEm||{})[k]; }); if(Object.keys(p.bySec).length) localStorage.setItem(DRAFT_KEY, JSON.stringify(p)); else localStorage.removeItem(DRAFT_KEY); }catch(e){} }
 
-function setDirty(v){ if(v){ schedulePreview(); dirtySecs.add(curSec); saveDraftLocal(); } dirty=v; if(!v) dirtySecs.clear(); const s=$("edSt"); s.textContent = v?"Alterações não salvas":"Tudo salvo"; s.classList.toggle("dirty",v); }
+function setDirty(v){ if(v){ schedulePreview(); dirtySecs.add(curSec==="canais"?"config":curSec); saveDraftLocal(); } dirty=v; if(!v) dirtySecs.clear(); const s=$("edSt"); s.textContent = v?"Alterações não salvas":"Tudo salvo"; s.classList.toggle("dirty",v); }
 
 const editable = () => canEdit ? SECTIONS : SECTIONS.filter(s=>minhasPermissoes.includes(s.key));
 function openEditor(sec, only){
@@ -1746,6 +1842,7 @@ function openEditor(sec, only){
   if(!editable().some(s=>s.key===curSec)) curSec = editable()[0].key;
   if(dirty && draft){ $("editor").hidden=false; $("edSave").hidden=false; $("edPrev").hidden=false; $("edDiscard").hidden=false; renderNav(); renderSec(); return; }
   draft = clone(data);
+  cnEdit = -1;
   if(!draft.config) draft.config = {};
   if(!draft.config.ativos) draft.config.ativos = Object.fromEntries(SLIDE_KEYS.map(k=>[k,true]));
   /* recuperação de rascunho salvo no navegador (queda de luz, F5, fechamento acidental) */
@@ -2009,6 +2106,7 @@ function renderSec(){
   if(s.key==="aprovacoes") h += aprovHtml();
   if(s.key==="historico") h += histHtml();
   if(s.key==="permissoes") h += permHtml();
+  if(s.key==="canais") h += canaisHtml();
   const m=$("edMain"); m.innerHTML = (pvOn && R[s.key] ? `<div class="pv"><div class="pv-bar"><b>Prévia de como vai ficar na TV</b>
       <span class="pv-nav" id="pvNav" hidden><button type="button" class="btn" data-pvgo="-1" aria-label="Slide anterior da prévia">‹</button><b class="pv-n" id="pvN"></b><button type="button" class="btn" data-pvgo="1" aria-label="Próximo slide da prévia">›</button></span>
       <button type="button" class="btn ${pvTheme==="th-dark"?"on":""}" data-pvt="th-dark">Preto</button><button type="button" class="btn ${pvTheme==="th-light"?"on":""}" data-pvt="th-light">Branco</button></div>
@@ -2019,6 +2117,7 @@ function renderSec(){
   if(s.key==="historico") wireHist();
   if(s.key==="aprovacoes") wireAprov();
   if(s.key==="permissoes") wirePerm();
+  if(s.key==="canais") wireCanais();
   m.querySelectorAll("input:not([type=file]),select,textarea").forEach(el=>{
     const ev = el.type==="checkbox"||el.tagName==="SELECT" ? "change" : "input";
     el.addEventListener(ev, ()=>{
@@ -2150,16 +2249,17 @@ function renderSec(){
 }
 async function showWho(key){
   const el = $("edWho"); if(!el) return;
-  if(ADMIN_TOOLS.has(key) && key!=="config"){ el.textContent=""; return; }
-  let meta = metaCache[key];
+  if(ADMIN_TOOLS.has(key) && key!=="config" && key!=="canais"){ el.textContent=""; return; }
+  const cfgKey = key==="canais" ? "config" : key;
+  let meta = metaCache[cfgKey];
   if(!meta){
     try{
-      const url = key==="config" ? `/api/tv/${PANEL_SLUG}/config` : `/api/tv/${PANEL_SLUG}/secoes/${key}`;
+      const url = cfgKey==="config" ? `/api/tv/${PANEL_SLUG}/config` : `/api/tv/${PANEL_SLUG}/secoes/${cfgKey}`;
       const j = await api(url,{headers:authHeaders()});
       meta = { atualizadoEm:j.atualizadoEm, atualizadoPorNome:j.atualizadoPorNome, pending:j.pending || (j.pendencias?j.pendencias[0]:null) };
-      metaCache[key] = meta;
+      metaCache[cfgKey] = meta;
       // registra a publicação que este editor está vendo — base do controle anti-sobrescrita
-      if(meta.atualizadoEm && !restoredKeys.has(key)) baseEm[key] = meta.atualizadoEm;
+      if(meta.atualizadoEm && !restoredKeys.has(cfgKey)) baseEm[cfgKey] = meta.atualizadoEm;
     }catch(e){ meta = {}; }
   }
   if(!meta.atualizadoEm && !meta.pending){ el.textContent=""; return; }
@@ -2232,6 +2332,70 @@ async function wireHist(){
       return `<div class="hitem ${t[2]||""}"><span class="hq num">${quando}</span><span class="ht">${esc(t[1])}</span><span class="hu">${alvo}${esc(i.usuario||"—")}${info}</span></div>`;
     }).join("") : `<p class="hint" style="margin:0">Nada registrado com esse filtro.</p>`);
   }catch(e){ lista.innerHTML = `<p class="hint" style="margin:0">Não foi possível carregar o histórico${e&&e.message?` (${esc(e.message)})`:""}.</p>`; }
+}
+/* ---------- canais de TV (aba do admin): criar/editar/remover com travas ---------- */
+let cnEdit = -1; // índice do canal em edição; -1 = formulário de criação
+function cnTelasTxt(k){ return (SECTIONS.find(s=>s.key===k)||{}).label || k; }
+function cnLista(){ return Array.isArray(draft.config.canais) ? draft.config.canais : (draft.config.canais = []); }
+function cnValidar(){
+  const res = $("cnRes"), btn = $("cnSalvar"); if(!res || !btn) return null;
+  const nome = String(($("cnNome")&&$("cnNome").value)||"").trim();
+  const telas = [...document.querySelectorAll("#edMain [data-cnt]:checked")].map(x=>x.dataset.cnt);
+  const dup = cnLista().some((c,i)=>i!==cnEdit && String((c&&c.nome)||"").trim().toLowerCase()===nome.toLowerCase());
+  const faltas = [];
+  if(!nome) faltas.push("escreva o nome do canal");
+  if(nome && dup) faltas.push("já existe um canal com esse nome");
+  if(!telas.length) faltas.push("marque pelo menos uma tela");
+  const ok = !faltas.length;
+  res.innerHTML = ok
+    ? `Este canal vai tocar <b>${telas.length} tela${telas.length===1?"":"s"}</b>: ${telas.map(t=>esc(cnTelasTxt(t))).join(" · ")} (na ordem da rotação).`
+    : `Para salvar: ${esc(faltas.join(", "))}.`;
+  res.style.color = ok ? "var(--ok)" : "var(--warn)";
+  btn.disabled = !ok;
+  return {nome, telas, ok};
+}
+function canaisHtml(){
+  const lista = cnLista();
+  const linhas = lista.length ? lista.map((c,i)=>{
+    const telas = Array.isArray(c.telas)?c.telas:[];
+    return `<div class="cn-row"><div class="cn-info"><b>${esc(c.nome||"(sem nome)")}</b><span>${telas.length?`${telas.length} tela${telas.length===1?"":"s"}: ${telas.map(t=>esc(cnTelasTxt(t))).join(" · ")}`:"nenhuma tela"}</span></div>
+      <div class="cn-b"><button type="button" class="btn" data-cned="${i}">Editar</button><button type="button" class="btn del" data-cndel="${i}">Remover</button></div></div>`;
+  }).join("") : "";
+  const editando = cnEdit>=0 ? cnLista()[cnEdit] : null;
+  const telasEd = (editando && Array.isArray(editando.telas)) ? editando.telas : [];
+  const form = `<div class="cn-form"><h4>${editando?`Editando “${esc(editando.nome||"")}”`:"Criar canal novo"}</h4>
+    <div class="fld wide"><label for="cnNome">Nome do canal — é o que aparece na TV</label><input id="cnNome" type="text" maxlength="40" value="${editando?esc(editando.nome||""):""}" placeholder="Ex.: Recepção"></div>
+    <p class="hint" style="margin:14px 0 8px">Marque as telas que tocam neste canal:</p>
+    <div class="psecs">${SLIDE_KEYS.map(k=>`<label class="psec"><input type="checkbox" data-cnt="${k}" ${telasEd.includes(k)?"checked":""}>${esc(cnTelasTxt(k))}</label>`).join("")}</div>
+    <p class="hint" id="cnRes" style="margin:10px 0 0"></p>
+    <div class="cn-b" style="margin-top:14px"><button type="button" class="btn pri" id="cnSalvar" disabled>Salvar canal</button>${editando?`<button type="button" class="btn ghost" id="cnCancel">Cancelar edição</button>`:""}</div></div>`;
+  return `<div class="cn-head"><div><b>Canais que as TVs podem escolher</b><p class="hint" style="margin:2px 0 0">TV sem canal escolhido toca Tudo — todas as telas, como sempre. A escolha fica salva no aparelho.</p></div><button type="button" class="btn add" id="cnNovo" ${cnEdit>=0?"hidden":""}>+ Novo canal</button></div>
+    ${linhas || `<p class="hint" style="margin:8px 0">Nenhum canal criado ainda.</p>`}
+    ${form}`;
+}
+function wireCanais(){
+  const novo = $("cnNovo"); if(novo) novo.onclick = ()=>{ cnEdit=-1; renderSec(); };
+  $("edMain").querySelectorAll("[data-cned]").forEach(b=>b.onclick=()=>{ cnEdit=+b.dataset.cned; renderSec(); });
+  $("edMain").querySelectorAll("[data-cndel]").forEach(b=>b.onclick=()=>{
+    const i = +b.dataset.cndel, c = cnLista()[i]; if(!c) return;
+    if(!confirm(`Remover o canal “${c.nome}”? As TVs que estavam nele voltam sozinhas para Tudo (todas as telas).`)) return;
+    cnLista().splice(i,1); if(cnEdit===i) cnEdit=-1; else if(cnEdit>i) cnEdit--;
+    setDirty(true); renderSec();
+    toast("Canal removido do rascunho — clique em “Salvar e enviar para a TV”.");
+  });
+  const nome = $("cnNome"); if(!nome) return;
+  nome.addEventListener("input", cnValidar);
+  $("edMain").querySelectorAll("[data-cnt]").forEach(x=>x.addEventListener("change", cnValidar));
+  const cancel = $("cnCancel"); if(cancel) cancel.onclick = ()=>{ cnEdit=-1; renderSec(); };
+  $("cnSalvar").onclick = ()=>{
+    const v = cnValidar(); if(!v || !v.ok) return;
+    const lista = cnLista();
+    if(cnEdit>=0 && lista[cnEdit]){ lista[cnEdit].nome = v.nome; lista[cnEdit].telas = v.telas; }
+    else lista.push({id:"c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6), nome:v.nome, telas:v.telas});
+    cnEdit = -1; setDirty(true); renderSec();
+    toast("Canal salvo no rascunho — clique em “Salvar e enviar para a TV” para colocar no ar.");
+  };
+  cnValidar();
 }
 /* cópia de segurança */
 function wireBackup(){

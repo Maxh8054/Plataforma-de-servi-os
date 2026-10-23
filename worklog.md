@@ -682,3 +682,42 @@ Stage Summary:
 - Rodapé da TV: dias sem acidentes em BRANCO (dark e light).
 - Aniversariantes: sem logo ao lado da contagem do mês; fotos até 300px (eram ~211px), todos os aniversariantes do mês sempre visíveis (até 6 em linha única), modo festa sem cortar nomes.
 - Arquivo: public/html/painel-tv-goias.html.
+
+---
+Task ID: 1-b
+Agent: full-stack-developer
+Task: API /api/tv/panels (painéis de TV permitidos por usuário) + item "Painel TV" de Minas Gerais no menu da plataforma com filtro de permissão (só aparece para quem tem acesso)
+
+Work Log:
+- Lido o worklog (contexto: TV por regional com permissões por aba em TvPermissao, admin vê tudo — tasks 20/24/31; lint com 31 problemas pré-existentes — tasks 30/31/32/33).
+- API nova src/app/api/tv/panels/route.ts (GET), estilo de src/app/api/tv/[panel]/me/route.ts: tvUser (sessão via cookie/x-zamine-token) → sem usuário 401 {error}; tvAdmin → { admin: true, panels: ["goias","minas"] }; usuário comum → db.tvPermissao.findMany({ userEmail }) com dedupe de panelSlug (Set) + .sort() → { admin: false, panels }; try/catch com 500 {error} em falha de banco. Decisão: where usa user.email.toLowerCase() para bater com permissoesDoUsuario de src/lib/tv.ts (concessões são gravadas/consultadas em minúsculas) — desvio consciente do enunciado (que pedia user.email cru). src/lib/tv.ts NÃO foi modificado.
+- src/app/(platform)/page.tsx (edits cirúrgicos, nada mais tocado): (1) item { title: 'Painel TV', description: 'Painel de TV - Minas Gerais', icon: 'tv', url: '/html/painel-tv-minas.html' } em servicesData['mg'] — decisão: o array 'mg' NÃO tem item "Segurança" (só R&D/Araxá/Usiminas, que são drill-downs), então o item foi posicionado no fim da lista; (2) estado painelsPermitidos: Record<string, boolean> | null (null = não sei); (3) useEffect sobre isAuthenticated: deslogou → null; logou → authFetch('/api/tv/panels') e monta o mapa a partir de json.panels; erro/resposta não-ok → permanece null; (4) logo após currentData: filtro painelTvDaUrl (url contém 'painel-tv-goias' → 'goias', 'painel-tv-minas' → 'minas') + currentDataFiltrada removendo itens title === 'Painel TV' quando painelsPermitidos é null (oculto para não piscar acesso) ou quando o slug correspondente não está no mapa; os dois renders (security layout ~L1062 e services layout ~L1183) passaram a mapear currentDataFiltrada — securityData não tem itens "Painel TV", comportamento dos demais itens intocado.
+- Lint: primeira passada subiu para 32 problemas — o novo useEffect chamava setPainelsPermitidos(null) sincronamente no corpo (regra react-hooks/set-state-in-effect). Corrigido agendando o reset em Promise.resolve().then com flag de limpeza (mesmo padrão async dos effects vizinhos). Lint final: 31 problemas (24 errors, 7 warnings) — zero problemas novos.
+- Verificação HTTP (dev server na 3000): curl /api/tv/panels sem sessão → HTTP 401 {"error":"Faça login na plataforma"} (antes da rota existir era 404); curl home → HTTP 200; dev.log sem erro novo (o prisma:error do datasource postgres é pré-existente, ocorre só em rotas que tocam o banco local — a 401 da minha rota não depende de banco). Login não testado (sem credenciais). public/html/** não foi tocado (outro agente trabalha lá em paralelo); só src/** foi alterado.
+
+Stage Summary:
+- GET /api/tv/panels: admin → {admin:true, panels:["goias","minas"]}; usuário comum → slugs DISTINTOS (dedupe+sort) das concessões em TvPermissao; sem sessão → 401; erro de banco → 500.
+- Menu da plataforma: Minas Gerais ganhou o card "Painel TV" (/html/painel-tv-minas.html) e, junto com o de Goiás, agora só aparece para quem tem acesso real — enquanto /api/tv/panels não respondeu (ou deslogado) os itens ficam ocultos; admin aceita um flash a menos (mapa chega true).
+- Arquivos: src/app/api/tv/panels/route.ts (novo), src/app/(platform)/page.tsx (servicesData['mg'] ~L61-66, estado ~L255-259, useEffect ~L362-392, filtro ~L685-698, 2 usages de currentDataFiltrada ~L1062/~L1183).
+- Qualidade: lint 31 problemas (baseline mantida), HTTP 401 na rota sem sessão, HTTP 200 na home.
+
+---
+Task ID: 34
+Agent: Z.ai Code (principal)
+Task: Fase 1 dos Canais de TV — recortes da rotação por aparelho, com nomes criados pelo admin; painel novo para Minas Gerais; link Painel TV na plataforma só para autorizados por estado
+
+Work Log:
+- Desenhado em debate com o usuário: canais com nome (não "slot N"), escolha na TV salva no aparelho, à prova de erros para outros estados. Fase 2 (troca remota/pareamento) fica para depois.
+- 1-a Canais no painel (public/html/painel-tv-goias.html): config.canais = [{id, nome, telas[]}] guardado na TvPanelConfig (sem mudança de schema; PUT /config admin-only já existente). Aba nova "Canais de TV" (admin) com: lista de canais, criar/editar/remover, checklist de telas em ordem da rotação, PRÉVIA ao vivo ("vai tocar N telas: ..."), travas (nome obrigatório, nome duplicado bloqueado, mínimo 1 tela, confirm antes de remover). setDirty mapeia aba canais → config (salva pelo fluxo já existente do PUT /config, com anti-sobrescrita baseEm). Backup/restauração incluem canais de graça (pack.config).
+- Seletor na TV: botão "Canal da TV" nos ctrls + modal com botões grandes (Tudo + canais com contagem de telas e ✓ no atual); escolha grava localStorage "ztv-canal-<painel>" (sobrevive a desligar/ligar; só perde se limparem dados do navegador). Chip discreto no rodapé "Canal Recepção" quando um canal está em uso. activeSlides filtra por canal ∩ telas ativas do admin. Canal apagado/esvaziado no editor → TV volta sozinha para Tudo. Canal sem nada no ar → mensagem amigável (não fica preta). Sem canal → comportamento idêntico ao de hoje.
+- Campo "Nome da unidade" nas Configurações (config.geral.unidade): troca o topo da TV e o "ZAMine · X" das telas (Aniversariantes/Valores) sem código novo; padrão por arquivo (Goiás: Alto Horizonte; Minas: Minas Gerais). Corrigido bug de ordem: aplicarUnidade lia data antes do onData recalcular — agora lê cfgData direto.
+- 1-c Painel Minas (public/html/painel-tv-minas.html): cópia com PANEL_SLUG="minas", unidade/UF próprios, clima padrão Belo Horizonte, textos de hint ajustados (contador usa a data-base da plataforma, por regional — ContadorSeguranca já é por regional). tv-sw.js já é genérico por painel.
+- 1-b Plataforma (subagente full-stack-developer): API nova GET /api/tv/panels (admin → todos os painéis; usuário comum → painéis onde tem ao menos 1 permissão de aba; 401 sem sessão) + page.tsx: item "Painel TV - Minas Gerais" em servicesData['mg'] e filtro dos itens "Painel TV" do menu por permissão (oculto enquanto não sabe/sem acesso). Lint manteve os 31 pré-existentes.
+- E2E (agent-browser 1920×1080, conteúdo injetado via aplicarConteudo com 2 canais mock): seletor lista Tudo/Recepção(4)/Fábrica(3) com ✓; escolher Recepção → localStorage c1, rotação filtrada (13→3 telas), chip no rodapé; RECARREGOU a página → canal persistiu (c1, 3 telas, chip); canal inválido cAPAGADO → volta para Tudo sozinho (13 telas, ✓ em Tudo); Fábrica → seguranca+dds+maquinas; Tudo → localStorage limpo, chip some. Editor (simulado canEdit via eval): aba na navegação, validações (vazio/duplicado/sem telas bloqueiam), prévia com ordem correta da rotação, criar/editar/remover com confirm, dirtySecs="config". Minas: marca "MINAS GERAIS MG", canal persistindo em ztv-canal-minas, clima real de Belo Horizonte no rodapé, chip ok. Lint 31 (baseline). /api/tv/panels sem sessão → 401. GOIAS e MINAS 200.
+- Limitação: editor com login real e PUT /config não testáveis localmente (banco local não conecta ao Postgres do Render sem credenciais) — caminho de save é o mesmo já existente da aba Configurações; verificado por código. Deploy via Render valida com o banco real.
+
+Stage Summary:
+- Canais de TV no ar: admin cria recortes com nome e telas; cada TV escolhe o canal dela uma vez e fica salva no aparelho; chip no rodapé mostra o canal; canal apagado volta para Tudo sozinho; sem canal nada muda.
+- Painel de Minas Gerais criado (painel-tv-minas.html), com unidade/clima/textos próprios.
+- Plataforma: link Painel TV só aparece para quem tem permissão naquele estado (admin vê todos).
+- Arquivos: public/html/painel-tv-goias.html, public/html/painel-tv-minas.html (novo), src/app/api/tv/panels/route.ts (novo), src/app/(platform)/page.tsx.

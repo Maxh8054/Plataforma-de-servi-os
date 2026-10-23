@@ -61,7 +61,8 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg': [
     { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
     { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' },
-    { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' }
+    { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' },
+    { title: 'Painel TV', description: 'Painel de TV - Minas Gerais', icon: 'tv', url: '/html/painel-tv-minas.html' } // exibido só para quem tem permissão no painel (ver painelsPermitidos)
   ],
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
@@ -252,6 +253,10 @@ export default function Home() {
   const [contadorSalvando, setContadorSalvando] = useState(false);
   const [contadorErro, setContadorErro] = useState('');
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
+  // Painéis de TV que o usuário logado pode acessar (chave = slug: 'goias'/'minas').
+  // null = ainda não sabemos (rota /api/tv/panels não respondeu ou deslogado) →
+  // itens "Painel TV" ficam OCULTOS para não piscar acesso para quem não tem permissão.
+  const [painelsPermitidos, setPainelsPermitidos] = useState<Record<string, boolean> | null>(null);
   
   // Equipment states
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
@@ -352,6 +357,38 @@ export default function Home() {
     sendHeartbeat();
     const interval = setInterval(sendHeartbeat, 60_000);
     return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
+  // Painéis de TV permitidos para o usuário logado — alimenta o filtro do menu.
+  // Deslogou → null (itens ocultos); logou → busca o mapa { goias: true, minas: true, ... }.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Deslogou → volta a ocultar. O reset é agendado fora do corpo SÍNCRONO do
+      // effect (regra react-hooks/set-state-in-effect), com flag de limpeza para
+      // não desfazer um resultado que chegue depois de um novo login.
+      let limpo = false;
+      Promise.resolve().then(() => {
+        if (!limpo) setPainelsPermitidos(null);
+      });
+      return () => { limpo = true; };
+    }
+    let ativo = true;
+    authFetch('/api/tv/panels')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (ativo && d && Array.isArray(d.panels)) {
+          const mapa: Record<string, boolean> = {};
+          for (const p of d.panels) {
+            if (typeof p === 'string') mapa[p] = true;
+          }
+          setPainelsPermitidos(mapa);
+        }
+        // resposta não-ok (ou sem "panels") → mantém null, itens ocultos
+      })
+      .catch(() => {
+        // erro de rede → mantém null, itens ocultos
+      });
+    return () => { ativo = false; };
   }, [isAuthenticated]);
 
   // Rastreio de navegação — registra na auditoria qual tela/aba o usuário acessou
@@ -650,6 +687,21 @@ export default function Home() {
   const currentData = showSecurityContent 
     ? securityData[modalState || ''] 
     : (activeModal === 'services' ? servicesData[modalState || ''] : securityData[modalState || '']);
+
+  // Filtro do menu: itens "Painel TV" só aparecem para quem tem acesso ao painel
+  // correspondente (url → slug: painel-tv-goias → 'goias', painel-tv-minas → 'minas').
+  // Com painelsPermitidos null (carregando/deslogado) os itens ficam ocultos.
+  const painelTvDaUrl = (url: string): string | null => {
+    if (url.includes('painel-tv-goias')) return 'goias';
+    if (url.includes('painel-tv-minas')) return 'minas';
+    return null;
+  };
+  const currentDataFiltrada = currentData?.filter((item) => {
+    if (item.title !== 'Painel TV') return true;
+    if (!painelsPermitidos) return false;
+    const painel = painelTvDaUrl(item.url);
+    return !!painel && !!painelsPermitidos[painel];
+  });
 
   // Global styles
   const globalStyles = '@keyframes slideIn{from{transform:translateY(-30px);opacity:0}to{transform:translateY(0);opacity:1}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}body{font-family:Source Sans Pro,sans-serif;overflow:hidden}@media(max-width:640px){.marker-mg{left:72%!important;top:50%!important}.marker-go{left:54%!important;top:43%!important}.marker-pa{left:35%!important;top:24%!important}.marker-ba{left:67%!important;top:27%!important}.marker-sc{left:63%!important;top:80%!important}.marker-ma{left:57%!important;top:22%!important}.marker-tooltip{opacity:1!important;pointer-events:auto}}';
@@ -1013,7 +1065,7 @@ export default function Home() {
                   {showSecurityContent ? (
                     /* Security layout - visual cards */
                     <div className="space-y-2.5 sm:space-y-3">
-                      {currentData?.map((item, index) => (
+                      {currentDataFiltrada?.map((item, index) => (
                         item.url === '#' ? (
                           <button
                             key={index}
@@ -1134,7 +1186,7 @@ export default function Home() {
                   ) : (
                     /* Services layout - compact grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                    {currentData?.map((item, index) => (
+                    {currentDataFiltrada?.map((item, index) => (
                       item.url === '#' ? (
                         <button
                           key={index}
