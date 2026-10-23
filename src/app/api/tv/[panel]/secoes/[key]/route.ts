@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { auditLog } from '@/lib/audit-log';
+import { capturarSnapshot } from '@/lib/tv-monitor';
 import {
   panelValido,
   respostaPanelInvalido,
@@ -144,6 +145,9 @@ export async function PUT(
         );
       }
     }
+    // cópia pré-edição: guarda o que estava NO AR antes de publicar por cima
+    // (fire-and-forget — a própria função engole os erros)
+    void capturarSnapshot(panel, 'pre-edicao');
     await db.tvSection.upsert({
       where: { panelSlug_sectionKey: { panelSlug: panel, sectionKey: key } },
       create: {

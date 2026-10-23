@@ -32,11 +32,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // conteúdo do painel e a própria página: rede primeiro, cache como reserva
-  // (slug aceita painel por local: minas-araxa etc.)
+  // conteúdo do painel, a própria página e os scripts compartilhados da TV:
+  // rede primeiro, cache como reserva (slug aceita painel por local: minas-araxa etc.)
   const conteudo = /^\/api\/tv\/[a-z0-9-]+\/content$/.test(url.pathname);
   const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname);
-  if (conteudo || pagina) {
+  const script = /^\/tv-(extras|qrcode)\.js$/.test(url.pathname);
+  if (conteudo || pagina || script) {
     const chave = url.pathname + (url.search || "");
     event.respondWith(
       fetch(req).then((res) => {

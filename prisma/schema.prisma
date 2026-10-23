@@ -478,6 +478,56 @@ model TvAsset {
 }
 
 // ==========================================
+// Saúde das TVs (heartbeat): cada aparelho se anuncia a cada poucos
+// minutos (canal atual, nº de telas no ar). O editor e o dashboard
+// "TVs conectadas" mostram 🟢 online / 🔴 offline por aparelho.
+// ==========================================
+
+model TvDispositivo {
+  id        String   @id @default(cuid())
+  panelSlug String   @map("panelSlug") // painel (goias, minas-araxa…)
+  deviceId  String   @map("deviceId") // código salvo no aparelho (ex.: TV-4F2A)
+  canal     String? // nome do canal em uso ("" = Tudo)
+  telas     Int? // quantas telas estão na rotação agora
+  ua        String? // user-agent (identifica smart TV / navegador)
+  ultimaVez DateTime @default(now()) @map("ultimaVez")
+  criadoEm  DateTime @default(now()) @map("criadoEm")
+
+  @@unique([panelSlug, deviceId])
+  @@map("tv_dispositivos")
+}
+
+// ==========================================
+// Backup automático agendado do painel TV (+ cópia pré-edição).
+// Um snapshot por dia (criado na primeira leitura do dia) e uma cópia
+// do conteúdo ANTES de cada salvar — restauração com 1 clique.
+// ==========================================
+
+model TvBackup {
+  id        String   @id @default(cuid())
+  panelSlug String   @map("panelSlug")
+  origem    String   @default("auto") // auto | pre-edicao | manual
+  dados     String // JSON pack { secoes, config }
+  criadoEm  DateTime @default(now()) @map("criadoEm")
+
+  @@index([panelSlug, criadoEm])
+  @@map("tv_backups")
+}
+
+// ==========================================
+// Central de notificações (sino na plataforma): guarda só quando cada
+// usuário viu as notificações pela última vez; os itens são calculados
+// na hora (TV offline, backup concluído, conteúdo expirando…).
+// ==========================================
+
+model NotificacaoLeitura {
+  userEmail String   @id @map("userEmail")
+  ultimaVez DateTime @default(now()) @updatedAt @map("ultimaVez")
+
+  @@map("notificacoes_leitura")
+}
+
+// ==========================================
 // [OBSOLETO] Organograma da plataforma via modal no rodapé — desativado.
 // O organograma agora vive no PAINEL TV (aba Organograma → TvSection
 // "organograma"), com as fotos casadas PELO NOME no cadastro de

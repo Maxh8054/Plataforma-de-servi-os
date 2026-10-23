@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { auditLog } from '@/lib/audit-log';
+import { capturarSnapshot } from '@/lib/tv-monitor';
 import { panelValido, respostaPanelInvalido, tvUser, tvAdmin } from '@/lib/tv';
 
 /**
@@ -96,6 +97,8 @@ export async function PUT(
   }
 
   const agora = new Date();
+  // cópia pré-edição da config (canais, rotação, letreiro…) antes de sobrescrever
+  void capturarSnapshot(panel, 'pre-edicao');
   await db.tvPanelConfig.upsert({
     where: { panelSlug: panel },
     create: {

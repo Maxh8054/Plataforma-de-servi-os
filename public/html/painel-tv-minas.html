@@ -727,6 +727,8 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
   </div>
 </div>
 
+<script src="/tv-qrcode.js"></script>
+<script src="/tv-extras.js"></script>
 <script>
 const STATUS = {
   "Operando":{c:"var(--ok)"}, "Preventiva":{c:"var(--warn)"}, "Corretiva":{c:"var(--bad)"},
@@ -815,7 +817,7 @@ const SECTIONS = [
       {k:"ligacao",l:"Linha",t:"select",opts:["Contínua","Tracejada"],w:2}]}]},
   {key:"config", label:"Configurações", admin:true, hint:"Tempo de cada tela, letreiro do rodapé, previsão do tempo, quais telas entram na rotação, links para os responsáveis e cópia de segurança.",
     parts:[
-      {kind:"obj",key:"geral",fields:[{k:"duracao",l:"Tempo padrão por tela (segundos)",t:"number"},{k:"climaCidade",l:"Cidade da previsão do tempo no rodapé (ex.: Belo Horizonte; vazio = Belo Horizonte)"},{k:"rodape",l:"Frase fixa do rodapé (aparece quando não há avisos no letreiro)",wide:true},{k:"unidade",l:"Nome da unidade no topo da TV (ex.: Araxá; vazio usa o padrão do estado)"}]},
+      {kind:"obj",key:"geral",fields:[{k:"duracao",l:"Tempo padrão por tela (segundos)",t:"number"},{k:"climaCidade",l:"Cidade da previsão do tempo no rodapé (ex.: Belo Horizonte; vazio = Belo Horizonte)"},{k:"rodape",l:"Frase fixa do rodapé (aparece quando não há avisos no letreiro)",wide:true},{k:"unidade",l:"Nome da unidade no topo da TV (ex.: Araxá; vazio usa o padrão do estado)"},{k:"marcos",l:"Comemorar marcos automáticos (100, 200 … 1000, 1500 dias) com slide de festa na TV",t:"check"},{k:"qrUrl",l:"Link da plataforma para o QR do rodapé (vazio = esconde o QR; ex.: https://plataforma-da-empresa)",wide:true}]},
       {kind:"list",key:"avisos",label:"Letreiro do rodapé (avisos passando em rolagem)",cols:[{k:"texto",l:"Aviso curto",w:6},{k:"ate",l:"Mostrar até (opcional)",t:"date",def:"",w:2}]},
       {kind:"obj",key:"ativos",label:"Telas na rotação",fields:[]},
       {kind:"obj",key:"duracoes",label:"Tempo de cada tela (segundos, vazio usa o padrão)",fields:[]},
@@ -1484,6 +1486,19 @@ function activeSlides(){
     const nAni = out.filter(s=>s.key==="aniversarios").length;
     if(nAni>1){ const bloco = out.splice(aIdx,nAni); out.splice(1,0,...bloco); }
   }
+  /* marcos comemorativos: slide de festa nos dias redondos (100, 200 … 1000, 1500…)
+     entra logo depois da tela do contador, só no dia do marco (toggle em Configurações) */
+  if(window.ZTV && ZTV.marcoSlide){
+    const dM = (segurancaAuto && segurancaAuto.dias!=null) ? segurancaAuto.dias : diasSemAcidente(data);
+    const gM = get(data,"config","geral") || {};
+    const mM = ZTV.marcoSlide(dM, gM, gM.unidade);
+    if(mM){
+      TITLES.marco = TITLES.marco || "🎉 Marco comemorativo";
+      R.marco = ()=>mM.html;
+      const si = out.findIndex(s=>s.key==="seguranca");
+      out.splice(si>=0?si+1:0, 0, {key:"marco", sub:0, fn:()=>mM.html});
+    }
+  }
   return out;
 }
 function duration(){
@@ -1614,6 +1629,10 @@ function guardarCache(j){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify({t
 function pegaCache(){ try{ const p = JSON.parse(localStorage.getItem(CACHE_KEY)||"null"); return p && p.j ? p : null; }catch(e){ return null; } }
 function aplicarConteudo(j){
   secData = j.secoes||{}; cfgData = j.config||{}; escalaAuto = j.escalaAuto||null; relatoriosAuto = j.relatorios||null; segurancaAuto = j.segurancaAuto||null; tvHoje = j.hoje||null;
+  /* ZTV: QR da plataforma no rodapé (Configurações → link; vazio esconde) + unidade p/ IA */
+  if(window.ZTV){
+    try{ ZTV.qrFooter(get(cfgData,"geral","qrUrl")); ZTV.unidade = String(get(cfgData,"geral","unidade")||"") || UNIDADE_TXT; }catch(e){}
+  }
   aplicarUnidade();
   gotSec = true; gotCfg = true; onData();
 }
@@ -1923,6 +1942,11 @@ function openEditor(sec, only){
       .then(([p,u])=>{ permCache = p.permissoes||[]; usersCache = (u.users||[]).filter(x=>x.isActive!==false); if(curSec==="permissoes") renderSec(); })
       .catch(()=>{});
   }
+  /* ZTV: chip de TVs conectadas + botão Prévia na TV (recursos compartilhados) */
+  if(window.ZTV){
+    ZTV.chipTVs(document.querySelector(".ed-top"), authHeaders);
+    ZTV.previaBotao(document.querySelector(".ed-top"));
+  }
 }
 /* tela mostrada quando o usuário não está logado na plataforma */
 function renderGate(){
@@ -2172,6 +2196,8 @@ function renderSec(){
       else if(parts.length===5){ const [,sk,pk,ri,ck]=parts; draft[sk][pk][+ri][ck] = el.type==="number"?(el.value===""?"":Number(el.value)):el.value; setDirty(true); }
     });
   });
+  /* ZTV: botão ✨ IA junto aos campos de texto do editor */
+  if(window.ZTV) ZTV.iaBotoes(m);
   m.querySelectorAll(".fileIn:not(#bkFile):not(#loteFile)").forEach(el=>el.addEventListener("change", async ()=>{
     const f = el.files && el.files[0]; if(!f) return;
     const lb = el.previousElementSibling; lb.textContent = "Enviando…";
@@ -2697,6 +2723,19 @@ function startPoll(){ clearInterval(pollT); pollT = setInterval(()=>{ if($("edit
   await carregarConteudo();
   startPoll();
   climaLoop(); // previsão do tempo no rodapé (cidade vem das Configurações; sem internet, chip fica escondido)
+  /* ZTV extras: saúde da TV (heartbeat a cada 2,5 min) + prévia do editor usando o rascunho atual */
+  if(window.ZTV){
+    ZTV.heartbeat(PANEL_SLUG, ()=>({ c:(canalAtivo()||{}).nome||"", t:(state==="ready"?activeSlides().length:0) }));
+    if(ZTV.prev){
+      ZTV.previaSilencio();
+      try{
+        const dR = loadDraftLocal();
+        if(dR && dR.bySec && Object.keys(dR.bySec).length){
+          aplicarConteudo({ secoes:Object.assign({}, secData, dR.bySec), config:Object.assign({}, cfgData, dR.bySec.config||{}) });
+        }
+      }catch(e){}
+    }
+  }
   // 2) Login da plataforma define quem pode editar o quê
   try{
     const me = await api(`/api/tv/${PANEL_SLUG}/me`,{headers:authHeaders()});

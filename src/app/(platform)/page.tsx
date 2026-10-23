@@ -57,6 +57,18 @@ const LITERATURAS_TECNICAS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERV
 // const SHAREPOINT_SERVICOS_URL = 'https://zaminebrasil.sharepoint.com/sites/SERVIOS-LUNDIN/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FSERVIOS%2DLUNDIN%2FShared%20Documents%2FSERVI%C3%87OS&viewid=c13d8cad%2Da802%2D45ff%2D9ca9%2De5760b0f6790'; // oculto a pedido
 
 // Services Data
+// Item de notificação do sino (central de notificações da plataforma)
+interface NotifItem {
+  id: string;
+  tipo: string;
+  panel: string;
+  painelNome: string;
+  titulo: string;
+  descricao: string;
+  desde: string;
+  novo: boolean;
+}
+
 const servicesData: Record<string, {title: string; description: string; icon: string; url: string}[]> = {
   'mg': [
     { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
@@ -93,6 +105,8 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'go': [
     { title: 'Segurança', description: 'Opções de segurança - Goiás', icon: 'shield', url: '#' },
     { title: 'Painel TV', description: 'Painel de TV - Goiás', icon: 'tv', url: '/html/painel-tv-goias.html' },
+    // Monitor global das TVs (todas as unidades): só para administrador (ver tvAdmin).
+    { title: 'TVs conectadas', description: 'Monitor das TVs em tempo real — online/offline, canal e pendências (admin)', icon: 'monitor', url: '/html/tvs-monitor.html' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     { title: 'Relatórios Técnicos', description: 'Indicadores de Relatórios Técnicos', icon: 'bar_chart', url: 'https://app.powerbi.com/links/sZd7OFBV_z?ctid=8394d100-2f96-4738-9e1c-00b5e663cb6f&pbi_source=linkShare' },
@@ -263,6 +277,14 @@ export default function Home() {
   // null = ainda não sabemos (rota /api/tv/panels não respondeu ou deslogado) →
   // itens "Painel TV" ficam OCULTOS para não piscar acesso para quem não tem permissão.
   const [painelsPermitidos, setPainelsPermitidos] = useState<Record<string, boolean> | null>(null);
+  // Admin da TV (vem junto do /api/tv/panels: admin:true) — libera o card "TVs conectadas".
+  // null = ainda não sabe (card oculto, mesma regra dos painéis).
+  const [tvAdmin, setTvAdmin] = useState<boolean | null>(null);
+  // Central de notificações (sino): TV offline, aprovações pendentes, backup concluído,
+  // conteúdo expirando — itens calculados no servidor, polling leve a cada 2 min.
+  const [notifAberto, setNotifAberto] = useState(false);
+  const [notifs, setNotifs] = useState<NotifItem[]>([]);
+  const [naoLidas, setNaoLidas] = useState(0);
   
   // Equipment states
   const [showEquipmentModal, setShowEquipmentModal] = useState(false);
@@ -388,6 +410,8 @@ export default function Home() {
             if (typeof p === 'string') mapa[p] = true;
           }
           setPainelsPermitidos(mapa);
+          // o mesmo endpoint diz se o usuário é admin da TV → libera o monitor global
+          setTvAdmin(!!d.admin);
         }
         // resposta não-ok (ou sem "panels") → mantém null, itens ocultos
       })
@@ -396,6 +420,50 @@ export default function Home() {
       });
     return () => { ativo = false; };
   }, [isAuthenticated]);
+
+  // Central de notificações (sino) — carrega ao logar e depois a cada 2 min.
+  // Deslogou → limpa tudo (reset fora do corpo síncrono do effect, padrão acima).
+  useEffect(() => {
+    if (!isAuthenticated) {
+      let limpo = false;
+      Promise.resolve().then(() => {
+        if (!limpo) {
+          setNotifs([]);
+          setNaoLidas(0);
+          setNotifAberto(false);
+          setTvAdmin(null);
+        }
+      });
+      return () => { limpo = true; };
+    }
+    let ativo = true;
+    const carregarNotifs = () => {
+      authFetch('/api/notificacoes')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!ativo || !d) return;
+          setNotifs(Array.isArray(d.itens) ? d.itens : []);
+          setNaoLidas(Number(d.naoLidas) || 0);
+        })
+        .catch(() => { /* silencioso: sino nunca derruba a página */ });
+    };
+    carregarNotifs();
+    const t = setInterval(carregarNotifs, 120_000);
+    return () => { ativo = false; clearInterval(t); };
+  }, [isAuthenticated]);
+
+  // Abre/fecha o sino; ao abrir marca tudo como visto (badge zera no servidor também)
+  const alternarNotifs = () => {
+    if (!notifAberto) {
+      setNaoLidas(0);
+      authFetch('/api/notificacoes/lido', { method: 'POST' }).catch(() => {});
+    }
+    setNotifAberto(!notifAberto);
+  };
+  const iconeNotif = (tipo: string) =>
+    tipo === 'tv_offline' ? 'tv_off' : tipo === 'pendente' ? 'hourglass_top' : tipo === 'backup' ? 'check_circle' : 'schedule';
+  const corNotif = (tipo: string) =>
+    tipo === 'tv_offline' ? '#f87171' : tipo === 'pendente' ? '#facc15' : tipo === 'backup' ? '#4ade80' : '#fb923c';
 
   // Rastreio de navegação — registra na auditoria qual tela/aba o usuário acessou
   useEffect(() => {
@@ -709,6 +777,8 @@ export default function Home() {
     return 'minas';
   };
   const currentDataFiltrada = currentData?.filter((item) => {
+    // Monitor global das TVs: SÓ administrador (tvAdmin true; null/false oculta)
+    if (item.url.includes('tvs-monitor')) return tvAdmin === true;
     const painel = painelTvDaUrl(item.url);
     if (!painel) return true;
     if (!painelsPermitidos) return false;
@@ -880,6 +950,62 @@ export default function Home() {
                     <span className="material-icons text-sm">manage_accounts</span>
                     <span className="hidden sm:inline">Usuários</span>
                   </button>
+                )}
+                {/* Central de notificações (sino) — TV offline, pendências, backup, expiração */}
+                {isAuthenticated && (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); alternarNotifs(); }}
+                      aria-label={`Notificações${naoLidas > 0 ? ` (${naoLidas} novas)` : ''}`}
+                      aria-expanded={notifAberto}
+                      className="bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 relative"
+                    >
+                      <span className="material-icons text-sm">notifications</span>
+                      <span className="hidden sm:inline">Avisos</span>
+                      {naoLidas > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center min-w-[18px] min-h-[18px] animate-pulse">
+                          {naoLidas > 9 ? '9+' : naoLidas}
+                        </span>
+                      )}
+                    </button>
+                    {notifAberto && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setNotifAberto(false)} aria-hidden="true"></div>
+                        <div
+                          role="dialog"
+                          aria-label="Central de notificações"
+                          className="absolute right-0 top-full mt-2 z-50 w-80 max-w-[92vw] bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl overflow-hidden"
+                        >
+                          <div className="px-4 py-2.5 text-sm font-semibold border-b border-neutral-800 flex items-center justify-between">
+                            <span>Notificações</span>
+                            <span className="text-[10px] font-normal text-neutral-400">atualiza sozinho</span>
+                          </div>
+                          <div className="max-h-80 overflow-y-auto divide-y divide-neutral-800">
+                            {notifs.length === 0 ? (
+                              <p className="px-4 py-6 text-sm text-neutral-400 text-center">Tudo tranquilo — nenhuma notificação.</p>
+                            ) : (
+                              notifs.map((n) => (
+                                <div key={n.id} className="px-4 py-3 flex gap-2.5 items-start hover:bg-neutral-800/60">
+                                  <span className="material-icons text-base mt-0.5 shrink-0" style={{ color: corNotif(n.tipo) }}>
+                                    {iconeNotif(n.tipo)}
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium leading-snug flex items-center gap-1.5 flex-wrap">
+                                      {n.titulo}
+                                      {n.novo && (
+                                        <span className="text-[9px] bg-orange-600 text-white rounded-full px-1.5 py-0.5 uppercase tracking-wide">novo</span>
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-neutral-400 leading-snug mt-0.5">{n.descricao}</p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
                 <button 
                   onClick={(e) => {

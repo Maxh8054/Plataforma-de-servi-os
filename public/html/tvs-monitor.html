@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TVs conectadas — ZAMine</title>
+<meta name="author" content="Max Henrique">
+<style>
+  :root{
+    --bg:#120800; --panel:#1e1207; --panel2:#241708; --line:#3d2a14;
+    --accent:#ff6600; --accent2:#ffb347; --txt:#f5ede2; --muted:#b39b7d;
+    --ok:#4ade80; --bad:#f87171; --warn:#facc15;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%,#2a1a09,var(--bg) 60%);
+    color:var(--txt);font-family:Barlow,"Source Sans Pro",system-ui,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+  header{
+    padding:18px clamp(14px,4vw,36px) 10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  header .t h1{font-size:clamp(20px,3.4vw,30px);font-weight:800;letter-spacing:.3px}
+  header .t p{color:var(--muted);font-size:13px;margin-top:2px}
+  header .acoes{display:flex;gap:8px;align-items:center}
+  .btn{
+    background:var(--accent);color:#fff;border:0;border-radius:10px;padding:9px 16px;font:600 14px/1 Barlow,sans-serif;
+    cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:filter .15s;
+  }
+  .btn:hover{filter:brightness(1.12)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
+  main{flex:1;padding:clamp(14px,3vw,30px);max-width:1500px;width:100%;margin:0 auto}
+  .resumo{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+  .resumo .p{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-weight:600;font-size:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .resumo .p b{font-size:20px;font-weight:800}
+  .grupo{margin:22px 0 8px;font-size:15px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--accent2);
+    display:flex;align-items:center;gap:10px}
+  .grupo::after{content:"";flex:1;height:1px;background:var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:10px;transition:border-color .15s;position:relative;
+  }
+  a.card{text-decoration:none;color:inherit}
+  a.card:hover{border-color:var(--accent)}
+  .card .topo{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card .topo b{font-size:18px;font-weight:800}
+  .card .topo span{font-size:12px;color:var(--muted)}
+  .card .linha{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 14px}
+  .card .linha b{color:var(--txt);font-weight:600}
+  .devs{display:flex;flex-direction:column;gap:6px}
+  .dev{
+    display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:9px;padding:7px 10px;font-size:13.5px;
+  }
+  .dev .bola{width:10px;height:10px;border-radius:50%;flex:none}
+  .dev.on .bola{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .dev.off .bola{background:var(--bad);box-shadow:0 0 8px var(--bad)}
+  .dev b{font-weight:700}
+  .dev small{color:var(--muted);margin-left:auto;white-space:nowrap}
+  .vazio{color:var(--muted);font-size:13px;font-style:italic}
+  .badge-pend{
+    position:absolute;top:-8px;right:-6px;background:var(--warn);color:#201500;font:700 11px/1 Barlow,sans-serif;
+    padding:5px 9px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.4)
+  }
+  .estado{display:flex;flex-direction:column}
+  .estado-carregando{display:flex;align-items:center;justify-content:center;gap:12px;padding:60px 0;color:var(--muted)}
+  .spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:g 1s linear infinite}
+  @keyframes g{to{transform:rotate(360deg)}}
+  .msg-box{
+    max-width:460px;margin:60px auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:34px 28px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;
+  }
+  .msg-box .ic{font-size:40px}
+  .msg-box h2{font-size:20px}
+  .msg-box p{color:var(--muted);font-size:14px;line-height:1.5}
+  footer{padding:14px;text-align:center;color:var(--muted);font-size:12px;border-top:1px solid var(--line);margin-top:auto}
+  footer a{color:var(--accent2);text-decoration:none}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#3d2a14;border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+<header>
+  <div class="t">
+    <h1>🖥️ TVs conectadas</h1>
+    <p>Saúde dos aparelhos em tempo real — as TVs se anunciam sozinhas a cada 2,5 minutos</p>
+  </div>
+  <div class="acoes">
+    <span id="resumo" class="resumo" style="margin:0"></span>
+    <button class="btn ghost" id="btnAtualizar" type="button">↻ Atualizar agora</button>
+  </div>
+</header>
+<main id="conteudo">
+  <div class="estado-carregando"><div class="spin"></div> Buscando as TVs…</div>
+</main>
+<footer>ZAMine · <a href="/">voltar para a plataforma</a> · atualiza sozinho a cada 30s</footer>
+
+<script>
+(function(){
+  "use strict";
+  var g = function(id){ return document.getElementById(id); };
+
+  /* token igual aos painéis de TV (x-zamine-token) — cookie da plataforma também vale */
+  function tokenHeaders(extra){
+    var h = Object.assign({"Content-Type":"application/json"}, extra || {});
+    try{
+      var t = localStorage.getItem("zamine_token") || localStorage.getItem("token") || "";
+      if(t) h["x-zamine-token"] = t;
+    }catch(e){}
+    return h;
+  }
+
+  function quando(iso){
+    if(!iso) return "—";
+    var t = new Date(iso).getTime();
+    if(!t) return "—";
+    var min = Math.round((Date.now()-t)/60000);
+    if(min < 1) return "agora";
+    if(min < 60) return "há " + min + " min";
+    var h = Math.round(min/60);
+    if(h < 24) return "há " + h + "h";
+    return "há " + Math.round(h/24) + " dia(s)";
+  }
+  function dataHora(iso){
+    if(!iso) return "—";
+    var d = new Date(iso);
+    if(isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  }
+  function esc(s){
+    return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function urlDoPainel(p){
+    // painel de estado único (goias) tem arquivo próprio; os demais usam o HTML do estado com ?panel=
+    if(p.slug === "goias") return "/html/painel-tv-goias.html";
+    return "/html/painel-tv-minas.html?panel=" + encodeURIComponent(p.slug);
+  }
+
+  function mostrarErro(titulo, texto, comBotao){
+    g("conteudo").innerHTML =
+      '<div class="msg-box"><div class="ic">⚠️</div><h2>' + esc(titulo) + "</h2><p>" + esc(texto) + "</p>" +
+      (comBotao ? '<button class="btn" id="reTentar" type="button">Tentar de novo</button>' : "") +
+      '<button class="btn ghost" onclick="location.href=\'/\'" type="button">Ir para a plataforma</button></div>';
+    var b = g("reTentar");
+    if(b) b.onclick = carregar;
+  }
+
+  function cardPainel(p){
+    var devs = p.dispositivos || [];
+    var devsHtml = devs.length
+      ? '<div class="devs">' + devs.map(function(d){
+          return '<div class="dev ' + (d.online ? "on" : "off") + '">' +
+            '<span class="bola" aria-hidden="true"></span>' +
+            "<b>" + esc(d.id) + "</b>" +
+            "<span>" + (d.canal ? "canal " + esc(d.canal) : "canal Tudo") +
+            (d.telas != null ? " · " + d.telas + " telas" : "") + "</span>" +
+            "<small>" + (d.online ? "no ar" : "sem sinal " + quando(d.ultimaVez)) + "</small></div>";
+        }).join("") + "</div>"
+      : '<span class="vazio">Nenhuma TV se conectou ainda — o aparelho aparece aqui depois do primeiro anúncio.</span>';
+    var pend = p.pendencias > 0 ? '<span class="badge-pend">' + p.pendencias + " pendência" + (p.pendencias>1?"s":"") + "</span>" : "";
+    var local = p.localNome === p.estadoNome ? p.estadoNome : p.localNome + " · " + p.estadoNome;
+    return '<a class="card estado" href="' + esc(urlDoPainel(p)) + '" title="Abrir o painel ' + esc(local) + '">' + pend +
+      '<div class="topo"><b>' + esc(local) + "</b><span>" + p.online + " 🟢 · " + p.offline + " 🔴</span></div>" +
+      '<div class="linha"><span>Última edição: <b>' + quando(p.ultimaEdicao) + "</b></span>" +
+      "<span>Backup automático: <b title=\"" + esc(dataHora(p.ultimoBackup)) + "\">" + quando(p.ultimoBackup) + "</b></span></div>" +
+      devsHtml + "</a>";
+  }
+
+  function pintar(j){
+    var r = j.resumo || {};
+    g("resumo").innerHTML =
+      '<span class="p">🟢 <b>' + (r.onlineAgora || 0) + "</b> online</span>" +
+      '<span class="p">🔴 <b>' + (r.offline || 0) + "</b> offline</span>" +
+      '<span class="p">🖥️ <b>' + (r.aparelhosConhecidos || 0) + "</b> aparelho(s)</span>";
+
+    var grupos = {};
+    var ordem = [];
+    (j.paineis || []).forEach(function(p){
+      if(!grupos[p.estadoNome]){ grupos[p.estadoNome] = []; ordem.push(p.estadoNome); }
+      grupos[p.estadoNome].push(p);
+    });
+    var html = "";
+    ordem.forEach(function(estado){
+      html += '<div class="grupo">' + esc(estado) + "</div>" +
+        '<div class="grid">' + grupos[estado].map(cardPainel).join("") + "</div>";
+    });
+    if(!html) html = '<div class="msg-box"><div class="ic">🖥️</div><h2>Nenhum painel encontrado</h2><p>O registro de painéis está vazio.</p></div>';
+    g("conteudo").innerHTML = html;
+  }
+
+  function carregar(){
+    fetch("/api/tv/monitor", { headers: tokenHeaders(), credentials: "include" })
+      .then(function(r){
+        if(r.status === 401){
+          mostrarErro("Faça login na plataforma", "O monitor mostra dados de quem está logado. Abra a plataforma, entre com o seu usuário e volte aqui — este aviso pode ficar aberto na TV do escritório.");
+          return null;
+        }
+        if(r.status === 403){
+          mostrarErro("Apenas administradores", "Este monitor reúne todas as unidades e por isso é restrito aos administradores da plataforma.");
+          return null;
+        }
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(function(j){ if(j) pintar(j); })
+      .catch(function(){ mostrarErro("Não deu para carregar agora", "Verifique a internet e tente de novo.", true); });
+  }
+
+  g("btnAtualizar").onclick = carregar;
+  carregar();
+  setInterval(carregar, 30000);
+})();
+</script>
+</body>
+</html>
