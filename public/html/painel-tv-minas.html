@@ -714,6 +714,7 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 <div id="editor" hidden>
   <div class="ed-top">
     <h2>Editor do painel</h2>
+    <select id="edLocal" hidden aria-label="Unidade do painel (somente administrador)" title="Troca a unidade deste editor: cada unidade tem conteúdo, canais e permissões próprios"></select>
     <span class="st" id="edSt">Sem alterações</span>
     <button class="btn ghost" id="edDiscard" hidden title="Descarta o rascunho não salvo deste navegador e volta ao conteúdo que está no ar">Descartar rascunho</button>
     <button class="btn ghost" id="edPrev" aria-pressed="false">Ver prévia</button>
@@ -825,18 +826,61 @@ const SECTIONS = [
   {key:"permissoes", label:"Permissões de edição", admin:true, hint:"Escolha qual usuário da plataforma pode editar cada aba do painel. Quem não tiver permissão não edita nada.", parts:[]},
   {key:"historico", label:"Histórico", admin:true, hint:"Quem editou, aprovou e publicou o quê — com data e hora. Os PROBLEMAS que as TVs reportaram sozinhas (erro na tela, queda de conexão) aparecem em vermelho no topo. Bom para rastrear “quem apagou meu comunicado”.", parts:[]}
 ];
-const PANEL_SLUG = "minas";
-const PANEL_URL = "/html/painel-tv-minas.html";
+/* ---------- painéis por UNIDADE (estado → local) ----------
+   Esta MESMA página serve todos os painéis de Minas Gerais; a query
+   ?panel=<slug> escolhe o painel:
+     /html/painel-tv-minas.html                      → Minas Gerais (painel do estado)
+     /html/painel-tv-minas.html?panel=minas-araxa    → Araxá
+     /html/painel-tv-minas.html?panel=minas-usiminas → Usiminas
+   Cada painel tem conteúdo, canais, permissões, controle e rascunho de edição
+   PRÓPRIOS (o slug é a chave usada em todas as chamadas /api/tv/<slug>/...),
+   e a escolha de canal da TV fica salva por aparelho E por painel.
+   Para criar um local novo, adicione uma linha aqui + uma entrada no registro
+   oficial src/lib/tv-panels.ts (backend) — nada mais muda. */
+const PAINEL_PADRAO = "minas";
+const LOCAIS = {
+  "minas":          { unidade:"Minas Gerais", clima:"Belo Horizonte", titulo:"Painel TV ZAMine · Minas Gerais" },
+  "minas-araxa":    { unidade:"Araxá",        clima:"Araxá",           titulo:"Painel TV ZAMine · Araxá" },
+  "minas-usiminas": { unidade:"Usiminas",     clima:"Usiminas",        titulo:"Painel TV ZAMine · Usiminas" }
+};
+const PANEL_SLUG = (()=>{
+  try{
+    const q = new URLSearchParams(location.search).get("panel")||"";
+    return (/^[a-z][a-z0-9-]{1,19}$/.test(q) && LOCAIS[q]) ? q : PAINEL_PADRAO;
+  }catch(e){ return PAINEL_PADRAO; }
+})();
+const LOCAL_CFG = LOCAIS[PANEL_SLUG];
+const PANEL_URL = "/html/painel-tv-minas.html" + (PANEL_SLUG===PAINEL_PADRAO ? "" : "?panel="+PANEL_SLUG);
 /* nome da unidade no topo da TV e nas telas — trocado sozinho se o admin
    preencher “Nome da unidade” nas Configurações */
-let UNIDADE_TXT = "Minas Gerais";
+let UNIDADE_TXT = LOCAL_CFG.unidade;
 const UF_TXT = "MG";
+try{ document.title = LOCAL_CFG.titulo; }catch(e){}
 function aplicarUnidade(){
   const u = String((cfgData && cfgData.geral && cfgData.geral.unidade)||"").trim();
   if(u) UNIDADE_TXT = u;
   const b = document.querySelector(".brand small");
   if(b) b.textContent = (UNIDADE_TXT+" "+UF_TXT).toUpperCase();
 }
+/* ---------- seletor de unidade do editor (somente admin) ----------
+   A mesma página serve todas as unidades de Minas; o admin troca de unidade
+   por este seletor (recarrega com ?panel=...). Cada unidade tem conteúdo,
+   canais, permissões e rascunho de edição PRÓPRIOS — trocar não mistura nada. */
+(function setupEdLocal(){
+  const sel = document.getElementById("edLocal");
+  if(!sel) return;
+  Object.keys(LOCAIS).forEach((k)=>{
+    const o = document.createElement("option");
+    o.value = k; o.textContent = "Unidade: " + LOCAIS[k].unidade;
+    if(k===PANEL_SLUG) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change", ()=>{
+    const k = sel.value;
+    if(!k || k===PANEL_SLUG || !LOCAIS[k]) return;
+    location.href = "/html/painel-tv-minas.html" + (k===PAINEL_PADRAO ? "" : "?panel="+k);
+  });
+})();
 /* ---------- canais da TV: recortes da rotação por aparelho ----------
    O admin cria canais com nome e telas (aba Canais de TV). Cada aparelho
    escolhe o canal dele uma vez (botão “Canal da TV”) e fica salvo no
@@ -1529,7 +1573,7 @@ setInterval(()=>{ const d=new Date().getDate(); if(d!==lastDay){ lastDay=d; rend
    Chip com temperatura, ícone e máx/mín da cidade escolhida nas Configurações
    (padrão: Belo Horizonte). Sem internet ou cidade inválida, o chip fica escondido. */
 let wthrT = null, wthrOk = false;
-function climaCidade(){ return String(get(data,"config","geral")?.climaCidade||"").trim() || "Belo Horizonte"; }
+function climaCidade(){ return String(get(data,"config","geral")?.climaCidade||"").trim() || LOCAL_CFG.clima; }
 function iconeClima(c){
   return c===0?"☀️":c<=2?"🌤️":c===3?"☁️":c<=48?"🌫️":c<=57?"🌦️":c<=67?"🌧️":c<=77?"🌨️":c<=82?"🌦️":c<=86?"🌨️":"⛈️";
 }
@@ -2645,6 +2689,8 @@ async function carregarConteudo(){
 let pollT = null;
 function startPoll(){ clearInterval(pollT); pollT = setInterval(()=>{ if($("editor").hidden) carregarConteudo(); }, 30000); }
 (async ()=>{
+  // 0) marca do topo com a unidade do painel (?panel=...) já antes do 1º conteúdo
+  aplicarUnidade();
   // 1) Conteúdo da TV (leitura pública — somente o aprovado entra no ar)
   await carregarConteudo();
   startPoll();
@@ -2653,6 +2699,7 @@ function startPoll(){ clearInterval(pollT); pollT = setInterval(()=>{ if($("edit
   try{
     const me = await api(`/api/tv/${PANEL_SLUG}/me`,{headers:authHeaders()});
     canEdit = !!me.isAdmin;
+    const el = $("edLocal"); if(el) el.hidden = !canEdit; // seletor de unidade: só admin
     minhasPermissoes = Array.isArray(me.permissoes)?me.permissoes:[];
     meuNome = (me.user && me.user.name) || "";
     meuEmail = (me.user && me.user.email) || "";
@@ -2668,7 +2715,8 @@ function startPoll(){ clearInterval(pollT); pollT = setInterval(()=>{ if($("edit
    a aba aberta há dias recarrega sozinha ao voltar o foco — nunca no meio de uma edição. ---------- */
 async function checkPanelUpdate(){
   try{
-    const r = await fetch(location.pathname+"?up="+Date.now(), {cache:"no-store"});
+    // preserva a query (?panel=...) ao conferir a versão da página
+    const r = await fetch(location.pathname+location.search+(location.search?"&":"?")+"up="+Date.now(), {cache:"no-store"});
     const et = r.headers.get("ETag"); if(!et) return;
     let antigo=null; try{ antigo = localStorage.getItem("zpanel_etag"); }catch(e){}
     try{ localStorage.setItem("zpanel_etag", et); }catch(e){}

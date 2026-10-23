@@ -721,3 +721,26 @@ Stage Summary:
 - Painel de Minas Gerais criado (painel-tv-minas.html), com unidade/clima/textos próprios.
 - Plataforma: link Painel TV só aparece para quem tem permissão naquele estado (admin vê todos).
 - Arquivos: public/html/painel-tv-goias.html, public/html/painel-tv-minas.html (novo), src/app/api/tv/panels/route.ts (novo), src/app/(platform)/page.tsx.
+
+---
+Task ID: 35
+Agent: Z.ai Code (principal)
+Task: Painéis de TV por LOCAL dentro do estado — Minas Gerais com Araxá e Usiminas (pedido: "dentro de minas tem vários lugares... tem que ter um painel pra cada local")
+
+Work Log:
+- Desenho: hierarquia ESTADO → LOCAL sem mudança de schema. O panelSlug (chave de todas as tabelas de TV e rotas /api/tv/[panel]/...) passa a admitir slugs compostos por local ("minas-araxa", "minas-usiminas") — cada local nasce com conteúdo, canais, permissões, controle em tempo real, rascunho de edição e canal salvo no aparelho PRÓPRIOS de graça.
+- Registro central NOVO src/lib/tv-panels.ts: TV_PANEIS (goias, minas, minas-araxa, minas-usiminas) com estado/estadoNome/localNome/arquivo + infoPainel/estadoDoPainel/slugsDePaineis. Criar um local novo = 1 linha aqui + 1 linha no LOCAIS do painel HTML.
+- src/lib/tv.ts: panelValido aceita hífen/número ("/^[a-z][a-z0-9-]{1,19}$/") — minas-araxa passa, lixo ("minas-araxa!!") continua 400 "Painel inválido" (testado via curl).
+- src/lib/seguranca-auto.ts: FALLBACK do contador de dias sem acidentes — painel por local sem data-base própria usa a linha do ESTADO (minas-araxa → minas); se um dia o admin cadastrar data-base do local, o local passa a usar a própria.
+- /api/tv/panels: admin recebe os slugs do registro (antes: ['goias','minas'] hardcoded); usuário comum recebe concessões (TvPermissao) cruzadas com o registro, ordenadas pela ordem do registro.
+- src/app/(platform)/page.tsx: servicesData['mg'] agora tem 3 cards (Painel TV · Minas Gerais, Painel TV - Araxá → /html/painel-tv-minas.html?panel=minas-araxa, Painel TV - Usiminas → ?panel=minas-usiminas); painelTvDaUrl extrai ?panel= da URL (fallback: nome do arquivo) e o filtro do menu ficou genérico — QUALQUER card que aponte para um painel é filtrado por permissão (antes filtrava por title === 'Painel TV', o que vazaria os novos cards).
+- public/html/painel-tv-minas.html: MESMA página para todos os locais de Minas via ?panel= — bloco LOCAIS (unidade/clima/título por local), PANEL_SLUG validado contra LOCAIS (slug estranho cai no painel do estado), PANEL_URL mantém a query (links "para os responsáveis" continuam apontando certo), document.title por local, marca do topo aplicada no boot (antes só após 1º conteúdo — com API caída ficava "Minas Gerais" na TV de Araxá), climaCidade default por local (Araxá/Usiminas/Belo Horizonte — testado com dados REAIS da Open-Meteo), seletor "Unidade:" no topo do editor (só admin, hidden até o /me confirmar; troca = navega para ?panel=...; rascunho é por painel, DRAFT_KEY com slug — trocar não mistura nada), checkPanelUpdate preserva a query.
+- public/tv-sw.js: regex do content aceita slug com hífen (cache offline funciona para painéis por local; a chave inclui a query — cada local guarda o seu).
+- Goiás NÃO foi tocado (painel-tv-goias.html sem edLocal, unidade Alto Horizonte, comportamento idêntico — conferido no browser).
+- E2E (agent-browser 1920×1080): ?panel=minas-araxa → slug/unidade/título/"ARAXÁ MG" corretos, edLocal hidden sem login; mock via aplicarConteudo → TV renderiza (1543 dias desde 01/08/2022, clima real de Araxá 28° no rodapé, 12 telas, letreiro); seletor com 3 opções e navegação real Araxá→Usiminas→Minas (URL/slug/marca conferidos a cada passo); minas padrão sem query (Belo Horizonte no clima); goias intacto; screenshot salvo. curl: painel minas 200, panels sem sessão 401, slug inválido 400, content 500 apenas pelo banco local do sandbox (sem conexão ao Postgres — pré-existente). Lint: 31 problemas (baseline). JS validado (new Function OK, 141KB de script).
+
+Stage Summary:
+- Cada local dentro de um estado tem seu PRÓPRIO painel de TV (conteúdo, canais, permissões, controle, rascunho) — Minas já vem com Araxá e Usiminas; o painel "Minas Gerais" continua existindo como painel do estado.
+- Um local novo leva ~2 linhas (registro backend + LOCAIS do HTML) e nasce funcionando com o contador do estado por padrão.
+- Menu da plataforma mostra um card por painel, só para quem tem permissão naquele painel; admin vê todos.
+- Arquivos: src/lib/tv-panels.ts (novo), src/lib/tv.ts, src/lib/seguranca-auto.ts, src/app/api/tv/panels/route.ts, src/app/(platform)/page.tsx, public/html/painel-tv-minas.html, public/tv-sw.js. Sem mudança de schema Prisma.

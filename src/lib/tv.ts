@@ -7,9 +7,10 @@ import { NextResponse } from 'next/server';
  * Painéis por regional (ex.: "goias"). Conteúdo por aba com aprovação do admin.
  */
 
-/** Slugs de painel aceitos (regional do painel de TV) */
+/** Slugs de painel aceitos: painel de estado ("goias") ou por local ("minas-araxa") —
+ *  minúsculas, números e hífen (ver src/lib/tv-panels.ts para a lista oficial). */
 export function panelValido(panel: string): boolean {
-  return /^[a-z]{2,14}$/.test(panel);
+  return /^[a-z][a-z0-9-]{1,19}$/.test(panel);
 }
 
 export function respostaPanelInvalido() {

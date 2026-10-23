@@ -33,7 +33,8 @@ self.addEventListener("fetch", (event) => {
   }
 
   // conteúdo do painel e a própria página: rede primeiro, cache como reserva
-  const conteudo = /^\/api\/tv\/[a-z0-9]+\/content$/.test(url.pathname);
+  // (slug aceita painel por local: minas-araxa etc.)
+  const conteudo = /^\/api\/tv\/[a-z0-9-]+\/content$/.test(url.pathname);
   const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname);
   if (conteudo || pagina) {
     const chave = url.pathname + (url.search || "");

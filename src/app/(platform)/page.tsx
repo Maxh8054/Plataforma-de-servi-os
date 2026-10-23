@@ -62,7 +62,11 @@ const servicesData: Record<string, {title: string; description: string; icon: st
     { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
     { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' },
     { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' },
-    { title: 'Painel TV', description: 'Painel de TV - Minas Gerais', icon: 'tv', url: '/html/painel-tv-minas.html' } // exibido só para quem tem permissão no painel (ver painelsPermitidos)
+    // Painéis TV por unidade — cada local tem painel próprio (conteúdo, canais e
+    // permissões próprios). Exibidos só para quem tem permissão no painel (ver painelsPermitidos).
+    { title: 'Painel TV', description: 'Painel de TV - Minas Gerais', icon: 'tv', url: '/html/painel-tv-minas.html' },
+    { title: 'Painel TV - Araxá', description: 'Painel de TV - Araxá (MG)', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-araxa' },
+    { title: 'Painel TV - Usiminas', description: 'Painel de TV - Usiminas (MG)', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-usiminas' }
   ],
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
@@ -688,19 +692,25 @@ export default function Home() {
     ? securityData[modalState || ''] 
     : (activeModal === 'services' ? servicesData[modalState || ''] : securityData[modalState || '']);
 
-  // Filtro do menu: itens "Painel TV" só aparecem para quem tem acesso ao painel
-  // correspondente (url → slug: painel-tv-goias → 'goias', painel-tv-minas → 'minas').
+  // Filtro do menu: itens de Painel TV (qualquer card cuja URL aponte para um
+  // painel) só aparecem para quem tem acesso ao painel correspondente.
+  // URL → slug: painel-tv-goias → 'goias'; painel-tv-minas → 'minas';
+  // painel-tv-minas.html?panel=minas-araxa → 'minas-araxa' (painel por local).
   // Com painelsPermitidos null (carregando/deslogado) os itens ficam ocultos.
   const painelTvDaUrl = (url: string): string | null => {
+    if (!url.includes('painel-tv-')) return null;
+    try {
+      const p = new URL(url, 'https://zamine.internal').searchParams.get('panel');
+      if (p) return p;
+    } catch { /* url relativa malformada — cai no fallback abaixo */ }
     if (url.includes('painel-tv-goias')) return 'goias';
-    if (url.includes('painel-tv-minas')) return 'minas';
-    return null;
+    return 'minas';
   };
   const currentDataFiltrada = currentData?.filter((item) => {
-    if (item.title !== 'Painel TV') return true;
-    if (!painelsPermitidos) return false;
     const painel = painelTvDaUrl(item.url);
-    return !!painel && !!painelsPermitidos[painel];
+    if (!painel) return true;
+    if (!painelsPermitidos) return false;
+    return !!painelsPermitidos[painel];
   });
 
   // Global styles
