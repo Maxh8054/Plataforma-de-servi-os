@@ -61,12 +61,8 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   'mg': [
     { title: 'R&D', description: 'Serviços R&D - Minas Gerais', icon: 'business', url: '#rd' },
     { title: 'Araxá', description: 'Serviços Araxá - Minas Gerais', icon: 'location_city', url: '#araxa' },
-    { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' },
-    // Painéis TV por unidade — cada local tem painel próprio (conteúdo, canais e
-    // permissões próprios). Exibidos só para quem tem permissão no painel (ver painelsPermitidos).
-    { title: 'Painel TV', description: 'Painel de TV - Minas Gerais', icon: 'tv', url: '/html/painel-tv-minas.html' },
-    { title: 'Painel TV - Araxá', description: 'Painel de TV - Araxá (MG)', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-araxa' },
-    { title: 'Painel TV - Usiminas', description: 'Painel de TV - Usiminas (MG)', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-usiminas' }
+    { title: 'Usiminas', description: 'Serviços Usiminas - Minas Gerais', icon: 'factory', url: '#usiminas' }
+    // Painéis TV por unidade ficam DENTRO da aba de cada local (mg-araxa, mg-usiminas)
   ],
   'mg-rd': [
     { title: 'Segurança', description: 'Opções de segurança - R&D', icon: 'shield', url: '#' },
@@ -78,12 +74,18 @@ const servicesData: Record<string, {title: string; description: string; icon: st
   ],
   'mg-araxa': [
     { title: 'Segurança', description: 'Opções de segurança - Araxá', icon: 'shield', url: '#' },
+    // Painel TV da unidade: cada local tem painel próprio (conteúdo, canais e permissões
+    // próprios). Exibido só para quem tem permissão no painel (ver painelsPermitidos).
+    { title: 'Painel TV', description: 'Painel de TV - Araxá', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-araxa' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
   ],
   'mg-usiminas': [
     { title: 'Segurança', description: 'Opções de segurança - Usiminas', icon: 'shield', url: '#' },
+    // Painel TV da unidade: cada local tem painel próprio (conteúdo, canais e permissões
+    // próprios). Exibido só para quem tem permissão no painel (ver painelsPermitidos).
+    { title: 'Painel TV', description: 'Painel de TV - Usiminas', icon: 'tv', url: '/html/painel-tv-minas.html?panel=minas-usiminas' },
     { title: 'Literaturas Técnicas', description: 'Documentos e literaturas técnicas', icon: 'menu_book', url: LITERATURAS_TECNICAS_URL },
     { title: 'Criar Relatórios', description: 'Ferramenta para criação de relatórios', icon: 'create', url: '/relatorios' },
     // { title: 'ZAB-Flow', description: 'Acesse o sistema ZAB-Flow', icon: 'account_tree', url: '#zabflow' },
