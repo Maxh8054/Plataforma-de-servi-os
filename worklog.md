@@ -757,3 +757,20 @@ Work Log:
 
 Stage Summary:
 - f9b32a1 no GitHub → Render fará deploy automático (painéis por local: minas-araxa, minas-usiminas).
+
+---
+Task ID: 36
+Agent: Z.ai Code (principal)
+Task: Menu da plataforma — card "Painel TV" de cada local dentro da ABA do local (Araxá dentro de Araxá, Usiminas dentro de Usiminas), não na lista raiz de Minas
+
+Work Log:
+- servicesData['mg']: removidos os 3 cards Painel TV (voltou a ser só R&D/Araxá/Usiminas como drill-downs).
+- servicesData['mg-araxa']: card "Painel TV" (/html/painel-tv-minas.html?panel=minas-araxa) logo após "Segurança", mesmo padrão do card de Goiás.
+- servicesData['mg-usiminas']: idem com ?panel=minas-usiminas.
+- O filtro por permissão (painelTvDaUrl extrai ?panel= da URL + painelsPermitidos) é por URL e continua valendo para os cards dentro das abas — sem mudança de lógica.
+- Painel do estado "minas" segue existindo (URL direta /html/painel-tv-minas.html) mas sem card no menu, conforme pedido do usuário; Goiás intocado (estado único, Painel TV direto).
+- Lint: 31 baseline. Home 200, dev.log sem erro novo. Validação visual do menu ficou limitada: a plataforma exige login e não há credenciais nesta sessão (estrutura conferida por código; filtro por URL já validado na Task 34).
+- Commit 9978bdf; push com o token enviado pelo usuário nesta sessão (se ainda válido).
+
+Stage Summary:
+- Menu: Minas Gerais → [R&D | Araxá | Usiminas]; dentro de Araxá → [Segurança | Painel TV | Literaturas | Criar Relatórios]; idem Usiminas. Cada Painel TV abre o painel daquele local, visível só para quem tem permissão.
