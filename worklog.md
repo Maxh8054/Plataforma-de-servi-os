@@ -1005,3 +1005,20 @@ Work Log:
 Stage Summary:
 - A tela Plano de Ação agora APARECE na rotação dos 4 painéis (goias 15 telas, minas 14) preenchida com o plano de exemplo da gestão — sem precisar salvar nada; quando salvarem por cima, vale o conteúdo real
 - Emerson saiu do organograma do painel Goiás (13 pessoas) e também não aparece no plano de exemplo; TVs atualizam no próximo poll (30s) ou recarregando a página
+
+---
+Task ID: 46
+Agent: Z.ai Code (principal)
+Task: Logo aparecendo 2× (Valores, Calendário, Plano de Ação) e com cor errada no fundo claro → uma logo só no cabeçalho (branca no escuro, preta no claro); + tabela do Plano de Ação rolando sozinha até o fim
+
+Work Log:
+- Diagnóstico: o cabeçalho da TV JÁ tinha as duas versões da logo (logo-d branca + logo-l preta, o CSS troca sozinho por tema — a logo-l do arquivo é idêntica byte a byte à da gestão, md5 conferido). A duplicata vinha das 3 telas que renderizavam logo PRÓPRIA dentro do slide (R.valores, R.calendario, R.planoAcao usavam `vh-logo` com src=LOGO_TV, que sempre pegava a BRANCA — errada no tema claro)
+- Removidas as 3 logos internas + CSS .vh-logo + const LOGO_TV órfã nos 2 painéis (goias+minas, blocos idênticos). Agora TODAS as telas têm exatamente 1 logo: a do cabeçalho, branca no tema escuro e preta no claro (troca automática via #stage.th-light)
+- Tabela do Plano de Ação: nova paScrollAuto(tw, preview) chamada no desenha() — quando a tabela não cabe inteira, desce devagar com easeInOut até a ÚLTIMA ação (duração amarrada ao tempo do slide: max(9s, duration()*0.75)), espera 4s no fim, volta ao topo e recomeça (loop); se couber inteira, não rola; prévia do editor fica parada no topo; congela quando a rotação está pausada (__calPausa) e se autodestrói quando o nó sai do DOM (troca de tela) — sem leak de interval
+- Testes browser: todas as telas com logos=1 (visíveis, computado), th-light com logo-l preta visível e logo-d display:none (e vice-versa no th-dark); trace da rolagem: 600ms top=1 → 8400ms top=136 (max 156) em curva suave; screenshots claro/escuro conferidos; zero erros de página
+- Lint no baseline 31; commit 44e8a8c pushado (3e95607..44e8a8c) e remote limpo do token
+
+Stage Summary:
+- Ficou UMA logo por tela: a do cabeçalho da TV — branca quando o fundo é escuro, preta quando o fundo é claro (troca sozinha com o tema do slide)
+- A tabela do Plano de Ação desce sozinha mostrando ação por ação até o fim do plano, espera e volta ao topo — dá pra ver o plano inteiro mesmo com a tabela maior que a tela
+- Zero mudança de dados/schema; TVs atualizam no próximo poll (30s) ou recarregando
