@@ -658,6 +658,52 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .cn-b{display:flex;gap:8px;flex:none}
 .cn-form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px}
 .cn-form h4{margin:0 0 12px;font-size:16px}
+/* ---------- Calendário — feriados e pontes do mês (aba Calendário) ---------- */
+.s-cal{display:flex;flex-direction:column;height:100%;min-height:0;gap:18px;--fer:#d9464c;--fer-s:#d9464c2e;--pon:#c99a10;--pon-s:#e8c32e33}
+.th-light .s-cal{--fer:#c8363c;--pon:#a67c00}
+.s-cal .c-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:3px solid var(--accent);padding-bottom:12px}
+.s-cal .c-hd small{display:block;color:var(--accent);font-weight:700;letter-spacing:.24em;text-transform:uppercase;font-size:19px}
+.s-cal .c-hd h1{margin:6px 0 0;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;font-size:72px}
+.s-cal .c-hd h1 em{font-style:normal;color:var(--accent)}
+.s-cal .c-leg{display:flex;gap:26px;font-size:19px;font-weight:600;color:var(--muted);padding-bottom:12px;flex:none}
+.s-cal .c-leg i{display:inline-block;width:15px;height:15px;border-radius:5px;margin-right:9px}
+.s-cal .c-body{flex:1;display:grid;grid-template-columns:1fr 440px;gap:24px;min-height:0}
+.s-cal .c-gr{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:11px}
+.s-cal .c-dw{display:flex;align-items:center;justify-content:flex-end;font-size:18px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-right:14px}
+.s-cal .c-d{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:10px 14px;position:relative;min-width:0;overflow:hidden}
+.s-cal .c-d b{font-size:27px;font-weight:800}
+.s-cal .c-d span{display:block;font-size:15px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.s-cal .c-d.fds{background:var(--panel2)}
+.s-cal .c-d.f{border-color:var(--fer);background:var(--fer-s)}
+.s-cal .c-d.f b{color:var(--fer)}
+.s-cal .c-d.p{border-color:var(--pon);background:var(--pon-s)}
+.s-cal .c-d.p b{color:var(--pon)}
+.s-cal .c-d.hj{box-shadow:inset 0 0 0 4px var(--accent)}
+.s-cal .c-d.hj::after{content:"HOJE";position:absolute;top:10px;right:12px;background:var(--accent);color:var(--bg);font-size:12px;font-weight:800;letter-spacing:.08em;border-radius:6px;padding:3px 7px}
+.s-cal .c-side{display:flex;flex-direction:column;gap:14px;min-height:0}
+.s-cal .c-card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px 20px;flex:none}
+.s-cal .c-card h3{margin:0 0 10px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.s-cal .c-nx b{font-size:58px;line-height:1;color:var(--accent)}
+.s-cal .c-nx p{margin:8px 0 0;font-size:25px;font-weight:700;overflow-wrap:anywhere}
+.s-cal .c-nx small{display:block;font-size:17px;color:var(--muted);margin-top:3px;text-transform:capitalize}
+.s-cal .c-flx{flex:1;min-height:0;display:flex;flex-direction:column}
+.s-cal .c-fl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;overflow-y:auto;min-height:0}
+.s-cal .c-fl::-webkit-scrollbar{width:8px}
+.s-cal .c-fl::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.s-cal .c-fl li{display:flex;align-items:center;gap:13px;font-size:20px;font-weight:600;flex:none}
+.s-cal .c-fl li>div{min-width:0}
+.s-cal .c-fl li .nm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-cal .c-fl li em{display:block;font-style:normal;font-size:15px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-cal .c-fl li .dd{flex:0 0 auto;width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:21px}
+.s-cal .c-fl li.F .dd{background:var(--fer-s);color:var(--fer);box-shadow:inset 0 0 0 2px var(--fer)}
+.s-cal .c-fl li.P .dd{background:var(--pon-s);color:var(--pon);box-shadow:inset 0 0 0 2px var(--pon)}
+.s-cal .c-fl li.ps{opacity:.4}
+.s-cal .c-fl li.ps .nm{text-decoration:line-through}
+.s-cal .c-none{margin:2px 0;font-size:17px;color:var(--muted)}
+.s-cal .c-tot{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.s-cal .c-tot b{display:block;font-size:46px;line-height:1.05}
+.s-cal .c-tot small{font-size:15px;color:var(--muted);font-weight:600}
+.s-cal .c-av{font-size:17px;font-weight:600;color:var(--muted)}
 </style>
 
 <div id="viewport">
@@ -764,6 +810,9 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Atividades",cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora",t:"time",w:1},
       {k:"atividade",l:"Atividade",w:4},{k:"equipamento",l:"Equipamento",w:2},{k:"responsavel",l:"Responsável",w:2}]}]},
+  {key:"calendario", label:"Calendário", hint:"Feriados e pontes do ano (ponte = dia encaixado entre feriado e fim de semana). A TV mostra sempre o mês atual: dias marcados em vermelho (feriado) e amarelo (ponte), card com a contagem para o próximo feriado e resumo do mês (dias úteis, feriados e pontes). Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. Sem nenhum feriado cadastrado, a tela fica fora da rotação.",
+    parts:[{kind:"list",key:"itens",label:"Feriados e pontes",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
+      {k:"data",l:"Data",t:"date",w:2},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
     parts:[{kind:"list",key:"itens",label:"Treinamentos",cols:[
       {k:"treinamento",l:"Treinamento",ph:"Ex.: NR-35 Trabalho em altura",w:3},{k:"tipo",l:"Tipo",t:"select",opts:["Formação","Reciclagem","Integração","Interno"],w:2},
@@ -854,6 +903,10 @@ const PANEL_SLUG = (()=>{
 })();
 const LOCAL_CFG = LOCAIS[PANEL_SLUG];
 const PANEL_URL = "/html/painel-tv-minas.html" + (PANEL_SLUG===PAINEL_PADRAO ? "" : "?panel="+PANEL_SLUG);
+/* feriados pré-carregados na primeira abertura da aba Calendário: Goiás já tem a
+   lista de 2026 pronta; Minas/Araxá/Usiminas começam vazio — o admin cadastra os
+   feriados do próprio local e salva. Depois de salva uma vez, nunca mais é sobrescrito. */
+const CAL_SEED = [];
 /* nome da unidade no topo da TV e nas telas — trocado sozinho se o admin
    preencher “Nome da unidade” nas Configurações */
 let UNIDADE_TXT = LOCAL_CFG.unidade;
@@ -1306,6 +1359,70 @@ R.organograma = function(o){
     + (base.length?`<div class="base"><div class="bl">${base.map(p=>`<div class="bi"><i class="hst${dash(p)?" dash":""}"></i>${orgCard(p,true)}</div>`).join("")}</div></div>`:"");
   return `<div class="org"><div class="tree" style="grid-template-columns:repeat(${Math.max(total,1)},auto)">${celulas}</div></div>`;
 };
+/* ---------- Calendário — feriados e pontes do mês corrente (aba Calendário) ----------
+   Dados vêm do editor (data AAAA-MM-DD, tipo Feriado/Ponte, nome). A tela mostra
+   SEMPRE o mês atual: a cada volta da rotação o HTML é reconstruído, então a
+   virada do dia/mês acontece sozinha. Sem feriado cadastrado, a aba não entra
+   na rotação (expandSlides). */
+const CAL_DS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+function calItens(){
+  return list(data,"calendario")
+    .map(x=>({d:pDate(x.data), t:/^ponte/i.test(String(x.tipo||"").trim())?"P":"F", n:String(x.nome||"").trim()}))
+    .filter(x=>x.d && x.n)
+    .sort((a,b)=>+a.d-+b.d);
+}
+R.calendario = function(){
+  const it = calItens();
+  if(!it.length) return emptyBox("Calendário sem feriados","Cadastre feriados e pontes no editor (aba Calendário) — sem eles esta tela fica fora da rotação.");
+  const hj = tvHoje ? pDate(tvHoje) : today0();
+  const ano = hj.getFullYear(), mes = hj.getMonth();
+  const mesIt = it.filter(x=>x.d.getFullYear()===ano && x.d.getMonth()===mes);
+  const mapa = {}; mesIt.forEach(x=>{ mapa[x.d.getDate()] = x; });
+  const ini = new Date(ano,mes,1).getDay(), dias = new Date(ano,mes+1,0).getDate();
+  let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
+  for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
+  let uteis = 0;
+  for(let d=1;d<=dias;d++){
+    const wd = (ini+d-1)%7, f = mapa[d], fds = wd===0||wd===6;
+    if(!fds && !f) uteis++;
+    const cls = "c-d"+(fds?" fds":"")+(f?" "+f.t.toLowerCase():"")+(d===hj.getDate()?" hj":"");
+    g += `<div class="${cls}"${f?` title="${esc(f.n)}"`:""}><b>${d}</b>${f?`<span>${esc(f.n)}</span>`:""}</div>`;
+  }
+  const nx = it.filter(x=>x.t==="F" && +x.d>=+hj)[0] || null;
+  let nxh = "";
+  if(nx){
+    const n = Math.round((+nx.d - +hj)/864e5);
+    nxh = `<div class="c-card c-nx"><h3>Próximo feriado</h3><b>${n===0?"HOJE":n===1?"AMANHÃ":n+" dias"}</b><p>${esc(nx.n)}</p><small>${nx.d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}</small></div>`;
+  }
+  const lst = mesIt.length
+    ? `<ul class="c-fl">${mesIt.map(x=>{
+        const ps = +x.d < +hj;
+        return `<li class="${x.t}${ps?" ps":""}"><span class="dd">${("0"+x.d.getDate()).slice(-2)}</span><div><span class="nm">${esc(x.n)}</span><em>${x.t==="F"?"Feriado":"Ponte"} · ${x.d.toLocaleDateString("pt-BR",{weekday:"long"})}</em></div></li>`;
+      }).join("")}</ul>`
+    : `<p class="c-none">Nenhum feriado ou ponte neste mês.</p>`;
+  const nf = mesIt.filter(x=>x.t==="F").length, np = mesIt.length - nf;
+  const anos = new Set(it.map(x=>x.d.getFullYear()));
+  const av = anos.has(ano) ? "" : `<div class="c-card c-av">⚠ Feriados de ${ano} ainda não foram cadastrados — avise o responsável pelo painel.</div>`;
+  return `<div class="s-cal">
+    <header class="c-hd">
+      <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>${esc(MESES[mes+1])} <em>${ano}</em></h1></div>
+      <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span></div>
+      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
+    </header>
+    <div class="c-body">
+      <div class="c-gr">${g}</div>
+      <div class="c-side">${nxh}
+        <div class="c-card c-flx"><h3>Feriados e pontes do mês</h3>${lst}</div>
+        ${av}
+        <div class="c-card"><h3>Resumo do mês</h3><div class="c-tot">
+          <div><b>${uteis}</b><small>dias úteis</small></div>
+          <div><b style="color:var(--fer)">${nf}</b><small>feriados</small></div>
+          <div><b style="color:var(--pon)">${np}</b><small>pontes</small></div>
+        </div></div>
+      </div>
+    </div>
+  </div>`;
+};
 function fitOrg(root){
   /* root pode ser um elemento (prévia do editor) ou vir de um addEventListener("load", …)
      — nesse caso é um evento, não um elemento, então usa o palco da TV */
@@ -1433,6 +1550,7 @@ function expandSlides(o, sec){
     if(!d) return null;                       // sem DDS: renderer mostra o aviso de cadastro
     return janelaHora(d) ? null : [];         // dentro da janela: slide normal; fora: aba some
   }
+  if(sec==="calendario") return list(o,"calendario").some(x=>x.data&&x.nome) ? null : [];
   return null;
 }
 /* aniversariantes do DIA (tvHoje = fuso da operação, como no slide do mês) */
@@ -1910,6 +2028,11 @@ function openEditor(sec, only){
   cnEdit = -1;
   if(!draft.config) draft.config = {};
   if(!draft.config.ativos) draft.config.ativos = Object.fromEntries(SLIDE_KEYS.map(k=>[k,true]));
+  /* Calendário: na primeira abertura (aba nunca salva), já vem com os feriados padrão (Goiás) */
+  if(curSec==="calendario" && CAL_SEED.length && !secData.calendario && !(loadDraftLocal()||{bySec:{}}).bySec.calendario){
+    draft.calendario = Object.assign({}, draft.calendario, {itens: clone(CAL_SEED)});
+    dirtySecs.add("calendario"); setDirty(true); $("edDiscard").hidden = false;
+  }
   /* recuperação de rascunho salvo no navegador (queda de luz, F5, fechamento acidental) */
   const salvos = loadDraftLocal();
   const recuperados = [];

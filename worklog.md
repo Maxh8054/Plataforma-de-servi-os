@@ -846,3 +846,38 @@ Work Log:
 
 Stage Summary:
 - Para a IA funcionar no Render: criar chave em z.ai (API keys) e definir no Render → Environment: IA_API_KEY=<chave> (opcional IA_BASE_URL/IA_MODEL para outro provedor OpenAI-compatível). O push dispara deploy; depois de deployar, o botão ✨ passa a funcionar. Sem a chave, o modal mostra exatamente o que falta (503).
+
+---
+Task ID: 40-recuperacao
+Agent: Z.ai Code (principal)
+Task: Restaurar o projeto após reset do sandbox (git re-inicializado + arquivos do projeto apagados do disco)
+
+Work Log:
+- Detectado: .git recriado com commit órfão "Initial commit" (infra do sandbox), sem remote; disco voltou ao template (prisma/schema.prisma genérico sqlite, sem public/html, sem src do projeto). Sobras do template (src/app/page.tsx, layout.tsx, globals.css na raiz de app) conflitariam com (platform)/page.tsx — removidas.
+- GitHub tinha a árvore completa (origin/main = 98694fa, incluindo o fix da IA desta sessão). Remote re-adicionado com o token autorizado, fetch, git reset --hard origin/main, token removido do remote.
+- .env local era placeholder (a URL real de produção já era inacessível do sandbox antes — pré-existente); backup em /tmp. Produção (Render) intocada — as credenciais estão no dashboard do Render.
+- bun install (330 pacotes), dev server reiniciado, GET / → 200.
+
+Stage Summary:
+- Projeto 100% restaurado do GitHub (98694fa). O hábito de push por tarefa salvou o projeto — única cópia existente estava lá.
+- Lição: .env real nunca esteve no git (correto); se precisar rodar integração com banco no sandbox, pedir ao usuário a DATABASE_URL do Render de novo.
+
+---
+Task ID: 41
+Agent: Z.ai Code (principal)
+Task: Calendário dinâmico no painel TV (a partir do HTML de referência enviado pelo usuário)
+
+Work Log:
+- (em andamento)
+
+Work Log (conclusão da Task 41):
+- public/html/painel-tv-goias.html e painel-tv-minas.html: nova aba/seção "calendario" (label Calendário, entre Programação e Treinamentos) com editor de lista padrão (Data / Tipo Feriado|Ponte / Nome) — sem mudança de schema (TvSection dados JSON).
+- TV: R.calendario renderiza SEMPRE o mês atual (tvHoje do servidor, imune a fuso): grade 7×6 com feriados (vermelho) e pontes (amarelo), fim de semana sombreado, chip HOJE, card "Próximo feriado" com contagem (HOJE/AMANHÃ/N dias, só feriados F), lista do mês (passados riscados), aviso quando o ano corrente não tem cadastro e resumo (dias úteis/feriados/pontes). CSS .s-cal nativo do tema (var(--panel/--accent/--fer/--pon)) — funciona em th-dark, th-light e th-orange. HTML reconstruído a cada volta da rotação → virada do dia/mês sozinha, sem timer.
+- expandSlides: calendario sem nenhum feriado válido = FORA da rotação; com feriados = slide único.
+- Semente: CAL_SEED com os feriados de 2026 de Goiás (do arquivo de referência enviado pelo usuário) pré-preenche o rascunho na PRIMEIRA abertura da aba (só enquanto a seção nunca foi salva); Minas/Araxá/Usiminas começam vazio (CAL_SEED=[]). Depois de salva 1x, nunca mais sobrescreve.
+- E2E (agent-browser 1920×1080, mock por cache offline zpanel-conteudo-*): Goiás claro (grade out/2026 correta, HOJE 24, Aparecida riscada, "9 dias"→Finados, resumo 21/1/0 — batendo com cálculo manual), Araxá claro (unidade ARAXÁ no header), virada de dia (hoje=26 → HOJE 26, "7 dias", resumo 22/0/0), sem feriados → "Nada no ar agora", tema Escuro via config.cores (idêntico à referência). Erros 500 no console = baseline pré-existente (Postgres inacessível do sandbox).
+- node --check: script único dos 2 painéis OK. Lint 31 baseline. dev.log sem erro novo.
+- Nota: mock de rede do agent-browser não interceptou fetch nesta sessão — usado o cache offline do próprio painel (zpanel-conteudo-<slug>), que é o mecanismo real de fallback.
+
+Stage Summary:
+- Calendário dinâmico no ar nos 2 painéis: admin cadastra feriados/pontes por painel (Goiás já nasce com 2026 preenchido), TV mostra o mês corrente com contagem para o próximo feriado e resumo do mês; tela some da rotação se não houver cadastro. Zero mudança de schema/rotas.
