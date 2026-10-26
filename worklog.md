@@ -1022,3 +1022,22 @@ Stage Summary:
 - Ficou UMA logo por tela: a do cabeçalho da TV — branca quando o fundo é escuro, preta quando o fundo é claro (troca sozinha com o tema do slide)
 - A tabela do Plano de Ação desce sozinha mostrando ação por ação até o fim do plano, espera e volta ao topo — dá pra ver o plano inteiro mesmo com a tabela maior que a tela
 - Zero mudança de dados/schema; TVs atualizam no próximo poll (30s) ou recarregando
+
+---
+Task ID: 47
+Agent: Z.ai Code (principal)
+Task: "No plano de ação os exemplos eu quero tirar eles e deixar dinamico onde pessoas podem adicionar somente" → remover o plano de exemplo (PA_SEED) e deixar a tela 100% dinâmica
+
+Work Log:
+- Conferido no banco de produção: NENHUM planoAcao salvo (só goias tem 10 sections, nenhuma é planoAcao) — os exemplos existiam só no HTML, não precisou limpar banco
+- Removido o PA_SEED (as 12 ações de exemplo) e a lógica de seed do paFonte nos 2 painéis (goias+minas, blocos idênticos): paFonte agora devolve SOMENTE o que foi salvo na aba Plano de Ação (paFonte = list(o,"planoAcao"))
+- Removido o bloco de pré-preenchimento do editor (a aba não abre mais com o plano de exemplo; o bloco espelho do calendário CAL_SEED ficou intacto)
+- Hint da aba atualizado: "A tela é 100% DINÂMICA: começa vazia — use o botão + Adicionar para montar o seu plano; salve e a ação entra no ar na hora. Sem nenhuma ação salva, a tela fica fora da rotação (e salvando vazio, sai)."
+- Portão da rotação alinhado com o filtro da tabela: expandSlides agora exige acao+quem+prazo (igual ao paItens) — uma ação sem responsável não deixa mais a tela entrar no ar vazia
+- Testes browser (agent-browser, mock client-side SEM escrita no banco): goias com dados reais = TELA 1 DE 14 SEM a tela (rotação: seguranca|dds|maquinas|programacao|calendario|treinamentos|escala|perdas|campanhasSeg|engage|aniversarios|beneficios|valores|organograma); injetando 2 ações salvas = 15 telas com a tela no ar — Out/2026 KPIs 1/0/0/0/1 com "21 dias de atraso", ▶ Nov: ação nova "Faltam 30 dias · EM ANDAMENTO", "Mês atual" volta; editor (aberto via openEditor com permissão simulada): abre VAZIO com "Nenhum item ainda.", zero exemplos, hint nova visível; "+ Adicionar" cria a linha, preenchido Ação/Responsável/Prazo/Progresso — prévia ao vivo mostra "Nenhuma ação com prazo em outubro" em Out e a ação "Faltam 20 dias · NÃO INICIADA" em Nov; expandSlides: com 1 ação válida entra na rotação (null), salvou vazio sai ([]); minas = TELA 1 DE 13 sem a tela; rascunho de teste limpo do localStorage; zero erros de página/console
+- Lint no baseline 31; commit de9ff77 pushado (44e8a8c..de9ff77) e remote limpo do token
+
+Stage Summary:
+- Plano de Ação não tem mais exemplo nenhum: a TV mostra SOMENTE o que a gestão cadastrar na aba — começou vazia, a tela fica fora da rotação; adicionaram a 1ª ação e salvaram, a tela entra no ar na hora; salvou vazio, sai
+- Editor abre a aba vazia (sem prefill) com "+ Adicionar" para montar o plano; prévia ao vivo continua funcionando
+- Zero mudança de schema/rotas/backend; TVs atualizam no próximo poll (30s) ou recarregando
