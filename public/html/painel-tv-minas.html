@@ -923,7 +923,7 @@ const SECTIONS = [
   {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. Na TV a tela abre no mês atual com BOTÕES na própria tela: ◀ ▶ passam o mês, “Hoje” volta ao atual, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez — clicar num mini-calendário abre o mês. Enquanto estiver no modo ano ou num mês diferente, a rotação pausa e volta sozinha depois de 2 minutos. Cores: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. A tela JÁ ENTRA NO AR PREENCHIDA com os feriados padrão do ano — revise, ajuste e salve para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
     parts:[{kind:"list",key:"itens",label:"Feriados, pontes, eventos e DDS",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora (opcional)",ph:"Ex.: 07:30",w:1},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte","Evento","DDS"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
-  {key:"planoAcao", label:"Plano de Ação", hint:"Plano de ação da operação, igual ao quadro da gestão: cada linha tem a AÇÃO (o que será feito), o RESPONSÁVEL e o PRAZO — o mês que a TV mostra é o do prazo. O STATUS sai sozinho: Concluída (preencheu “Concluída em”), Atrasada (prazo já passou), Em andamento (progresso maior que 0) ou Não iniciada. Na TV a tela abre no mês atual com botões na própria tela: ◀ ▶ passam o mês, “Mês atual” volta, o seletor escolhe qualquer mês, os CARDS grandes filtram por status (toque de novo para limpar) e o filtro por RESPONSÁVEL isola as ações de uma pessoa. Enquanto estiver num mês diferente ou com filtro ligado, a rotação pausa (chip avisa) e volta sozinha depois de 2 minutos sem toque. A tela entra na rotação assim que a primeira ação for salva; a aba salva vazia fica de fora.",
+  {key:"planoAcao", label:"Plano de Ação", hint:"Plano de ação da operação, igual ao quadro da gestão: cada linha tem a AÇÃO (o que será feito), o RESPONSÁVEL e o PRAZO — o mês que a TV mostra é o do prazo. O STATUS sai sozinho: Concluída (preencheu “Concluída em”), Atrasada (prazo já passou), Em andamento (progresso maior que 0) ou Não iniciada. Na TV a tela abre no mês atual com botões na própria tela: ◀ ▶ passam o mês, “Mês atual” volta, o seletor escolhe qualquer mês, os CARDS grandes filtram por status (toque de novo para limpar) e o filtro por RESPONSÁVEL isola as ações de uma pessoa. Enquanto estiver num mês diferente ou com filtro ligado, a rotação pausa (chip avisa) e volta sozinha depois de 2 minutos sem toque. A tela JÁ ENTRA NO AR PREENCHIDA com um plano de exemplo (igual ao HTML da gestão) — revise, ajuste e salve por cima para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
     parts:[{kind:"list",key:"itens",label:"Ações",newRow:()=>({acao:"",quem:"",prazo:nextDate(),progresso:0}),cols:[
       {k:"acao",l:"Ação (o que será feito)",w:4},{k:"quem",l:"Responsável",w:2},{k:"prazo",l:"Prazo (define o mês)",t:"date",w:2},{k:"progresso",l:"Progresso %",t:"number",w:1},{k:"concluida",l:"Concluída em (opcional)",t:"date",def:"",w:2}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
@@ -1738,9 +1738,31 @@ function calFitAno(view){
    sozinha depois de 2 minutos sem toque — a TV nunca fica presa. */
 const PA_ST = {atr:"Atrasada",and:"Em andamento",ni:"Não iniciada",ok:"Concluída"};
 const PA_ORD = ["atr","and","ni","ok"];
+/* plano padrão no ar (mesma regra dos feriados do calendário): enquanto a aba
+   Plano de Ação nunca foi salva, a TV mostra o plano de EXEMPLO da gestão —
+   a tela entra na rotação preenchida. Salvou = vale o que foi salvo;
+   salvou vazio = tela sai da rotação. */
+const PA_SEED = [
+  {acao:"Trocar os cilindros da EH-01", quem:"Marcos Paulo", prazo:"2026-10-24", progresso:80},
+  {acao:"Preventiva de 500 h da EH-03", quem:"Fabricio Cesar", prazo:"2026-10-30", progresso:30},
+  {acao:"Inventário cíclico do almoxarifado", quem:"Marcos Rosa", prazo:"2026-10-31", progresso:60},
+  {acao:"Reciclagem NR-35 dos técnicos", quem:"Girlene Nogueira", prazo:"2026-11-10", progresso:20},
+  {acao:"Sinalizar a linha de fogo na oficina", quem:"Girlene Nogueira", prazo:"2026-10-15", progresso:100, concluida:"2026-10-14"},
+  {acao:"Padronizar o relatório de turno 4x4", quem:"Max Rufino", prazo:"2026-10-10", progresso:100, concluida:"2026-10-08"},
+  {acao:"Painel de TV da operação", quem:"Max Rufino", prazo:"2026-10-30", progresso:90},
+  {acao:"Plano de troca de componentes EH-01/02/03", quem:"Wallysson Santos", prazo:"2026-11-20", progresso:40},
+  {acao:"5S na bancada de ferramentas", quem:"Marcos Paulo", prazo:"2026-10-20", progresso:50},
+  {acao:"Revisar o lead time de reparo de componentes", quem:"Max Rufino", prazo:"2026-11-14", progresso:0},
+  {acao:"Atualizar o cadastro de colaboradores", quem:"Ranielly Souza", prazo:"2026-11-05", progresso:50},
+  {acao:"Relatório de falha da bomba hidráulica da EH-01", quem:"Fabricio Cesar", prazo:"2026-10-05", progresso:100, concluida:"2026-10-03"}
+];
+function paFonte(o){
+  const l = list(o,"planoAcao");
+  return (l.length || (o && o.planoAcao) || !PA_SEED.length) ? l : PA_SEED;
+}
 function paItens(o){
   const hj = tvHoje ? pDate(tvHoje) : today0();
-  return list(o,"planoAcao")
+  return paFonte(o)
     .map(a=>({acao:String(a.acao||"").trim(), quem:String(a.quem||"").trim(), prazo:pDate(a.prazo), prog:num(a.progresso), conc:pDate(a.concluida)}))
     .filter(a=>a.acao && a.quem && a.prazo)
     .map(a=>{ a.s = a.conc ? "ok" : (+a.prazo < +hj ? "atr" : (a.prog>0 ? "and" : "ni")); return a; });
@@ -1966,7 +1988,7 @@ function expandSlides(o, sec){
     return janelaHora(d) ? null : [];         // dentro da janela: slide normal; fora: aba some
   }
   if(sec==="calendario") return calFonte(o).some(x=>x.data&&x.nome) ? null : [];
-  if(sec==="planoAcao") return list(o,"planoAcao").some(x=>x.acao&&x.prazo) ? null : [];
+  if(sec==="planoAcao") return paFonte(o).some(x=>x.acao&&x.prazo) ? null : [];
   return null;
 }
 /* aniversariantes do DIA (tvHoje = fuso da operação, como no slide do mês) */
@@ -2455,6 +2477,11 @@ function openEditor(sec, only){
   if(curSec==="calendario" && CAL_SEED.length && !secData.calendario && !(loadDraftLocal()||{bySec:{}}).bySec.calendario){
     draft.calendario = Object.assign({}, draft.calendario, {itens: clone(CAL_SEED)});
     dirtySecs.add("calendario"); setDirty(true); $("edDiscard").hidden = false;
+  }
+  /* Plano de Ação: na primeira abertura (aba nunca salva), já vem com o plano de exemplo */
+  if(curSec==="planoAcao" && PA_SEED.length && !secData.planoAcao && !(loadDraftLocal()||{bySec:{}}).bySec.planoAcao){
+    draft.planoAcao = Object.assign({}, draft.planoAcao, {itens: clone(PA_SEED)});
+    dirtySecs.add("planoAcao"); setDirty(true); $("edDiscard").hidden = false;
   }
   /* recuperação de rascunho salvo no navegador (queda de luz, F5, fechamento acidental) */
   const salvos = loadDraftLocal();
