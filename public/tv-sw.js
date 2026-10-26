@@ -6,7 +6,7 @@
    - A PRÓPRIA PÁGINA do painel: rede primeiro; caiu, serve do cache — a TV
      recarregada continua funcionando mesmo sem internet.
    Assim a TV nunca fica preta/travada quando a conexão cai. */
-const CACHE = "ztv-offline-v1";
+const CACHE = "ztv-offline-v2";
 
 self.addEventListener("install", () => { self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(self.clients.claim()); });
@@ -32,10 +32,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // conteúdo do painel, a própria página e os scripts compartilhados da TV:
-  // rede primeiro, cache como reserva (slug aceita painel por local: minas-araxa etc.)
+  // conteúdo do painel, a própria página, os scripts compartilhados da TV e a
+  // apresentação de benefícios: rede primeiro, cache como reserva (slug aceita
+  // painel por local: minas-araxa etc.)
   const conteudo = /^\/api\/tv\/[a-z0-9-]+\/content$/.test(url.pathname);
-  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname);
+  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname) || url.pathname === "/html/beneficios-zamine.html";
   const script = /^\/tv-(extras|qrcode)\.js$/.test(url.pathname);
   if (conteudo || pagina || script) {
     const chave = url.pathname + (url.search || "");

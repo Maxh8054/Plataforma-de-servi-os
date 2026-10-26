@@ -1085,3 +1085,26 @@ Stage Summary:
 - A tela Escala de turno usa o layout do HTML da gestão: cards No turno agora/Próximo/Fora hoje + grade por turma (linhas A–D × dias) + legenda, com tudo que já existia encaixado (mês/ano, pausa da rotação, automático/manual, selos, relatório ✓/✗)
 - Contagem de horas na TV e na API: eventos (Atestado, Férias, Folga agendada) DESCONTEM das horas previstas/turnos, o turno em andamento conta proporcional pelo relógio, Spot e ADM somam — por técnico, com barra e detalhe das perdas
 - Zero mudança de schema; TVs atualizam no próximo poll (30s) ou recarregando
+
+---
+Task ID: 50
+Agent: Z.ai Code (principal)
+Task: "Na parte de benefícios pode acrescentar esse html" → embutir a apresentação pronta de Benefícios ZAMine (HTML enviado pelo usuário) na tela Benefícios da empresa da TV
+
+Work Log:
+- Arquivo novo public/html/beneficios-zamine.html (734KB, enviado pelo usuário; CRLF convertido p/ LF): apresentação de 12 slides com palco 1920x1080 que se ajusta a qualquer tela — capa, saúde (Unimed/Amil Dental), day off no aniversário, educação com desconto (comparativo + Una, Newton Paiva, Anhanguera, FIAP, Senac EAD com contatos), Open English 80%, Movida e encerramento; auto-avança sozinha (data-t 9–12s por slide, ciclo total de 127s)
+- Modo TV no deck: com ?tv=1 os controles (barra inferior com ◀ Pausar ▶ Tela cheia e dots) são removidos e o fundo vira a cor do palco (sem barras pretas puras); sem o parâmetro, o arquivo continua igual abrindo direto no navegador com controles
+- R.beneficios nos 2 painéis (goias+minas, blocos idênticos): saiu a grade de cards da lista (que estava vazia no banco) e entrou um iframe .bn-fr de página inteira com /html/beneficios-zamine.html?tv=1 — a apresentação roda entre o cabeçalho e o rodapé do painel (dias sem acidente, letreiro, pontos e QR continuam visíveis)
+- ROTAÇÃO ESPERA O DECK: duration() voltou ~130s para a tela benefícios (135s de segurança; depois que o deck carrega, bnMede() soma os data-t dos 12 slides = 127s + 3s de folga e usa o valor medido); tempo próprio definido pelo admin em Configurações → Duração por tela continua valendo mais; a cada volta da rotação o deck recomeça da capa (iframe novo)
+- POLL DE 30s NÃO RECARREGA O DECK: renderFrame agora pula a troca de innerHTML quando a tela atual é benefícios (mesmo guard das telas interativas pausadas) — verificado no browser: mesmo nó do iframe e o deck continua do MESMO slide depois do poll
+- bnMede ligado direto no onload do iframe ao montar (+ fallback de 1,5s) — o listener de load em capture no window NÃO dispara para iframe neste ambiente (testado), por isso o fix
+- Editor: hint da aba Benefícios da empresa reescrita (explica a apresentação pronta, as 5 instituições e que a rotação espera ~2 minutos) e a lista renomeada para "Benefícios (backup — não entra no ar)" — continua salvando como backup, mas não entra mais no ar
+- tv-sw.js: apresentação de benefícios agora entra no cache offline (rede primeiro, cache como reserva) e versão do cache sobe p/ ztv-offline-v2
+- Testes browser (goias+minas, produção): goias TELA 12 DE 14 com o deck montado — capa "Nossos benefícios" → avança sozinho (saúde → educação comparativo vistos ao vivo), controles escondidos dentro do iframe, cabeçalho/rodapé do painel intactos (1547 dias, 12/14 nos pontos), bnDur medindo 130000; poll de 30s = mesmo nó, mesmo slide (não recarrega); rotação fast-forward (bnDur=6s) saiu p/ Valores na hora; voltou à tela e o deck recomeçou da CAPA (1s depois do load, slide 0 confirmado atômico); editor com permissão simulada: hint + label novo visíveis, prévia mostra a capa do deck ("Ver prévia"), rascunho descartado e storage limpo; minas idêntico (13 telas, medição 130s, poll seguro); deck aberto direto SEM ?tv=1 mantém os 12 dots + Pausar/Tela cheia; zero erros de página/console
+- Lint no baseline 31; JS validado (new Function) nos 3 arquivos
+
+Stage Summary:
+- A tela Benefícios da empresa da TV agora é a APRESENTAÇÃO PRONTA enviada pela gestão: 12 slides com animação (saúde, day off, educação com as 5 instituições e contatos, Open English, Movida) rodando sozinha entre o cabeçalho e o rodapé do painel
+- A rotação espera a apresentação terminar (~2min07s medidos no próprio deck) antes de trocar de tela; o poll de 30s não interrompe; cada volta da rotação recomeça da capa
+- Admin ainda pode tirar a tela da rotação (Telas na rotação) ou dar um tempo próprio (Duração por tela); a lista antiga continua no editor como backup, fora do ar
+- Zero mudança de schema/rotas; TVs atualizam recarregando a página

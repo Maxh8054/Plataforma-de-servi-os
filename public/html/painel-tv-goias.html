@@ -66,6 +66,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hid
 
 #main{position:relative;padding:44px 56px 40px;overflow:hidden}
 .slide{position:absolute;top:44px;right:56px;bottom:40px;left:56px;inset:44px 56px 40px;animation:in .6s ease both}
+/* benefícios: apresentação pronta (deck) rodando dentro da tela */
+.bn-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#0d0c0b}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.slide{animation:none}.bar i{animation:none!important}}
 
@@ -1102,8 +1104,8 @@ const SECTIONS = [
         {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"dia",l:"Dia",t:"number",w:1},{k:"mes",l:"Mês",t:"select",opts:MESES,w:2},{k:"nascimento",l:"Nascimento",t:"date",w:2},{k:"setor",l:"Setor / função",w:3}]},
       {kind:"lote",label:"Fotos em lote"},
       {kind:"colar",label:"Colar do Excel (cadastro em lote)"}]},
-  {key:"beneficios", label:"Benefícios da empresa", hint:"Até 6 benefícios por tela.",
-    parts:[{kind:"list",key:"itens",label:"Benefícios",cols:[
+  {key:"beneficios", label:"Benefícios da empresa", hint:"A TV mostra nesta tela a APRESENTAÇÃO PRONTA de benefícios: capa, saúde (Unimed e Amil Dental), day off no aniversário, educação com desconto (Una, Newton Paiva, Anhanguera, FIAP e Senac EAD), Open English, Movida e encerramento. Ela roda sozinha, com animação, e a rotação espera ela terminar (~2 minutos) antes de trocar de tela. A lista abaixo continua salva aqui como backup, mas NÃO entra mais no ar.",
+    parts:[{kind:"list",key:"itens",label:"Benefícios (backup — não entra no ar)",cols:[
       {k:"titulo",l:"Benefício",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:5}]}]},
   {key:"valores", label:"Valores da empresa", hint:"Cada valor vira uma linha na TV: letra grande em laranja + nome do valor + o que significa na prática. As letras formam a assinatura (ex.: C-O-N-T-A-G). Deixe os 6 valores da empresa nesta ordem.",
     parts:[
@@ -1844,10 +1846,11 @@ const R = {
     </div>`;
   },
   beneficios(o){
-    const it = list(o,"beneficios").slice(0,6);
-    if(!it.length) return emptyBox("Nenhum benefício cadastrado","Cadastre os benefícios no editor.");
-    const cols = it.length<=2?it.length:it.length===4?2:3;
-    return `<div class="grid-b" style="grid-template-columns:repeat(${cols},1fr)">${it.map(b=>`<div class="card bn"><b>${esc(b.titulo)}</b><p class="clamp3" style="-webkit-line-clamp:4">${esc(b.descricao)}</p></div>`).join("")}</div>`;
+    /* Tela virou APRESENTAÇÃO PRONTA (arquivo /html/beneficios-zamine.html): capa,
+       saúde, day off, educação (Una, Newton Paiva, Anhanguera, FIAP, Senac EAD),
+       Open English, Movida e encerramento — roda sozinha e a rotação espera ela
+       terminar. A lista salva na aba continua guardada, mas não entra mais no ar. */
+    return `<iframe class="bn-fr" src="/html/beneficios-zamine.html?tv=1" title="Apresentação de benefícios ZAMine"></iframe>`;
   }
 };
 R.valores = function(o){
@@ -2470,10 +2473,24 @@ function activeSlides(){
   }
   return out;
 }
+/* benefícios: a apresentação pronta tem duração própria (12 slides ≈ 2min) —
+   a rotação espera ela acabar antes de trocar de tela. O tempo é medido no
+   próprio deck depois que ele carrega; um tempo próprio definido pelo admin
+   em Configurações (Duração por tela) continua valendo mais. */
+let bnDur = 135000;
+function bnMede(){
+  try{
+    const f = document.querySelector("main .bn-fr"); if(!f) return;
+    const d = f.contentDocument; if(!d) return;
+    let t = 0; d.querySelectorAll(".sl").forEach(s=>t += (+s.getAttribute("data-t")||10));
+    if(t>=60) bnDur = (t+3)*1000;
+  }catch(e){}
+}
 function duration(){
   const sl = activeSlides(); const key = sl[((idx % sl.length)+sl.length)%sl.length].key;
   const own = num(get(data,"config","duracoes")?.[key]);
   const def = num(get(data,"config","geral")?.duracao);
+  if(key==="beneficios" && !(own>=5)) return bnDur;
   const d = own>=5 ? own : def>=5 ? def : 15;
   return d*1000;
 }
@@ -2505,12 +2522,14 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else if(!((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
+  } else if(key!=="beneficios" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
     /* tela interativa pausada (calendário/escala no ano ou mês escolhido, plano de ação filtrado):
-       o poll de 30s não pode desmontar o que a pessoa está vendo */
+       o poll de 30s não pode desmontar o que a pessoa está vendo. Na tela de
+       benefícios o mesmo: recriar o slide recarregaria a apresentação do zero. */
     main.firstElementChild.innerHTML = html;
   }
   if(key==="organograma"){ fitOrg(); main.querySelectorAll(".org img").forEach(i=>i.addEventListener("load",fitOrg,{once:true})); }
+  if(key==="beneficios"){ const bf=main.querySelector(".bn-fr"); if(bf && !bf.dataset.med){ bf.dataset.med="1"; bf.addEventListener("load",bnMede,{once:true}); setTimeout(bnMede,1500); } }
   if(key==="aniversarios"){ aniDots(main.querySelector(".s-ani")); }
   else if(aniRaf){ cancelAnimationFrame(aniRaf); aniRaf = 0; }
   /* telas interativas: ligam os botões ao montar; ao sair da tela, solta a pausa */
