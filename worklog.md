@@ -987,3 +987,21 @@ Stage Summary:
 - Modo "Ver o ano inteiro" do Calendário na TV agora é visualmente IGUAL ao HTML do PC (cores cheias, fim de semana com fundo, HOJE com anel, notas completas) e a grade escala p/ caber na tela inteira sem cortar
 - Nova tela Plano de Ação no ar nos 4 painéis (goias, minas, minas-araxa, minas-usiminas — mesmos 2 arquivos HTML): status automático, cards que filtram, navegação de mês e filtro por responsável, com pausa/retoma da rotação igual ao calendário
 - Zero mudança de schema/rotas/backend; TVs atualizam no próximo poll (30s) ou recarregando a página
+
+---
+Task ID: 45
+Agent: Z.ai Code (principal)
+Task: "No previewer ainda mostra 14 apresentações" → tela Plano de Ação não entrava na rotação (não tinha nada salvo); + tirar o Emerson do organograma
+
+Work Log:
+- Diagnóstico do "14 ainda": a tela Plano de Ação só entrava na rotação quando a 1ª ação fosse salva (diferente do calendário, que entra preenchido com feriados padrão). Como nada foi salvo ainda, a rotação continuava em 14 telas e o usuário não via a tela nova
+- Corrigido nos 2 painéis (goias+minas, blocos idênticos): criado PA_SEED com as 12 ações de exemplo do HTML da gestão (zm-pa) — só os campos que a TV/editor usam (acao, quem, prazo, progresso, concluida); nova paFonte(o) com a MESMA regra do calFonte: nunca salvou = plano de exemplo no ar; salvou = vale o que foi salvo; salvou vazio = tela sai da rotação. paItens e expandSlides agora usam paFonte
+- EMERSON fora do plano de exemplo: as 2 ações do HTML da gestão que tinham "Emerson Alexandre" como responsável foram trocadas ("Trocar os cilindros da EH-01" → Marcos Paulo, que já era o apoio; "Relatório de falha da bomba hidráulica da EH-01" → Fabricio Cesar) — assim o nome não aparece na TV
+- Editor: aba Plano de Ação agora abre PRÉ-PREENCHIDA com o plano de exemplo na primeira abertura (mesmo bloco do calendário: marca dirty, botão Descartar visível); hint atualizado ("A tela JÁ ENTRA NO AR PREENCHIDA com um plano de exemplo (igual ao HTML da gestão)...")
+- ORGANOGRAMA GOIAS (banco de produção, pedido explícito do usuário): removido "Emerson Alexandre · Field Technical Specialist" (Abaixo, fileira 1) do TvSection organograma — 14 → 13 pessoas; editado direto no Postgres com backup do registro no log (cargo dele era puxado pelo nome no cadastro de Aniversariantes, que continua intacto — EMERSON LUIZ ALEXANDRE ainda aparece na tela de aniversariantes de novembro; se quiser tirar de lá também, é só pedir)
+- Testes browser (agent-browser, produção): goias TELA 6 DE 15 (era 14) com a tela PLANO DE AÇÃO no ar — Outubro 2026, KPIs 8/3/3/0/2 corretos, tabela com "2 dias de atraso", "6 dias de atraso", "Faltam 4 dias", pílulas Atrasada/Em andamento/Concluída; organograma renderiza 13 nomes SEM Emerson (Julio, Wallysson, Fabricio, Ranielly, Girlene, Jean, Marlon, Max, Marcos Rosa, Weslley, Marcos Paulo, Marcelo, Higor); minas 1/14 (era 13) com a mesma tela; zero erros de página/console
+- Lint no baseline 31 (após apagar os scripts temporários .zscripts/*.js); commit 3e95607 pushado (d4bb9b3..3e95607) e remote limpo do token
+
+Stage Summary:
+- A tela Plano de Ação agora APARECE na rotação dos 4 painéis (goias 15 telas, minas 14) preenchida com o plano de exemplo da gestão — sem precisar salvar nada; quando salvarem por cima, vale o conteúdo real
+- Emerson saiu do organograma do painel Goiás (13 pessoas) e também não aparece no plano de exemplo; TVs atualizam no próximo poll (30s) ou recarregando a página
