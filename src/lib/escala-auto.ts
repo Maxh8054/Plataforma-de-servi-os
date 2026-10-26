@@ -109,7 +109,9 @@ export function emIntervalo(dataStr: string, inicio?: string | null, fim?: strin
 
 /* ---------- turno base (Lundin + fallback ciclo 8 dias) ---------- */
 
-function turnoBase(dataStr: string, letra: string): TurnoBase {
+/** Turno BASE do ciclo (sem lançamentos): 'Manhã' | 'Noite' | 'Folga'.
+ *  Exportado para a contagem de horas do mês (escala-mes.ts). */
+export function turnoBase(dataStr: string, letra: string): TurnoBase {
   const noMapa = escalaLundinMap.get(`${dataStr}_${letra}`);
   if (noMapa) {
     if (noMapa.Turno === '07:00 – 19:00') return 'Manhã';

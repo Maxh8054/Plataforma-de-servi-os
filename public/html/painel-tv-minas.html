@@ -749,57 +749,162 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-sp{flex:1}
 .s-cal .c-pz{font-size:16px;font-weight:600;color:var(--muted);white-space:nowrap}
 .s-cal .c-pz[hidden]{display:none}
-/* visão do ANO: 12 mini-calendários (4 × 3) — mesmo visual do HTML da gestão no PC:
-   fim de semana com fundo, feriado/ponte/evento/DDS com COR CHEIA e HOJE com anel.
-   Clicar num mini abre o mês dele; a grade escala inteira se passar da altura da TV. */
+/* visão do ANO: 12 mini-calendários (6 × 2) nascendo do tamanho da TV —
+   nada de espremer: as linhas preenchem a altura toda (calFitAno fica só
+   como rede de segurança para telas pequenas) */
 .s-cal{--fds:#2a2520}
 .th-light .s-cal{--fds:#f1e7da}
-.s-cal .c-ano{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,auto);gap:clamp(12px,1.1vw,20px);align-content:start}
-.s-cal .c-mini{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:0;font:600 16px/1.2 var(--f-body);color:var(--fg)}
+.s-cal .c-ano{flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:16px}
+.s-cal .c-mini{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;font:600 15px/1.2 var(--f-body);color:var(--fg)}
 .s-cal .c-mini:hover{border-color:var(--accent)}
 .s-cal .c-mini.at{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.s-cal .c-mini h4{margin:0 0 6px;font-family:var(--f-display);font-size:22px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-.s-cal .c-mini h4 small{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--muted);text-transform:none;white-space:nowrap}
-.s-cal .c-mg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-variant-numeric:tabular-nums}
-.s-cal .c-mg i{font-style:normal;font-size:11px;color:var(--muted);text-align:center;font-weight:700;padding-bottom:2px}
-.s-cal .c-mg span{font-size:13px;text-align:center;padding:4px 0;border-radius:4px;font-weight:600}
+.s-cal .c-mini h4{margin:0 0 4px;font-family:var(--f-display);font-size:19px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex:none}
+.s-cal .c-mini h4 small{font-family:var(--f-body);font-size:11.5px;font-weight:600;color:var(--muted);text-transform:none;white-space:nowrap}
+.s-cal .c-mg{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(0,1fr);gap:2px;font-variant-numeric:tabular-nums}
+.s-cal .c-mg i{font-style:normal;font-size:10.5px;color:var(--muted);text-align:center;font-weight:700;align-self:end;padding-bottom:2px}
+.s-cal .c-mg span{display:flex;align-items:center;justify-content:center;font-size:15px;text-align:center;border-radius:4px;font-weight:600;min-height:0;min-width:0}
 .s-cal .c-mg span.fds{background:var(--fds)}
 .s-cal .c-mg span.f{background:var(--fer);color:#fff}
 .s-cal .c-mg span.p{background:var(--pon);color:#1a1300}
 .s-cal .c-mg span.eve{background:var(--eve);color:#fff}
 .s-cal .c-mg span.dds{background:var(--dds);color:#fff}
 .s-cal .c-mg span.hj{outline:2px solid var(--accent);outline-offset:-2px;font-weight:800}
-.s-cal .c-mn{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden;font-size:12px;color:var(--muted);line-height:1.4}
-.s-cal .c-mn li{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-cal .c-mn{list-style:none;margin:5px 0 0;padding:0;display:flex;flex-direction:column;gap:1px;min-height:0;overflow:hidden;font-size:12px;color:var(--muted);line-height:1.45;flex:none}
+.s-cal .c-mn li{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.s-cal .c-mn li:nth-child(n+4){display:none}
 .s-cal .c-mn li b{font-variant-numeric:tabular-nums}
 .s-cal .c-mn li.f b{color:var(--fer)}
 .s-cal .c-mn li.p b{color:var(--pon)}
 .s-cal .c-mn li.eve b{color:var(--eve)}
 .s-cal .c-mn li.dds b{color:var(--dds)}
-/* escala de turno interativa: reaproveita TODAS as classes do calendário (.s-cal .c-*)
-   — aqui só o desenho próprio das células (técnico do dia/noite, selos e horas) */
+/* escala de turno — layout "grade por turma" do HTML da gestão: cards do
+   AGORA (no turno / próximo / fora hoje) + tabela com as 4 equipes nas
+   linhas e os dias do mês nas colunas */
+.s-escx{--on-turma:var(--bg);
+  --ev-at:#e05252;--ev-fer:#a58bf5;--ev-fol:#2ea9a9;--ev-out:#9b948b;
+  --ev-ats:#e0525230;--ev-fers:#a58bf530;--ev-fols:#2ea9a930;--ev-outs:#9b948b30;
+  --las:#ff8a3d4d;--lbs:#5cc8ff4d;--lcs:#7ee08a4d;--lds:#f2c2304d}
+.th-light .s-escx{--ev-at:#c8363c;--ev-fer:#7457dd;--ev-fol:#0f8f8f;--ev-out:#6a625a;
+  --ev-ats:#c8363c26;--ev-fers:#7457dd26;--ev-fols:#0f8f8f26;--ev-outs:#6a625a26;
+  --las:#e0580040;--lbs:#0b7fbf33;--lcs:#25913e33;--lds:#a87d0033}
+.s-escx .tu-A{--c:var(--la);--cs:var(--las)}
+.s-escx .tu-B{--c:var(--lb);--cs:var(--lbs)}
+.s-escx .tu-C{--c:var(--lc);--cs:var(--lcs)}
+.s-escx .tu-D{--c:var(--ld);--cs:var(--lds)}
+.s-escx .tu-X{--c:var(--muted);--cs:transparent}
+.s-escx .c-hd{padding-bottom:8px}
+.s-escx .c-hd small{font-size:15px}
+.s-escx .c-hd h1{font-size:46px}
 .s-escx .c-view{gap:12px}
-.s-escx .c-gr{flex:1;min-height:0;grid-auto-rows:minmax(96px,1fr)}
-.s-escx .c-d{display:flex;flex-direction:column;gap:3px;padding:8px 12px;border-radius:12px}
-.s-escx .c-d b{font-size:20px;line-height:1.15}
-.s-escx .c-d.hj::after{top:8px;right:10px;font-size:11px;padding:2px 6px}
-.s-escx .ec-r{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.s-escx .ec-r em{font-style:normal;color:var(--muted);font-weight:600}
-.s-escx .ec-r .lt3{display:inline-block;min-width:22px;text-align:center;margin-right:7px;font-weight:800}
-.s-escx .ec-x{font-size:14px;font-weight:600;color:var(--muted)}
-.s-escx .ec-b{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:700;border-radius:6px;padding:2px 8px;background:var(--panel2);color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.s-escx .ec-b.at{background:#d4363c24;color:#e05252}
-.th-light .s-escx .ec-b.at{color:#b02330}
-.s-escx .ec-b.rel-ok{background:#1f9d5524;color:#1f9d55}
-.th-light .s-escx .ec-b.rel-ok{color:#187a41}
-.s-escx .ec-b.rel-no{background:#d4363c24;color:#e05252}
-.th-light .s-escx .ec-b.rel-no{color:#b02330}
-.s-escx .ec-load{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:220px;font-size:22px;font-weight:700;color:var(--muted)}
-.s-escx .esc-ft{display:flex;gap:14px;flex:none}
-.s-escx .esc-h{flex:1;display:flex;align-items:center;gap:14px;padding:10px 18px}
-.s-escx .esc-h .lbl{margin:0}
-.s-escx .esc-h b.num{font-size:30px}
-.s-escx .esc-h small{display:block;font-size:15px;color:var(--muted);font-weight:600}
+.s-escx .ec-load{flex:1;display:flex;align-items:center;justify-content:center;min-height:220px;font-size:22px;font-weight:700;color:var(--muted)}
+/* legenda da grade */
+.s-escx .ze-leg{display:flex;align-items:center;gap:15px;font-size:14px;font-weight:600;color:var(--muted);flex:none;white-space:nowrap;overflow:hidden}
+.s-escx .ze-leg span{display:inline-flex;align-items:center;gap:6px;flex:none}
+.s-escx .ze-sw{width:13px;height:13px;border-radius:4px;display:inline-block;flex:none}
+.s-escx .ze-sw.ev-at{background:var(--ev-at)}
+.s-escx .ze-sw.ev-fer{background:var(--ev-fer)}
+.s-escx .ze-sw.ev-fol{background:var(--ev-fol)}
+.s-escx .ze-sw.evx{background:repeating-linear-gradient(-45deg,var(--muted) 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1px var(--muted)}
+.s-escx .ze-leg .ze-ico{width:14px;height:14px;display:inline-block}
+.s-escx .ze-leg .ze-ico svg{width:100%;height:100%;display:block}
+.s-escx .ze-leg .icoD{color:var(--accent)}
+.s-escx .ze-leg .icoN{color:var(--muted)}
+/* cards do agora: No turno agora · Próximo turno · Fora hoje */
+.s-escx .ze-now{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr) minmax(0,1fr);gap:14px;flex:none}
+.s-escx .ze-ag{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding:10px 18px;border:2px solid var(--c);overflow:hidden}
+.s-escx .ze-ag::before{content:"";position:absolute;inset:0;background:var(--c);opacity:.08;pointer-events:none}
+.s-escx .ze-ag>*{position:relative}
+.s-escx .ze-ph{position:relative;width:88px;aspect-ratio:1;flex:none}
+.s-escx .ze-ph .av{width:100%;height:100%;border-radius:50%;overflow:hidden;border:4px solid var(--c);background:var(--panel2);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:40px;color:var(--muted)}
+.s-escx .ze-ph .lt{position:absolute;right:-6px;bottom:-6px;width:38px;height:38px;border-radius:50%;background:var(--c);color:var(--on-turma);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:21px;border:3px solid var(--panel)}
+.s-escx .ze-tx{min-width:0;display:flex;flex-direction:column;gap:3px}
+.s-escx .ze-live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--c)}
+.s-escx .ze-live::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);animation:zePulse 1.6s ease-in-out infinite;flex:none}
+@keyframes zePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.4)}}
+@media (prefers-reduced-motion:reduce){.s-escx .ze-live::before{animation:none}}
+.s-escx .ze-nm{font-family:var(--f-display);font-size:36px;font-weight:800;text-transform:uppercase;line-height:.95;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-sh{font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-sh b{color:var(--c);font-weight:800}
+.s-escx .ze-tl{height:7px;background:var(--panel2);border-radius:4px;overflow:hidden;margin-top:3px;flex:none}
+.s-escx .ze-tl i{display:block;height:100%;background:var(--c)}
+.s-escx .ze-tl.thin{height:5px}
+.s-escx .ze-tl.thin i{background:var(--fg);opacity:.55}
+.s-escx .ze-ag small{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-hm{display:flex;gap:20px;margin-top:3px}
+.s-escx .ze-hm>div{min-width:0}
+.s-escx .ze-hm span{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.s-escx .ze-hm b{font-family:var(--f-display);font-size:22px;font-weight:800;line-height:1.05}
+.s-escx .ze-hm em{font-style:normal;color:var(--muted);font-size:.66em}
+.s-escx .ze-mini{display:flex;align-items:center;gap:13px;padding:10px 16px;border-left:6px solid var(--c);min-width:0}
+.s-escx .ze-mini .av{width:52px;height:52px;border-radius:50%;overflow:hidden;border:3px solid var(--c);background:var(--panel2);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:21px;color:var(--muted);flex:none}
+.s-escx .ze-mini>div{min-width:0;flex:1}
+.s-escx .ze-mini small.lbl{display:block;font-size:10.5px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.s-escx .ze-mini b{display:block;font-family:var(--f-display);font-size:23px;font-weight:800;text-transform:uppercase;line-height:1.05;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-mini span.s{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* grade por turma: linhas = equipes A–D, colunas = dias do mês */
+.s-escx .ze-gw{flex:1;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex}
+.s-escx .ze-tw{width:100%;height:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.s-escx .ze-tw col.c0{width:246px}
+.s-escx .ze-tw thead th{font-size:11px;font-weight:700;color:var(--muted);padding:5px 0 4px;border-bottom:1px solid var(--line);text-align:center;overflow:hidden;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
+.s-escx .ze-tw thead th b{display:block;font-family:var(--f-display);font-size:16.5px;color:var(--fg);line-height:1.05}
+.s-escx .ze-tw thead th.fds b{color:var(--muted)}
+.s-escx .ze-tw thead th.hj{background:var(--accent);border-radius:8px 8px 0 0}
+.s-escx .ze-tw thead th.hj,.s-escx .ze-tw thead th.hj b{color:var(--on-accent)}
+.s-escx .ze-tw thead th:first-child{text-align:left;padding-left:12px}
+.s-escx .ze-tw tbody tr{height:25%}
+.s-escx .ze-tw tbody th{text-align:left;padding:4px 12px;position:sticky;left:0;background:var(--panel);z-index:1;border-right:1px solid var(--line);border-bottom:1px solid var(--line);vertical-align:middle}
+.s-escx .ze-tw tbody td{padding:3px;border-bottom:1px solid var(--line);vertical-align:middle;text-align:center;min-width:0}
+.s-escx .ze-tw tbody tr:last-child th,.s-escx .ze-tw tbody tr:last-child td{border-bottom:0}
+.s-escx .ze-tw tr.cur th{box-shadow:inset 4px 0 0 var(--c)}
+.s-escx .ze-tw td.hj{background:var(--accent-soft)}
+.s-escx .ze-who{display:flex;align-items:center;gap:9px;min-width:0}
+.s-escx .ze-lt2{width:32px;height:32px;border-radius:50%;background:var(--c);color:var(--on-turma);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:18px;flex:none}
+.s-escx .ze-who>div{min-width:0;flex:1}
+.s-escx .ze-who b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-who small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;white-space:nowrap}
+.s-escx .ze-tg{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:1.5px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);flex:none}
+.s-escx .ze-tg.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.s-escx .ze-cl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:calc(100% - 2px);max-height:54px;margin:auto;width:100%;border-radius:8px;font-weight:800;position:relative;padding:3px 2px}
+.s-escx .ze-cl.kd{background:var(--c);color:var(--on-turma)}
+.s-escx .ze-cl.kn{background:var(--cs);color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
+.s-escx .ze-cl.kf{opacity:.3}
+.s-escx .ze-cl .ze-ico{width:17px;height:17px;display:block;flex:none}
+.s-escx .ze-cl .ze-ico svg{width:100%;height:100%;display:block}
+.s-escx .ze-cl.kd .ze-ico{color:var(--on-turma)}
+.s-escx .ze-cl.kn .ze-ico{color:var(--c)}
+.s-escx .ze-cl .ze-selo{font-size:9.5px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.1}
+.s-escx .ze-cl.kev{background:var(--panel2);box-shadow:inset 0 0 0 1.5px var(--ec,var(--line));color:var(--ec,var(--muted));font-size:9.5px;text-transform:uppercase;letter-spacing:.05em}
+.s-escx .ze-cl.kev.ev-at{--ec:var(--ev-at)}
+.s-escx .ze-cl.kev.ev-fer{--ec:var(--ev-fer)}
+.s-escx .ze-cl.kev.ev-fol{--ec:var(--ev-fol)}
+.s-escx .ze-cl.kev.ev-out{--ec:var(--ev-out)}
+.s-escx .ze-cl.kev.kesc{background:repeating-linear-gradient(-45deg,var(--panel2) 0 5px,transparent 5px 10px)}
+.s-escx .ze-cl.kev.kesc em{font-style:normal;line-height:1;color:var(--fg)}
+.s-escx .ze-cl.kev.kfree{height:12px;max-height:12px;box-shadow:none;background:var(--ecs,transparent);border-radius:3px}
+.s-escx .ze-cl.kev.ev-at.kfree{--ecs:var(--ev-ats)}
+.s-escx .ze-cl.kev.ev-fer.kfree{--ecs:var(--ev-fers)}
+.s-escx .ze-cl.kev.ev-fol.kfree{--ecs:var(--ev-fols)}
+.s-escx .ze-cl.kev.ev-out.kfree{--ecs:var(--ev-outs)}
+.s-escx .ze-cl.agora{outline:3px solid var(--fg);outline-offset:1px}
+.s-escx .ze-cl .ze-rel{position:absolute;top:1px;right:2px;font-size:9px;line-height:1;font-weight:800;border-radius:50%;width:13px;height:13px;display:grid;place-items:center}
+.s-escx .ze-cl .ze-rel.ok{background:#1f9d5526;color:#3fbf6f}
+.s-escx .ze-cl .ze-rel.no{background:#e5484d26;color:#e5484d}
+.th-light .s-escx .ze-cl .ze-rel.ok{color:#187a41}
+.th-light .s-escx .ze-cl .ze-rel.no{color:#c8363c}
+/* contagem de horas do mês — eventos descontam, Spot/ADM somam */
+.s-escx .ze-hf{display:flex;flex:none}
+.s-escx .ze-hc{flex:1;display:flex;flex-direction:column;gap:7px;padding:11px 18px}
+.s-escx .ze-hl{display:flex;align-items:baseline;gap:14px;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.s-escx .ze-hl em{font-style:normal;color:var(--muted);letter-spacing:.04em;text-transform:none;font-size:13px;font-weight:600}
+.s-escx .ze-hg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.s-escx .ze-hp{display:flex;align-items:center;gap:10px;min-width:0}
+.s-escx .ze-hp>div{min-width:0;flex:1}
+.s-escx .ze-hp .nm{display:block;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-hp .hv{font-family:var(--f-display);font-size:24px;font-weight:800;line-height:1.05;display:block}
+.s-escx .ze-hp .hv em{font-style:normal;color:var(--muted);font-size:.62em}
+.s-escx .ze-hp small{display:block;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ze-hbar{height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:3px}
+.s-escx .ze-hbar i{display:block;height:100%;background:var(--c)}
 /* barra de botões da tela — o Plano de Ação reusa o desenho do calendário */
 .s-pa .c-bar{display:flex;align-items:center;gap:12px;flex:none;margin:-4px 0 2px}
 .s-pa .c-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 22px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer}
@@ -965,7 +1070,7 @@ const SECTIONS = [
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Horário",ph:"Ex.: 07:30 às 11:30",w:2},
       {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",w:2},
       {k:"participantes",l:"Participantes",t:"textarea",w:5}]}]},
-  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha as equipes A/B/C/D da plataforma — com ATESTADO, HORAS SPOT, ADM, eventos (folga, férias, viagem, treinamento, cobertura) e o status do RELATÓRIO DE ENTREGA DE TURNO (entregue/pendente) de cada técnico, tudo lançável aqui mesmo na parte Lançamentos da plataforma. A tela da TV agora é IGUAL AO CALENDÁRIO: ◀ ▶ mudam o mês, “Mês atual” volta, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez (clique num mini para abrir o mês). A tela também soma sozinha as HORAS do mês (Spot e ADM). Navegou para outro mês ou abriu o ano? A rotação pausa (chip avisa) e volta sozinha depois de 2 minutos. Modo manual: preencha a letra do turno diurno e noturno de cada dia — a TV monta o mês com as mesmas opções.",
+  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha as equipes A/B/C/D da plataforma — com ATESTADO, HORAS SPOT, ADM, eventos (folga, férias, viagem, treinamento, cobertura) e o status do RELATÓRIO DE ENTREGA DE TURNO (entregue/pendente) de cada técnico, tudo lançável aqui mesmo na parte Lançamentos da plataforma. A tela da TV usa a GRADE POR TURMA: as 4 equipes nas linhas e os dias do mês nas colunas, com os cards 'No turno agora', 'Próximo turno' e 'Fora hoje' no topo — igual ao HTML da gestão. Os botões ◀ ▶ mudam o mês, “Mês atual” volta, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez (clique num mini para abrir o mês). A CONTAGEM DE HORAS do mês vem no rodapé da tela: os eventos (Atestado, Férias, Folga agendada) DESCONTEM das horas previstas do técnico, e as horas de Spot e ADM SOMAM nas trabalhadas. Navegou para outro mês ou abriu o ano? A rotação pausa (chip avisa) e volta sozinha depois de 2 minutos. Modo manual: preencha a letra do turno diurno e noturno de cada dia — a TV monta a mesma grade com as mesmas opções.",
     parts:[
       {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"auto",l:"Puxar automaticamente da escala da plataforma (equipes A/B/C/D)",t:"check",def:false},{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
       {kind:"list",key:"dias",label:"Dias",newRow:()=>({data:nextDate(),diurno:"",noturno:""}),cols:[
@@ -1221,6 +1326,42 @@ let relatoriosAuto = null; // (legado) entregas do relatório na janela ontem..a
 let segurancaAuto = null;  // dias sem afastamento automáticos (contador oficial da plataforma)
 const LCLS = {A:"L-A",B:"L-B",C:"L-C",D:"L-D"};
 const ESC_COR = {A:"var(--la)",B:"var(--lb)",C:"var(--lc)",D:"var(--ld)"};
+/* ícones do turno (sol/lua) e utilidades da grade por turma */
+const ESC_SOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.6" fill="currentColor"/><g stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></g></svg>';
+const ESC_LUA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z" fill="currentColor"/></svg>';
+const ESC_LETRAS = ["A","B","C","D"];
+const DS_ABR = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+const evClasseDe = m => { const t=String(m||"").toLowerCase();
+  if(t.startsWith("atest")) return "ev-at";
+  if(t.startsWith("féri")||t.startsWith("feri")) return "ev-fer";
+  if(t.startsWith("folg")) return "ev-fol";
+  return "ev-out"; };
+/* selo completo → versão curta pra caber na célula (o título mostra o inteiro) */
+const zeSeloCurto = s => String(s||"").split(" · ").map(p=>{
+  let m;
+  if(/^spot/i.test(p)) return "Spot"+((m=p.match(/([\d.,]+)\s*h/i))?` ${m[1]}h`:"");
+  if(/^adm/i.test(p)) return "ADM"+((m=p.match(/(\d{1,2}:\d{2})/))?` ${m[1]}`:"");
+  if(/viagem/i.test(p)) return "Viagem";
+  if(/treinamento/i.test(p)) return "Trein.";
+  if((m=p.match(/cobrindo\s+(\w+)/i))) return "⇄"+m[1].toUpperCase();
+  return p;
+}).join(" · ");
+/* turno "agora" pelo relógio: diurno 07–19, noturno 19–07 (referência = dia do turno) */
+function zeTurnoAgora(hj){
+  const n = new Date(), mins = n.getHours()*60+n.getMinutes();
+  const d0 = new Date(hj.getFullYear(),hj.getMonth(),hj.getDate());
+  const at = (d,min)=> new Date(d.getFullYear(),d.getMonth(),d.getDate()+Math.floor(min/1440),0,min%1440);
+  if(mins>=420 && mins<1140) return {tipo:"D",ref:d0,ini:at(d0,420),fim:at(d0,1140)};
+  if(mins>=1140) return {tipo:"N",ref:d0,ini:at(d0,1140),fim:at(d0,1860)};
+  const ontem = new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()-1);
+  return {tipo:"N",ref:ontem,ini:at(ontem,1140),fim:at(d0,420)};
+}
+/* o turno seguinte ao informado (diurno → noturno do mesmo dia; noturno → diurno do dia seguinte) */
+function zeProximoTurno(t,hj){
+  if(t.tipo==="D") return {tipo:"N",ref:t.ref,ini:t.fim,fim:t.fim+12*3600000};
+  const base = t.ref<hj ? hj : new Date(hj.getFullYear(),hj.getMonth(),hj.getDate()+1);
+  return {tipo:"D",ref:base,ini:new Date(base.getFullYear(),base.getMonth(),base.getDate(),7,0),fim:new Date(base.getFullYear(),base.getMonth(),base.getDate(),19,0)};
+}
 const p2 = n => ("0"+n).slice(-2);
 let escCache = {}, escHora = {};  // cache dos meses carregados (TTL curto p/ pegar lançamentos novos)
 let escAnoC = {};                 // cache dos anos carregados
@@ -1250,70 +1391,180 @@ async function escAno(ano){
 function escMapaManual(o){ const m = {}; list(o,"escala","dias").forEach(d=>{ if(d.data) m[d.data]=d; }); return m; }
 /* primeiro nome da pessoa: "Weslley Siqueira" → "Weslley" */
 const escNome1 = x => esc(String(x.nome||"").split(" ")[0]||x.letra||"");
-function escLinhasDia(dia, rel, dataStr, hj){
-  let h = "";
-  const linha = arr => (arr||[]).slice(0,2).map(x=>`<div class="ec-r"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>${escNome1(x)}${x.selo?` <em>· ${esc(x.selo)}</em>`:""}</div>`).join("");
-  h += linha(dia.diurno);
-  h += linha(dia.noturno);
-  (dia.fora||[]).slice(0,2).forEach(f=>{
-    h += `<span class="ec-b${/atestado/i.test(String(f.motivo||""))?" at":""}" title="${esc(f.nome||"")}">${esc(f.motivo||"Folga")}: ${escNome1(f)} (${esc(f.letra)})</span>`;
+/* --- mapas rápidos do mês (dias por data + nome por letra) --- */
+function escMapas(j){
+  const porData = {}, nomes = {};
+  (j.dias||[]).forEach(d=>{
+    porData[d.data] = d;
+    [...(d.diurno||[]),...(d.noturno||[]),...(d.fora||[])].forEach(s=>{ if(s.letra && !nomes[s.letra]) nomes[s.letra]=s.nome; });
   });
-  const rd = rel && rel[dataStr];
-  if(rd && +pDate(dataStr) <= +hj){
-    ["A","B","C","D"].forEach(l=>{
-      const e = rd[l];
-      if(e && typeof e.entregue==="boolean") h += `<span class="ec-b ${e.entregue?"rel-ok":"rel-no"}" title="${esc(e.atualizadoPor||"")}">${e.entregue?"✓":"✗"} Relatório ${esc(l)}</span>`;
-    });
-  }
-  return h;
+  return { porData, nomes };
 }
-function escHtmlMesAuto(st, j){
-  const hj = st.hj, porData = {};
-  (j.dias||[]).forEach(d=>{ porData[d.data] = d; });
+/* --- cards do AGORA (só quando o mês visto é o mês corrente) ---
+   No turno agora (com progresso do turno e horas do mês) · Próximo turno · Fora hoje */
+function zeNowHtml(st, j){
+  const { porData } = escMapas(j);
+  if(!porData[j.hoje]) return "";
+  const hj = pDate(j.hoje) || today0();
+  const tec = (j.horas && j.horas.tecnicos) || [];
+  const T = l => tec.find(x=>x.letra===l);
+  const quemDe = x => { const d=porData[iso(x.ref)]; if(!d) return null; return (x.tipo==="D"?d.diurno:d.noturno)[0] || null; };
+  const t = zeTurnoAgora(hj), P = zeProximoTurno(t,hj);
+  const on = quemDe(t), nx = quemDe(P);
+  const hh = m => p2(Math.floor(m/60))+":00";
+  const faixa = x => `${x.tipo==="D"?"Diurno":"Noturno"} · ${hh(x.tipo==="D"?420:1140)} às ${hh(x.tipo==="D"?1140:420)}`;
+  const TT = on ? T(on.letra) : null;
+  const pct = on && t.fim>t.ini ? Math.max(0,Math.min(100,(Date.now()-t.ini)/(t.fim-t.ini)*100)) : 0;
+  const rest = Math.max(0, t.fim-Date.now());
+  const rh = Math.floor(rest/3600000), rm = Math.floor(rest%3600000/60000);
+  const pctH = TT && TT.previstas>0 ? Math.min(100,TT.trabalhadas/TT.previstas*100) : 0;
+  const agora = on ? `<div class="card ze-ag tu-${esc(on.letra)}">
+      <div class="ze-ph"><span class="av">${esc(on.letra)}</span><span class="lt">${esc(on.letra)}</span></div>
+      <div class="ze-tx"><span class="ze-live">No turno agora</span><b class="ze-nm">${esc(on.nome||("Equipe "+on.letra))}</b>
+        <span class="ze-sh"><b>Turma ${esc(on.letra)}</b> · ${faixa(t)}${on.selo?` · ${esc(on.selo)}`:""}</span>
+        <div class="ze-tl"><i style="width:${pct.toFixed(1)}%"></i></div>
+        <small>Faltam ${rh?rh+" h ":""}${rm} min para a troca</small>
+        ${TT?`<div class="ze-hm"><div><span>Horas no mês</span><b class="num">${fmtH(TT.trabalhadas)} h <em>/ ${fmtH(TT.previstas)} h</em></b></div><div><span>Turnos</span><b class="num">${p2(TT.turnos)} <em>/ ${TT.turnosPrev}</em></b></div></div>
+        <div class="ze-tl thin"><i style="width:${pctH.toFixed(1)}%"></i></div>`:""}
+      </div></div>` : `<div class="card ze-ag tu-X"><div class="ze-ph"><span class="av">–</span></div><div class="ze-tx"><span class="ze-live">No turno agora</span><b class="ze-nm">Sem técnico</b><span class="ze-sh">Nenhum lançamento para o turno de agora</span></div></div>`;
+  const TTn = nx ? T(nx.letra) : null;
+  const prox = `<div class="card ze-mini ${nx?`tu-${esc(nx.letra)}`:"tu-X"}">
+      <span class="av">${nx?esc(nx.letra):"–"}</span>
+      <div><small class="lbl">Próximo turno · ${P.tipo==="D"?"07:00":"19:00"} · ${+P.ref>+hj?"amanhã":"hoje"}</small>
+        <b>${nx?esc(nx.nome||("Equipe "+nx.letra)):"—"}</b>
+        <span class="s">Turma ${nx?esc(nx.letra):"—"} · ${P.tipo==="D"?"Diurno":"Noturno"}${nx&&nx.selo?` · ${esc(nx.selo)}`:""}</span>
+        ${TTn?`<span class="s num">${fmtH(TTn.trabalhadas)} h / ${fmtH(TTn.previstas)} h no mês</span>`:""}</div></div>`;
+  const hjDia = porData[j.hoje] || {fora:[]};
+  const todos = hjDia.fora||[];
+  const eventos = todos.filter(f=>f.motivo);
+  const ciclo = todos.filter(f=>!f.motivo);
+  const fora = `<div class="card ze-mini tu-X">
+      <span class="av" style="border-color:var(--line)">–</span>
+      <div><small class="lbl">Fora hoje</small>
+        <b>${todos.length ? todos.map(f=>escNome1(f)).join(" · ") : "Equipe completa"}</b>
+        <span class="s">${eventos.length ? esc(eventos.map(f=>`${f.motivo}: ${f.nome} (${f.letra})`).join(" · ")) : (ciclo.length?`Folga do ciclo · Turmas ${esc(ciclo.map(f=>f.letra).join(" e "))}`:"Ninguém fora hoje")}</span></div></div>`;
+  return agora + prox + fora;
+}
+/* --- célula da grade: trabalhado (sol/lua na cor da equipe), evento
+   (hachurado quando cai num dia de turno, filete quando cai na folga),
+   folga do ciclo apagada + selinho ✓/✗ do relatório de turno --- */
+function zeCelula(l, dia, bL, relDia, mostraRel, agora){
+  const todos = dia ? [...(dia.diurno||[]),...(dia.noturno||[]),...(dia.fora||[])] : [];
+  const st = todos.find(s=>s.letra===l);
+  let cls = "ze-cl", inner = "", ttl = "";
+  if(st && st.trabalha){
+    const tipo = st.efetivo==="Noite" ? "N" : "D";
+    cls += tipo==="D" ? " kd" : " kn";
+    inner = `<span class="ze-ico">${tipo==="D"?ESC_SOL:ESC_LUA}</span>`;
+    if(st.selo) inner += `<span class="ze-selo">${esc(zeSeloCurto(st.selo))}</span>`;
+    ttl = `${st.nome||"Equipe "+l} · ${tipo==="D"?"Diurno":"Noturno"}${st.selo?` · ${st.selo}`:""}`;
+    if(agora) cls += " agora";
+  } else if(st && st.motivo){
+    const escalado = bL==="D" || bL==="N";
+    cls += ` kev ${evClasseDe(st.motivo)}${escalado?" kesc":" kfree"}`;
+    if(escalado) inner = `<span class="ze-ico">${bL==="D"?ESC_SOL:ESC_LUA}</span><em>${esc(st.motivo.slice(0,4))}</em>`;
+    ttl = `${st.motivo}: ${st.nome||"Equipe "+l}` + (escalado?` · estaria no ${bL==="D"?"diurno":"noturno"}`:"");
+  } else {
+    cls += " kf";
+    ttl = st ? `${st.nome||"Equipe "+l} · Folga` : "Sem lançamento";
+  }
+  if(mostraRel && relDia && relDia[l] && typeof relDia[l].entregue==="boolean"){
+    const r = relDia[l];
+    inner += `<span class="ze-rel ${r.entregue?"ok":"no"}" title="${esc(`Relatório ${l} ${r.entregue?"entregue":"pendente"}${r.atualizadoPor?" · por "+r.atualizadoPor:""}`)}">${r.entregue?"✓":"✗"}</span>`;
+  }
+  return `<span class="${cls}" title="${esc(ttl)}">${inner}</span>`;
+}
+/* --- CONTAGEM DE HORAS do mês por técnico: os eventos (Atestado, Férias,
+   Folga agendada) descontam das horas previstas; Spot e ADM somam --- */
+function zeHoras(st, tec, j){
+  if(!tec || !tec.length) return "";
+  const H = j.horas || {};
+  const linha = t => {
+    const bits = [];
+    (t.perdas||[]).forEach(p=>bits.push(`${p.motivo} −${String(p.horas).replace(".",",")}h`));
+    if(t.spot>0) bits.push(`Spot +${String(t.spot).replace(".",",")}h`);
+    if(t.adm>0) bits.push(`ADM +${String(t.adm).replace(".",",")}h`);
+    return bits.join(" · ") || "sem eventos e horas extras";
+  };
+  return `<div class="esc-ft ze-hf"><div class="card ze-hc">
+    <div class="ze-hl">Contagem de horas · ${esc(MESES[st.mes+1])} <em>Spot ${String(H.spotTotal||0).replace(".",",")}h · ADM ${String(H.admTotal||0).replace(".",",")}h no mês</em></div>
+    <div class="ze-hg">${tec.map(t=>{
+      const pct = t.previstas>0 ? Math.min(100,t.trabalhadas/t.previstas*100) : 0;
+      return `<div class="ze-hp tu-${esc(t.letra)}"><span class="ze-lt2">${esc(t.letra)}</span><div>
+        <span class="nm">${esc(t.nome)}</span>
+        <span class="hv num">${fmtH(t.trabalhadas)} h <em>/ ${fmtH(t.previstas)} h</em></span>
+        <small>${esc(linha(t))}</small>
+        <div class="ze-hbar"><i style="width:${pct.toFixed(1)}%"></i></div>
+      </div></div>`;}).join("")}</div></div></div>`;
+}
+/* --- grade por turma (HTML da gestão): linhas = equipes A–D (quem está no
+   turno primeiro), colunas = dias do mês; rodapé com a contagem de horas --- */
+function zeGrade(st, j){
+  const { porData, nomes } = escMapas(j);
   const rel = j.relatorios || {};
-  const ini = new Date(st.ano,st.mes,1).getDay(), ndias = new Date(st.ano,st.mes+1,0).getDate();
-  const noMes = st.ano===hj.getFullYear() && st.mes===hj.getMonth();
-  let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
-  for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
+  const base = j.base || {};
+  const tec = (j.horas && j.horas.tecnicos) || [];
+  const hjSrv = pDate(j.hoje) || st.hj;
+  const noMes = st.ano===st.hj.getFullYear() && st.mes===st.hj.getMonth();
+  const t = zeTurnoAgora(hjSrv), P = zeProximoTurno(t,hjSrv);
+  const quemDe = x => { const d=porData[iso(x.ref)]; if(!d) return ""; const p=(x.tipo==="D"?d.diurno:d.noturno)[0]; return p?p.letra:""; };
+  const cur = quemDe(t), nx = quemDe(P);
+  const ordem = [cur,nx,...ESC_LETRAS.filter(l=>l!==cur&&l!==nx)].filter(Boolean);
+  const refIso = iso(t.ref);
+  const ndias = new Date(st.ano,st.mes+1,0).getDate();
+  let h = `<div class="ze-gw"><table class="ze-tw"><colgroup><col class="c0">${"<col>".repeat(ndias)}</colgroup><thead><tr><th>Equipe</th>`;
   for(let d=1;d<=ndias;d++){
-    const wd=(ini+d-1)%7, fds=wd===0||wd===6;
-    const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
-    const dia = porData[dataStr];
-    const hjHoje = noMes && d===hj.getDate();
-    let inner = `<b>${d}</b>`;
-    inner += dia ? escLinhasDia(dia, rel, dataStr, hj) : `<span class="ec-x">sem dados</span>`;
-    g += `<div class="c-d${fds?" fds":""}${hjHoje?" hj":""}"${dia?` title="${esc(dia.diaSemana||"")}"`:""}>${inner}</div>`;
+    const wd = new Date(st.ano,st.mes,d).getDay();
+    h += `<th class="${(wd===0||wd===6)?"fds":""}${(noMes&&d===st.hj.getDate())?" hj":""}">${DS_ABR[wd][0]}<b class="num">${p2(d)}</b></th>`;
   }
-  const H = j.horas || {spot:{},spotTotal:0,adm:{},admTotal:0};
-  const por = r => Object.entries(r||{}).filter(([,v])=>+v>0).map(([l,v])=>`${esc(l)} ${String(v).replace(".",",")}h`).join(" · ") || "—";
-  const horas = (H.spotTotal>0 || H.admTotal>0) ? `<div class="esc-ft">
-      <div class="card kv esc-h"><div class="lbl">Horas Spot no mês</div><div><b class="num">${String(H.spotTotal).replace(".",",")} h</b><small>${por(H.spot)}</small></div></div>
-      <div class="card kv esc-h"><div class="lbl">Horas ADM no mês</div><div><b class="num">${String(H.admTotal).replace(".",",")} h</b><small>${por(H.adm)}</small></div></div>
-    </div>` : "";
-  return `<div class="c-gr esc-gr">${g}</div>${horas}`;
+  h += `</tr></thead><tbody>`;
+  ordem.forEach(l=>{
+    const tt = tec.find(x=>x.letra===l);
+    const nome = (tt && tt.nome) || nomes[l] || `Equipe ${l}`;
+    const tag = l===cur?`<span class="ze-tg on">No turno</span>` : l===nx?`<span class="ze-tg">Próximo</span>` : "";
+    h += `<tr class="tu-${esc(l)}${l===cur?" cur":""}"><th><div class="ze-who"><span class="ze-lt2">${esc(l)}</span><div><b>${esc(nome)}</b><small>${tt?`${p2(tt.turnos)}/${p2(tt.turnosPrev)} turnos`:"&nbsp;"}${tag}</small></div></div></th>`;
+    for(let d=1;d<=ndias;d++){
+      const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
+      const dia = porData[dataStr];
+      const agora = !!(dia && dia.data===refIso && ((t.tipo==="D"&&(dia.diurno||[]).some(s=>s.letra===l))||(t.tipo==="N"&&(dia.noturno||[]).some(s=>s.letra===l))));
+      const cell = zeCelula(l, dia, (base[dataStr]||{})[l], rel[dataStr], dataStr<=j.hoje, agora);
+      h += `<td class="${(noMes&&d===st.hj.getDate())?"hj":""}">${cell}</td>`;
+    }
+    h += `</tr>`;
+  });
+  h += `</tbody></table></div>`;
+  return h + zeHoras(st, tec, j);
 }
-function escHtmlMesManual(st){
-  const hj = st.hj, mapa = escMapaManual(st.o);
-  const ini = new Date(st.ano,st.mes,1).getDay(), ndias = new Date(st.ano,st.mes+1,0).getDate();
-  const noMes = st.ano===hj.getFullYear() && st.mes===hj.getMonth();
-  let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
-  for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
+/* --- grade no MODO MANUAL (letras da aba Escala): mesma tabela, sem horas --- */
+function zeGradeManual(st){
+  const mapa = escMapaManual(st.o);
+  const hj = st.hj, noMes = st.ano===hj.getFullYear() && st.mes===hj.getMonth();
+  const ndias = new Date(st.ano,st.mes+1,0).getDate();
   let com = 0;
+  let h = `<div class="ze-gw"><table class="ze-tw"><colgroup><col class="c0">${"<col>".repeat(ndias)}</colgroup><thead><tr><th>Equipe</th>`;
   for(let d=1;d<=ndias;d++){
-    const wd=(ini+d-1)%7, fds=wd===0||wd===6;
-    const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
-    const dia = mapa[dataStr];
-    const hjHoje = noMes && d===hj.getDate();
-    let inner = `<b>${d}</b>`;
-    if(dia && (dia.diurno || dia.noturno)){
-      com++;
-      inner += `<div class="ec-r">☀ <span class="lt3 ${LCLS[dia.diurno]||""}">${esc(dia.diurno)||"–"}</span><em> · diurno</em></div>
-        <div class="ec-r">☾ <span class="lt3 ${LCLS[dia.noturno]||""}">${esc(dia.noturno)||"–"}</span><em> · noturno</em></div>`;
-    } else inner += `<span class="ec-x">sem lançamento</span>`;
-    g += `<div class="c-d${fds?" fds":""}${hjHoje?" hj":""}">${inner}</div>`;
+    const wd = new Date(st.ano,st.mes,d).getDay();
+    h += `<th class="${(wd===0||wd===6)?"fds":""}${(noMes&&d===hj.getDate())?" hj":""}">${DS_ABR[wd][0]}<b class="num">${p2(d)}</b></th>`;
   }
-  const av = com ? "" : `<div class="c-card c-av">⚠ Nenhum dia lançado neste mês — preencha na aba Escala de turno do editor (ou ligue o modo automático).</div>`;
-  return `<div class="c-gr esc-gr">${g}</div>${av}`;
+  h += `</tr></thead><tbody>`;
+  ESC_LETRAS.forEach(l=>{
+    h += `<tr class="tu-${l}"><th><div class="ze-who"><span class="ze-lt2">${l}</span><div><b>Equipe ${l}</b><small>&nbsp;</small></div></div></th>`;
+    for(let d=1;d<=ndias;d++){
+      const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
+      const dia = mapa[dataStr];
+      let cell = `<span class="ze-cl kf" title="Sem lançamento neste dia"></span>`;
+      if(dia){
+        if(dia.diurno===l){ com++; cell = `<span class="ze-cl kd" title="Diurno — lançado na aba Escala de turno"><span class="ze-ico">${ESC_SOL}</span></span>`; }
+        else if(dia.noturno===l){ com++; cell = `<span class="ze-cl kn" title="Noturno — lançado na aba Escala de turno"><span class="ze-ico">${ESC_LUA}</span></span>`; }
+        else cell = `<span class="ze-cl kf" title="Folga neste dia (lançado na aba)"></span>`;
+      }
+      h += `<td class="${(noMes&&d===hj.getDate())?"hj":""}">${cell}</td>`;
+    }
+    h += `</tr>`;
+  });
+  h += `</tbody></table></div>`;
+  if(!com) h += `<div class="card ze-hc" style="flex:none"><div class="ze-hl" style="letter-spacing:.06em">⚠ Nenhum dia lançado neste mês — preencha na aba Escala de turno do editor (ou ligue o modo automático).</div></div>`;
+  return h;
 }
 function escHtmlAno(st, j){
   const hj = st.hj;
@@ -1339,7 +1590,7 @@ function escHtmlAno(st, j){
   }
   return h+`</div>`;
 }
-const escLegenda = `<div class="c-leg" aria-hidden="true"><span><i style="background:var(--accent)"></i>Diurno</span><span><i style="background:var(--muted)"></i>Noturno</span><span><i style="background:#e05252"></i>Atestado/Folga</span><span><i style="background:#1f9d55"></i>Spot</span><span><i style="background:#8b5cf6"></i>ADM</span></div>`;
+const escLegenda = `<div class="ze-leg" aria-hidden="true"><span><i class="ze-sw" style="background:var(--la)"></i>Turma A</span><span><i class="ze-sw" style="background:var(--lb)"></i>Turma B</span><span><i class="ze-sw" style="background:var(--lc)"></i>Turma C</span><span><i class="ze-sw" style="background:var(--ld)"></i>Turma D</span><span><i class="ze-ico icoD">${ESC_SOL}</i>Diurno 07–19</span><span><i class="ze-ico icoN">${ESC_LUA}</i>Noturno 19–07</span><span><i class="ze-sw ev-at"></i>Atestado</span><span><i class="ze-sw ev-fer"></i>Férias</span><span><i class="ze-sw ev-fol"></i>Folga agendada</span><span><i class="ze-sw evx"></i>Dia que estaria escalado</span></div>`;
 function escBarra(){
   return `<div class="c-bar">
       <button type="button" class="c-btn ic" data-esc="prev" aria-label="Anterior (mês ou ano)" title="Mês/ano anterior">◀</button>
@@ -1354,14 +1605,14 @@ function escBarra(){
 function escInit(root, preview, o){
   if(!root || root._escOk) return;
   root._escOk = true;
-  const st = { o:o||data, hj:tvHoje ? pDate(tvHoje) : today0(), modo:"mes", ano:0, mes:0, auto:false, anos:[] };
+  const st = { o:o||data, hj:tvHoje ? pDate(tvHoje) : today0(), modo:"mes", ano:0, mes:0, auto:false, anos:[], j:null };
   const h = get(st.o,"escala","horarios") || {};
   st.auto = !!h.auto;
   st.ano = st.hj.getFullYear(); st.mes = st.hj.getMonth();
   const anosManuais = Array.from(new Set(list(st.o,"escala","dias").map(d=>d.data && +d.data.slice(0,4)).filter(Boolean)));
   st.anos = Array.from(new Set([st.hj.getFullYear()-1, st.hj.getFullYear(), st.hj.getFullYear()+1].concat(anosManuais))).sort();
   const q = s => root.querySelector(s);
-  const view = q(".c-view"), tit = q(".c-tit"), sel = q("[data-esc=sel]"), pz = q(".c-pz"), bAno = q("[data-esc=ano]");
+  const view = q(".c-view"), tit = q(".c-tit"), sel = q("[data-esc=sel]"), pz = q(".c-pz"), bAno = q("[data-esc=ano]"), nowBox = q("[data-esc=now]");
   if(!view || !tit || !sel) return;
   const ehPadrao = () => st.modo==="mes" && st.ano===st.hj.getFullYear() && st.mes===st.hj.getMonth();
   const selOpts = () => {
@@ -1380,9 +1631,12 @@ function escInit(root, preview, o){
     if(bAno){ bAno.textContent = st.modo==="ano" ? "Voltar ao mês" : "Ver o ano inteiro"; bAno.classList.toggle("on", st.modo==="ano"); }
     selOpts();
     if(st.modo==="ano"){
+      if(nowBox) nowBox.hidden = true;
       view.innerHTML = `<div class="c-ano"><div class="ec-load" style="grid-column:1/-1">Carregando o ano…</div></div>`;
+      const alvoAno = st.ano;
       const pronto = j => {
         if(!root.isConnected) return;
+        if(st.modo!=="ano" || st.ano!==alvoAno) return; /* mudou de tela enquanto carregava */
         view.innerHTML = (j || !st.auto) ? escHtmlAno(st, j) : `<div class="c-ano"><div class="ec-load" style="grid-column:1/-1">Sem conexão com a escala agora — tente de novo.</div></div>`;
         if(view.querySelector(".c-ano")){
           calFitAno(view);
@@ -1394,14 +1648,20 @@ function escInit(root, preview, o){
       };
       if(st.auto) escAno(st.ano).then(pronto); else pronto(null);
     } else if(st.auto){
-      view.innerHTML = `<div class="c-gr esc-gr"><div class="ec-load">Carregando a escala…</div></div>`;
+      const alvoMes = st.ano+"-"+st.mes;
+      if(nowBox){ nowBox.hidden = false; nowBox.innerHTML = `<div class="card ze-ag tu-X" style="grid-column:1/-1"><div class="ze-tx"><span class="ze-live">Escala</span><b class="ze-nm" style="font-size:24px">Carregando…</b></div></div>`; }
+      view.innerHTML = `<div class="ec-load">Carregando a escala…</div>`;
       escMes(st.ano, st.mes).then(j=>{
         if(!root.isConnected) return;
-        view.innerHTML = j ? escHtmlMesAuto(st, j) : `<div class="c-gr esc-gr"><div class="ec-load">Sem conexão com a escala agora — tente de novo.</div></div>`;
+        if(st.modo!=="mes" || (st.ano+"-"+st.mes)!==alvoMes) return; /* mudou de tela/mês enquanto carregava */
+        st.j = j;
+        view.innerHTML = j ? zeGrade(st, j) : `<div class="ec-load">Sem conexão com a escala agora — tente de novo.</div>`;
+        if(nowBox){ const nj = j ? zeNowHtml(st, j) : ""; nowBox.hidden = !nj; nowBox.innerHTML = nj; }
         pausa();
       });
     } else {
-      view.innerHTML = escHtmlMesManual(st);
+      if(nowBox) nowBox.hidden = true;
+      view.innerHTML = zeGradeManual(st);
       pausa();
     }
   };
@@ -1415,6 +1675,15 @@ function escInit(root, preview, o){
   });
   sel.onchange = () => { const v = sel.value.split("-"); st.ano = +v[0]; st.mes = +v[1]; st.modo = "mes"; desenha(); };
   desenha();
+  /* relógio do turno: a cada 30 s redesenha os cards e a grade — a troca de
+     turno reordena as linhas sozinha (igual ao HTML da gestão); sem fetch */
+  clearInterval(root._escT);
+  root._escT = setInterval(()=>{
+    if(!root.isConnected){ clearInterval(root._escT); return; }
+    if(st.modo!=="mes" || !st.auto || !st.j) return;
+    view.innerHTML = zeGrade(st, st.j);
+    if(nowBox && !nowBox.hidden){ const nj = zeNowHtml(st, st.j); if(nj) nowBox.innerHTML = nj; }
+  }, 30000);
 }
 
 /* ---------- renderização dos slides ---------- */
@@ -1533,10 +1802,11 @@ const R = {
     return `<div class="s-cal s-escx">
       <header class="c-hd">
         <div><small>ZAMine · ${esc(UNIDADE_TXT)} · Escala de turno${h.auto?" · equipes A/B/C/D":" · manual"}</small><h1 class="c-tit">${esc(MESES[hj.getMonth()+1])} <em>${hj.getFullYear()}</em></h1></div>
-        ${escLegenda}
       </header>
+      <div class="ze-now" data-esc="now" hidden></div>
       ${escBarra()}
-      <div class="c-view"><div class="c-gr esc-gr"><div class="ec-load">Carregando a escala…</div></div></div>
+      ${escLegenda}
+      <div class="c-view"><div class="ec-load">Carregando a escala…</div></div>
     </div>`;
   },
   perdas(o){
