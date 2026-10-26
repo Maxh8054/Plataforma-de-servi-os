@@ -328,7 +328,6 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .vh small{display:block;color:var(--accent);font-weight:600;letter-spacing:.22em;text-transform:uppercase;font-size:20px}
 .vh h1{margin:4px 0 0;font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:.95;font-size:62px;letter-spacing:.01em}
 .vh .sig{font-family:var(--f-display);font-weight:800;font-size:36px;letter-spacing:.32em;color:var(--accent);margin-top:6px}
-.vh-logo{height:74px;width:auto;display:block;flex:none}
 .vlz{list-style:none;margin:0;padding:0;flex:1;display:flex;flex-direction:column;justify-content:space-evenly;min-height:0}
 .vr{display:grid;grid-template-columns:92px minmax(0,5fr) minmax(0,7fr);gap:36px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);min-height:0}
 .vr:last-child{border-bottom:0}
@@ -1395,8 +1394,6 @@ const R = {
     return `<div class="grid-b" style="grid-template-columns:repeat(${cols},1fr)">${it.map(b=>`<div class="card bn"><b>${esc(b.titulo)}</b><p class="clamp3" style="-webkit-line-clamp:4">${esc(b.descricao)}</p></div>`).join("")}</div>`;
   }
 };
-/* logo do cabeçalho da TV (mesma arte, sem duplicar base64 no arquivo) */
-const LOGO_TV = (()=>{ try{ const i=document.querySelector("#stage .hd .logo-d")||document.querySelector("#stage .hd .logo-l"); return i?(i.getAttribute("src")||""):""; }catch(e){ return ""; } })();
 R.valores = function(o){
   const it = list(o,"valores").slice(0,8);
   if(!it.length) return emptyBox("Valores não cadastrados","Preencha os valores no editor (letra, nome e descrição).");
@@ -1404,7 +1401,6 @@ R.valores = function(o){
   return `<div class="s-val">
     <header class="vh">
       <div class="vh-t"><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>Nossos valores</h1>${sig?`<div class="sig" aria-label="${esc(sig.split("").join(" "))}">${esc(sig)}</div>`:""}</div>
-      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
     </header>
     <ol class="vlz">${it.map(v=>`<li class="vr"><span class="lt3" aria-hidden="true">${esc(String(v.letra||"").trim().charAt(0).toUpperCase()||"•")}</span><h2>${esc(v.titulo)}</h2><p>${esc(v.descricao)}</p></li>`).join("")}</ol>
   </div>`;
@@ -1661,7 +1657,6 @@ R.calendario = function(o){
     <header class="c-hd">
       <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1 class="c-tit">${esc(MESES[st.mes+1])} <em>${st.ano}</em></h1></div>
       <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span><span><i style="background:var(--eve)"></i>Evento</span><span><i style="background:var(--dds)"></i>DDS</span><span><i style="background:var(--ani)"></i>Aniversário</span></div>
-      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
     </header>
     ${calBarra()}
     <div class="c-view">${calHtmlMes(st)}</div>
@@ -1769,7 +1764,6 @@ R.planoAcao = function(o){
     <header class="pa-hd">
       <div><small>ZAMine · ${esc(UNIDADE_TXT)} · Planos de ação</small><h1 class="pa-tit">${esc(MESES[st.mes+1])} <em>${st.ano}</em></h1></div>
       <div class="pa-leg" aria-hidden="true"><span><i style="background:var(--atr)"></i>Atrasada</span><span><i style="background:var(--and)"></i>Em andamento</span><span><i style="background:var(--ni)"></i>Não iniciada</span><span><i style="background:var(--ok)"></i>Concluída</span></div>
-      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
     </header>
     ${paBarra()}
     <div class="pa-view">${paHtmlView(st)}</div>
@@ -1777,6 +1771,29 @@ R.planoAcao = function(o){
 };
 /* liga os botões do plano de ação (mesma mecânica do calendário):
    preview=true na prévia do editor — funciona sem mexer na rotação da TV */
+/* rolagem automática da tabela do plano: desce devagar até a última ação
+   (pra todo mundo ver o plano inteiro), fica um pouco no fim e volta ao topo
+   — só quando a tabela não cabe inteira; congela enquanto a rotação está
+   pausada (alguém mexendo nos botões) e para sozinha quando a tela sai */
+let paScrollT = 0;
+function paScrollAuto(tw, preview){
+  if(paScrollT){ clearInterval(paScrollT); paScrollT = 0; }
+  if(!tw) return;
+  tw.scrollTop = 0;
+  const de = tw.scrollHeight - tw.clientHeight;
+  if(preview || de < 24) return;
+  const dur = Math.max(9000, duration()*0.75);
+  let t0 = performance.now(), espera = 0;
+  paScrollT = setInterval(()=>{
+    if(!tw.isConnected){ clearInterval(paScrollT); paScrollT = 0; return; }
+    if(window.__calPausa) return;
+    const agora = performance.now();
+    if(espera){ if(agora >= espera){ espera = 0; t0 = agora; tw.scrollTop = 0; } return; }
+    const k = Math.min(1,(agora-t0)/dur);
+    tw.scrollTop = de*(k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2);
+    if(k>=1) espera = agora + 4000;
+  }, 40);
+}
 function paInit(root, preview, o){
   if(!root || root._paOk) return;
   root._paOk = true;
@@ -1802,6 +1819,7 @@ function paInit(root, preview, o){
     sel.innerHTML = anos().map(a=>MESES.map((n,i)=>i?`<option value="${a}-${i-1}"${(a===st.ano&&i-1===st.mes)?" selected":""}>${n} ${a}</option>`:"").join("")).join("");
     pes.innerHTML = `<option value="">Todas as pessoas</option>`+Array.from(new Set(todos().map(a=>a.quem))).sort((a,b)=>a.localeCompare(b,"pt-BR")).map(n=>`<option${st.pessoa===n?" selected":""}>${esc(n)}</option>`).join("");
     view.querySelectorAll(".pa-k").forEach(b=>b.onclick=()=>{ st.filtro = st.filtro===b.dataset.f ? "" : b.dataset.f; desenha(); });
+    paScrollAuto(view.querySelector(".pa-tw"), preview);
     pausa();
   };
   const passo = n => { st.mes+=n; if(st.mes<0){st.mes=11;st.ano--;} if(st.mes>11){st.mes=0;st.ano++;} st.filtro=""; desenha(); };
