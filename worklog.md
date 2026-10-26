@@ -1108,3 +1108,22 @@ Stage Summary:
 - A rotação espera a apresentação terminar (~2min07s medidos no próprio deck) antes de trocar de tela; o poll de 30s não interrompe; cada volta da rotação recomeça da capa
 - Admin ainda pode tirar a tela da rotação (Telas na rotação) ou dar um tempo próprio (Duração por tela); a lista antiga continua no editor como backup, fora do ar
 - Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+---
+Task ID: 51
+Agent: Z.ai Code (principal)
+Task: "Na parte de benefícios não ficou na tela inteira a apresentação" → a apresentação de benefícios agora ocupa a TELA INTEIRA da TV
+
+Work Log:
+- Antes: o iframe do deck ficava DENTRO da área de slide (inset 44/56/40px), com o cabeçalho e o rodapé do painel aparecendo em volta — o deck ainda perdia borda por causa do letterbox do palco 1920x1080
+- CSS nos 2 painéis (goias+minas, blocos idênticos): nova regra `main .bn-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}` — na TV o iframe sai da caixa do slide e cobre o viewport INTEIRO (1920x1080 medido no browser, ponta a ponta); a regra base .bn-fr (absolute) continua para a PRÉVIA do editor, que segue contida na caixa de prévia (conferido: position absolute na prévia, visual intacto)
+- Z-index 10 de propósito: fica DEBAIXO dos botões flutuantes (.ctrls z-20), editor (30), toasts (40), seletor de canal (60) e barra de controle da TV (70) — nada desses é coberto; #offTag (aviso de sem internet) ganhou position:relative;z-index:80 para continuar visível por cima do deck
+- Jump de 0,6s eliminado: a animação de entrada do .slide (translateY) fazia o iframe fixed calcular pelo ancestral transformado e "pular" ao soltar — renderFrame agora zera animation:none no slide de benefícios ao montar
+- Verificado no browser (goias+minas, 1920x1080): iframe computed position fixed, 1920x1080, top 0, z 10; screenshot ponta a ponta SEM cabeçalho/rodapé (capa "Nossos benefícios" ocupando tudo); poll de 30s continua sem recarregar o deck (mesmo nó, bnDur 130000 medido); prévia do editor contida; zero erros de página/console
+- Lint no baseline 31; JS validado (new Function) nos 2 painéis
+
+Stage Summary:
+- A apresentação de benefícios agora é TELA INTEIRA na TV: cobre o viewport inteiro, sem o cabeçalho nem o rodapé do painel em volta (enquanto ela roda, o contador de dias/letreiro/pontos voltam na tela seguinte)
+- Editor, toasts, botões flutuantes, seletor de canal, barra de controle e aviso offline continuam por cima — nada quebrou
+- Prévia do editor continua mostrando o deck dentro da caixa (não virou fullscreen lá)
+- Zero mudança de schema/rotas; TVs atualizam recarregando a página
