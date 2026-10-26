@@ -54,7 +54,7 @@ export interface EscalaAuto {
 
 /* ---------- pessoas (mesma atribuição do EscalaModal) ---------- */
 
-const PESSOAS: PessoaEscala[] = [
+export const PESSOAS: PessoaEscala[] = [
   { letra: 'A', nome: 'Weslley Siqueira' },
   { letra: 'B', nome: 'Higor Ataides' },
   { letra: 'C', nome: 'Marcos Paulo' },
@@ -102,7 +102,7 @@ function diaSemanaDe(dataStr: string): string {
 }
 
 /** dataStr está dentro do intervalo [inicio, fim]? (strings YYYY-MM-DD) */
-function emIntervalo(dataStr: string, inicio?: string | null, fim?: string | null): boolean {
+export function emIntervalo(dataStr: string, inicio?: string | null, fim?: string | null): boolean {
   if (!inicio || !fim || !RE_DATA.test(inicio) || !RE_DATA.test(fim)) return false;
   return dataStr >= inicio && dataStr <= fim;
 }
@@ -176,6 +176,8 @@ async function carregarLancamentos(): Promise<EscalaParsed> {
     return LISTA_VAZIA;
   }
 }
+/** leitura dos lançamentos para quem monta mês/ano fora daqui */
+export const lancamentosDaPlataforma = carregarLancamentos;
 
 /* ---------- regras por pessoa/dia (espelham o EscalaModal) ---------- */
 
@@ -243,6 +245,7 @@ function montarDia(dataStr: string, destaque: 'hoje' | 'amanha' | 'ontem' | null
     fora: status.filter((s) => !s.trabalha),
   };
 }
+export { montarDia };
 
 export const TZ_PADRAO = 'America/Sao_Paulo';
 

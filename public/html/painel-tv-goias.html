@@ -484,6 +484,7 @@ body.nao-tv .btn.voltar{display:inline-flex}
 #ctlBar{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 40px);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;box-shadow:0 12px 34px rgba(0,0,0,.4)}
 #ctlBar[hidden]{display:none}
 #ctlBar b{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+#ctlBar .ctl-exp{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
 #ctlBar select{background:var(--panel2);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:9px 10px;font:600 14px var(--f-body);max-width:250px}
 body.tv #bCtl,body.tv #ctlBar{display:none!important}
 .btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -651,6 +652,14 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .ft .canal-chip b{color:var(--fg);font-weight:700}
 .cn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:12px}
 .cn-row{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:8px}
+/* lançamentos da escala no editor: linhas compactas de campos */
+.lanc h4{margin:18px 0 8px;font-family:var(--f-display);font-size:19px;text-transform:uppercase;letter-spacing:.04em}
+.lanc h4 small{font-family:var(--f-body);font-size:14px;color:var(--muted);font-weight:600}
+.lanc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.lanc-row input,.lanc-row select{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:600 14px var(--f-body);color:var(--fg)}
+.lanc-row input[type=date],.lanc-row input[type=time]{width:auto}
+.lanc-row .btn.del{margin-left:auto}
+.lanc-por{font-size:13px;color:var(--muted);font-weight:600}
 .cn-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .cn-info b{font-size:17px;text-transform:uppercase}
 .cn-info span{font-size:13px;color:var(--muted)}
@@ -767,6 +776,30 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-mn li.p b{color:var(--pon)}
 .s-cal .c-mn li.eve b{color:var(--eve)}
 .s-cal .c-mn li.dds b{color:var(--dds)}
+/* escala de turno interativa: reaproveita TODAS as classes do calendário (.s-cal .c-*)
+   — aqui só o desenho próprio das células (técnico do dia/noite, selos e horas) */
+.s-escx .c-view{gap:12px}
+.s-escx .c-gr{flex:1;min-height:0;grid-auto-rows:minmax(96px,1fr)}
+.s-escx .c-d{display:flex;flex-direction:column;gap:3px;padding:8px 12px;border-radius:12px}
+.s-escx .c-d b{font-size:20px;line-height:1.15}
+.s-escx .c-d.hj::after{top:8px;right:10px;font-size:11px;padding:2px 6px}
+.s-escx .ec-r{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ec-r em{font-style:normal;color:var(--muted);font-weight:600}
+.s-escx .ec-r .lt3{display:inline-block;min-width:22px;text-align:center;margin-right:7px;font-weight:800}
+.s-escx .ec-x{font-size:14px;font-weight:600;color:var(--muted)}
+.s-escx .ec-b{display:inline-block;align-self:flex-start;font-size:12.5px;font-weight:700;border-radius:6px;padding:2px 8px;background:var(--panel2);color:var(--muted);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.s-escx .ec-b.at{background:#d4363c24;color:#e05252}
+.th-light .s-escx .ec-b.at{color:#b02330}
+.s-escx .ec-b.rel-ok{background:#1f9d5524;color:#1f9d55}
+.th-light .s-escx .ec-b.rel-ok{color:#187a41}
+.s-escx .ec-b.rel-no{background:#d4363c24;color:#e05252}
+.th-light .s-escx .ec-b.rel-no{color:#b02330}
+.s-escx .ec-load{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:220px;font-size:22px;font-weight:700;color:var(--muted)}
+.s-escx .esc-ft{display:flex;gap:14px;flex:none}
+.s-escx .esc-h{flex:1;display:flex;align-items:center;gap:14px;padding:10px 18px}
+.s-escx .esc-h .lbl{margin:0}
+.s-escx .esc-h b.num{font-size:30px}
+.s-escx .esc-h small{display:block;font-size:15px;color:var(--muted);font-weight:600}
 /* barra de botões da tela — o Plano de Ação reusa o desenho do calendário */
 .s-pa .c-bar{display:flex;align-items:center;gap:12px;flex:none;margin:-4px 0 2px}
 .s-pa .c-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 22px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer}
@@ -864,6 +897,7 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
   <button type="button" class="btn" id="cNext" aria-label="Próxima tela">Próxima ›</button>
   <select id="cIr" aria-label="Ir para uma tela específica"></select>
   <button type="button" class="btn pri" id="cSoltar">Encerrar controle</button>
+  <span class="ctl-exp" id="cExp" title="Navegar, pausar ou escolher tela renova os 8 minutos"></span>
 </div>
 
 <div id="editor" hidden>
@@ -929,13 +963,14 @@ const SECTIONS = [
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Horário",ph:"Ex.: 07:30 às 11:30",w:2},
       {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",w:2},
       {k:"participantes",l:"Participantes",t:"textarea",w:5}]}]},
-  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha os técnicos de ONTEM, hoje e de amanhã das equipes A/B/C/D, direto da escala da plataforma — incluindo atestados, férias, folgas e coberturas lançadas na Escala de Turno, além do status do RELATÓRIO TÉCNICO (entregue/pendente) marcado na aba Escala de Turno da plataforma, individual para cada técnico. Os dias cadastrados aqui ficam de fora da TV enquanto o modo estiver ligado. Modo manual: preencha a letra do turno diurno e noturno de cada dia; o dia de hoje é destacado na TV.",
+  {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha as equipes A/B/C/D da plataforma — com ATESTADO, HORAS SPOT, ADM, eventos (folga, férias, viagem, treinamento, cobertura) e o status do RELATÓRIO DE ENTREGA DE TURNO (entregue/pendente) de cada técnico, tudo lançável aqui mesmo na parte Lançamentos da plataforma. A tela da TV agora é IGUAL AO CALENDÁRIO: ◀ ▶ mudam o mês, “Mês atual” volta, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez (clique num mini para abrir o mês). A tela também soma sozinha as HORAS do mês (Spot e ADM). Navegou para outro mês ou abriu o ano? A rotação pausa (chip avisa) e volta sozinha depois de 2 minutos. Modo manual: preencha a letra do turno diurno e noturno de cada dia — a TV monta o mês com as mesmas opções.",
     parts:[
       {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"auto",l:"Puxar automaticamente da escala da plataforma (equipes A/B/C/D)",t:"check",def:false},{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
       {kind:"list",key:"dias",label:"Dias",newRow:()=>({data:nextDate(),diurno:"",noturno:""}),cols:[
         {k:"data",l:"Data",t:"date",w:2},{k:"diurno",l:"Diurno",t:"select",opts:LETRAS,w:1},{k:"noturno",l:"Noturno",t:"select",opts:LETRAS,w:1}]},
       {kind:"list",key:"turmas",label:"Turmas",cols:[
-        {k:"letra",l:"Letra",t:"select",opts:LETRAS,w:1},{k:"lider",l:"Líder",w:3},{k:"obs",l:"Observação",w:3}]}]},
+        {k:"letra",l:"Letra",t:"select",opts:LETRAS,w:1},{k:"lider",l:"Líder",w:3},{k:"obs",l:"Observação",w:3}]},
+      {kind:"lanc",label:"Lançamentos da plataforma — Atestado · Horas Spot · ADM · Eventos · Relatório de entrega de turno"}]},
   {key:"perdas", label:"Perfil de perdas", hint:"Horas perdidas por causa no período. O slide ordena da maior para a menor e calcula o percentual.",
     parts:[
       {kind:"obj",key:"dados",fields:[{k:"periodo",l:"Período",ph:"Ex.: Semana 42 · 12 a 18/10"},{k:"horasProgramadas",l:"Horas programadas no período",t:"number"}]},
@@ -1128,59 +1163,215 @@ function noAr(c){ const t=+today0(), i=pDate(c.inicio), f=pDate(c.fim); return (
 function faltaTxt(d){ const n=Math.round((d-today0())/864e5); return n<=0?"Hoje":n===1?"Amanhã":`Faltam ${n} dias`; }
 const emptyBox = (t,m) => `<div class="empty"><div><b>${esc(t)}</b>${esc(m)}</div></div>`;
 
-/* ---------- escala automática (puxada da plataforma) ---------- */
+/* ---------- escala de turno interativa (mesmo layout do calendário) ----------
+   ◀ ▶ mudam o mês, "Mês atual" volta, o seletor escolhe qualquer mês e
+   "Ver o ano inteiro" mostra os 12 meses de uma vez (mini clicável abre o mês).
+   MODO AUTOMÁTICO: os dias vêm da plataforma (equipes A/B/C/D + atestados,
+   spots, ADMs, eventos e o RELATÓRIO DE TURNO entregue/pendente) direto do
+   banco via /api/tv/<painel>/escala — inclusive a CONTAGEM DE HORAS do mês
+   (Spot e ADM). MODO MANUAL: usa as letras digitadas na aba Escala de turno.
+   Enquanto estiver num mês diferente do atual ou no modo ano, a rotação pausa
+   (chip avisa) e volta sozinha depois de 2 minutos sem toque. */
 const TV_TZ = (()=>{ try{ return encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone||"America/Sao_Paulo"); }catch(e){ return encodeURIComponent("America/Sao_Paulo"); } })();
-let escalaAuto = null;   // calculada no servidor e entregue junto com o /content
-let relatoriosAuto = null; // entregas do relatório técnico (por dia/técnico) marcadas na plataforma
-let segurancaAuto = null; // dias sem afastamento automáticos (contador oficial da plataforma)
-const HORA_DIURNA = "07:00 – 19:00", HORA_NOTURNA = "19:00 – 07:00";
+let escalaAuto = null;     // (legado) escala ontem..amanhã entregue junto com o /content
+let relatoriosAuto = null; // (legado) entregas do relatório na janela ontem..amanhã
+let segurancaAuto = null;  // dias sem afastamento automáticos (contador oficial da plataforma)
 const LCLS = {A:"L-A",B:"L-B",C:"L-C",D:"L-D"};
-function relBadge(letra, dataStr){
-  /* selo do relatório técnico (entregue/pendente) — só para dias que já rolaram
-     ou o de hoje; amanhã ainda não tem relatório para mostrar */
-  if(!relatoriosAuto || typeof relatoriosAuto!=='object') return "";
-  const d = relatoriosAuto[dataStr]; if(!d || typeof d!=='object') return "";
-  const e = d[letra]; if(!e || typeof e.entregue!=="boolean") return "";
-  const when = e.atualizadoPor ? `<span class="dt">· ${esc(String(e.atualizadoPor).split(" ")[0])}</span>` : "";
-  return e.entregue
-    ? `<span class="esc-rel ok">✓ Relatório entregue${when}</span>`
-    : `<span class="esc-rel no">✗ Relatório pendente${when}</span>`;
+const ESC_COR = {A:"var(--la)",B:"var(--lb)",C:"var(--lc)",D:"var(--ld)"};
+const p2 = n => ("0"+n).slice(-2);
+let escCache = {}, escHora = {};  // cache dos meses carregados (TTL curto p/ pegar lançamentos novos)
+let escAnoC = {};                 // cache dos anos carregados
+const ESC_TTL = 300000;           // 5 min
+async function escMes(ano, mes){  // mes 0-11 aqui; a API espera 1-12
+  const k = ano+"-"+mes, ag = Date.now();
+  if(escCache[k] && ag-(escHora[k]||0) < ESC_TTL) return escCache[k];
+  try{
+    const r = await fetch(`/api/tv/${PANEL_SLUG}/escala?ano=${ano}&mes=${mes+1}&tz=${TV_TZ}`,{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    escCache[k] = j; escHora[k] = ag;
+    return j;
+  }catch(e){ return escCache[k] || null; }
 }
-function escPessoa(x, linha, dataStr, comRel){
-  return `<div class="esc-row"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>
-    <div class="esc-p"><b>${esc(x.nome)}</b><span class="t">${esc(linha)}</span>
-    ${x.selo?`<span class="esc-selo">${esc(x.selo)}</span>`:""}
-    ${comRel?relBadge(x.letra,dataStr):""}</div></div>`;
+async function escAno(ano){
+  if(escAnoC[ano]) return escAnoC[ano];
+  try{
+    const r = await fetch(`/api/tv/${PANEL_SLUG}/escala?ano=${ano}&tz=${TV_TZ}`,{cache:"no-store"});
+    if(!r.ok) throw 0;
+    const j = await r.json();
+    escAnoC[ano] = j;
+    return j;
+  }catch(e){ return escAnoC[ano] || null; }
 }
-function escDiaAuto(d, hd, hn){
-  const dt = pDate(d.data);
-  const off = d.fora.map(f=>`${esc(f.letra)} <em>(${esc(f.motivo||"Folga")})</em>`).join(" · ");
-  const tit = d.destaque==="ontem"?"Ontem":d.destaque==="hoje"?"Hoje":"Amanhã";
-  /* relatório técnico aparece em ontem e hoje (amanhã não tem o que entregar) */
-  const comRel = d.destaque==="ontem" || d.destaque==="hoje";
-  const row = (arr, hora, vazio)=>arr.length?arr.map(x=>escPessoa(x,hora,d.data,comRel)).join("")
-    :`<div class="esc-row"><span class="lt3">–</span><div class="esc-p"><b>${vazio}</b><span class="t">${esc(hora)}</span></div></div>`;
-  return `<div class="card esc-day ${d.destaque==="hoje"?"hj":d.destaque==="ontem"?"ot":""}">
-    <div class="esc-dh"><b>${tit}</b><span>${esc(d.diaSemana)}${dt?" · "+fmtDM(dt):""}</span></div>
-    ${row(d.diurno,"Diurno · "+hd,"Sem diurno escalado")}
-    ${row(d.noturno,"Noturno · "+hn,"Sem noturno escalado")}
-    ${off?`<div class="esc-off">Fora: ${off}</div>`:""}
-  </div>`;
+/* mapa data → dia no MODO MANUAL (letras digitadas na aba Escala) */
+function escMapaManual(o){ const m = {}; list(o,"escala","dias").forEach(d=>{ if(d.data) m[d.data]=d; }); return m; }
+/* primeiro nome da pessoa: "Weslley Siqueira" → "Weslley" */
+const escNome1 = x => esc(String(x.nome||"").split(" ")[0]||x.letra||"");
+function escLinhasDia(dia, rel, dataStr, hj){
+  let h = "";
+  const linha = arr => (arr||[]).slice(0,2).map(x=>`<div class="ec-r"><span class="lt3 ${LCLS[x.letra]||""}">${esc(x.letra)}</span>${escNome1(x)}${x.selo?` <em>· ${esc(x.selo)}</em>`:""}</div>`).join("");
+  h += linha(dia.diurno);
+  h += linha(dia.noturno);
+  (dia.fora||[]).slice(0,2).forEach(f=>{
+    h += `<span class="ec-b${/atestado/i.test(String(f.motivo||""))?" at":""}" title="${esc(f.nome||"")}">${esc(f.motivo||"Folga")}: ${escNome1(f)} (${esc(f.letra)})</span>`;
+  });
+  const rd = rel && rel[dataStr];
+  if(rd && +pDate(dataStr) <= +hj){
+    ["A","B","C","D"].forEach(l=>{
+      const e = rd[l];
+      if(e && typeof e.entregue==="boolean") h += `<span class="ec-b ${e.entregue?"rel-ok":"rel-no"}" title="${esc(e.atualizadoPor||"")}">${e.entregue?"✓":"✗"} Relatório ${esc(l)}</span>`;
+    });
+  }
+  return h;
 }
-function renderEscalaAuto(o){
-  if(!escalaAuto || !Array.isArray(escalaAuto.dias) || !escalaAuto.dias.length)
-    return emptyBox("Escala automática carregando","A TV está buscando a escala da plataforma. Se persistir, verifique a conexão.");
-  const h = get(o,"escala","horarios") || {};
-  const hd = String(h.diurno||"").trim() || HORA_DIURNA;
-  const hn = String(h.noturno||"").trim() || HORA_NOTURNA;
-  const otm = escalaAuto.dias.find(d=>d.destaque==="ontem");
-  const hj = escalaAuto.dias.find(d=>d.destaque==="hoje");
-  const am = escalaAuto.dias.find(d=>d.destaque==="amanha");
-  if(!hj || !am) return emptyBox("Escala automática carregando","A TV está buscando a escala da plataforma. Se persistir, verifique a conexão.");
-  const dias = [otm,hj,am].filter(Boolean);
-  return `<div class="s-esc esc-only">
-    <div class="esc-auto" style="--esc-n:${dias.length}">${dias.map(d=>escDiaAuto(d,hd,hn)).join("")}</div>
-  </div>`;
+function escHtmlMesAuto(st, j){
+  const hj = st.hj, porData = {};
+  (j.dias||[]).forEach(d=>{ porData[d.data] = d; });
+  const rel = j.relatorios || {};
+  const ini = new Date(st.ano,st.mes,1).getDay(), ndias = new Date(st.ano,st.mes+1,0).getDate();
+  const noMes = st.ano===hj.getFullYear() && st.mes===hj.getMonth();
+  let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
+  for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
+  for(let d=1;d<=ndias;d++){
+    const wd=(ini+d-1)%7, fds=wd===0||wd===6;
+    const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
+    const dia = porData[dataStr];
+    const hjHoje = noMes && d===hj.getDate();
+    let inner = `<b>${d}</b>`;
+    inner += dia ? escLinhasDia(dia, rel, dataStr, hj) : `<span class="ec-x">sem dados</span>`;
+    g += `<div class="c-d${fds?" fds":""}${hjHoje?" hj":""}"${dia?` title="${esc(dia.diaSemana||"")}"`:""}>${inner}</div>`;
+  }
+  const H = j.horas || {spot:{},spotTotal:0,adm:{},admTotal:0};
+  const por = r => Object.entries(r||{}).filter(([,v])=>+v>0).map(([l,v])=>`${esc(l)} ${String(v).replace(".",",")}h`).join(" · ") || "—";
+  const horas = (H.spotTotal>0 || H.admTotal>0) ? `<div class="esc-ft">
+      <div class="card kv esc-h"><div class="lbl">Horas Spot no mês</div><div><b class="num">${String(H.spotTotal).replace(".",",")} h</b><small>${por(H.spot)}</small></div></div>
+      <div class="card kv esc-h"><div class="lbl">Horas ADM no mês</div><div><b class="num">${String(H.admTotal).replace(".",",")} h</b><small>${por(H.adm)}</small></div></div>
+    </div>` : "";
+  return `<div class="c-gr esc-gr">${g}</div>${horas}`;
+}
+function escHtmlMesManual(st){
+  const hj = st.hj, mapa = escMapaManual(st.o);
+  const ini = new Date(st.ano,st.mes,1).getDay(), ndias = new Date(st.ano,st.mes+1,0).getDate();
+  const noMes = st.ano===hj.getFullYear() && st.mes===hj.getMonth();
+  let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
+  for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
+  let com = 0;
+  for(let d=1;d<=ndias;d++){
+    const wd=(ini+d-1)%7, fds=wd===0||wd===6;
+    const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
+    const dia = mapa[dataStr];
+    const hjHoje = noMes && d===hj.getDate();
+    let inner = `<b>${d}</b>`;
+    if(dia && (dia.diurno || dia.noturno)){
+      com++;
+      inner += `<div class="ec-r">☀ <span class="lt3 ${LCLS[dia.diurno]||""}">${esc(dia.diurno)||"–"}</span><em> · diurno</em></div>
+        <div class="ec-r">☾ <span class="lt3 ${LCLS[dia.noturno]||""}">${esc(dia.noturno)||"–"}</span><em> · noturno</em></div>`;
+    } else inner += `<span class="ec-x">sem lançamento</span>`;
+    g += `<div class="c-d${fds?" fds":""}${hjHoje?" hj":""}">${inner}</div>`;
+  }
+  const av = com ? "" : `<div class="c-card c-av">⚠ Nenhum dia lançado neste mês — preencha na aba Escala de turno do editor (ou ligue o modo automático).</div>`;
+  return `<div class="c-gr esc-gr">${g}</div>${av}`;
+}
+function escHtmlAno(st, j){
+  const hj = st.hj;
+  const hjIso = `${hj.getFullYear()}-${p2(hj.getMonth()+1)}-${p2(hj.getDate())}`;
+  const anoD = st.auto && j ? (j.dias||{}) : null;
+  const mapa = st.auto ? null : escMapaManual(st.o);
+  const corDe = l => ESC_COR[l] || "var(--muted)";
+  let h = `<div class="c-ano">`;
+  for(let m=0;m<12;m++){
+    const ini = new Date(st.ano,m,1).getDay(), ndias = new Date(st.ano,m+1,0).getDate();
+    let g = CAL_DS.map(d=>`<i>${d[0]}</i>`).join("");
+    for(let i=0;i<ini;i++) g += `<span></span>`;
+    for(let d=1;d<=ndias;d++){
+      const wd=(ini+d-1)%7, fds=wd===0||wd===6;
+      const dataStr = `${st.ano}-${p2(m+1)}-${p2(d)}`;
+      let l="", n="", fora="";
+      if(st.auto){ const x = anoD[dataStr]||{}; l=x.d||""; n=x.n||""; fora=x.fora||""; }
+      else { const x = mapa[dataStr]||{}; l=x.diurno||""; n=x.noturno||""; }
+      const tip = ` title="${d}/${m+1}${l?` · Diurno ${esc(l)}${n?` · Noturno ${esc(n)}`:""}`:" · sem escala"}${fora?` · ${esc(fora)}`:""}"`;
+      g += `<span class="${fds?"fds":""}${dataStr===hjIso?" hj":""}"${tip}${l?` style="color:${corDe(l)};font-weight:800"`:""}>${l||"·"}</span>`;
+    }
+    h += `<button type="button" class="c-mini${(st.ano===hj.getFullYear()&&m===hj.getMonth())?" at":""}" data-m="${m}" aria-label="Abrir ${esc(MESES[m+1])} de ${st.ano}"><h4>${esc(MESES[m+1])}</h4><div class="c-mg">${g}</div></button>`;
+  }
+  return h+`</div>`;
+}
+const escLegenda = `<div class="c-leg" aria-hidden="true"><span><i style="background:var(--accent)"></i>Diurno</span><span><i style="background:var(--muted)"></i>Noturno</span><span><i style="background:#e05252"></i>Atestado/Folga</span><span><i style="background:#1f9d55"></i>Spot</span><span><i style="background:#8b5cf6"></i>ADM</span></div>`;
+function escBarra(){
+  return `<div class="c-bar">
+      <button type="button" class="c-btn ic" data-esc="prev" aria-label="Anterior (mês ou ano)" title="Mês/ano anterior">◀</button>
+      <button type="button" class="c-btn ic" data-esc="next" aria-label="Próximo (mês ou ano)" title="Próximo mês/ano">▶</button>
+      <button type="button" class="c-btn" data-esc="hoje">Mês atual</button>
+      <select class="c-sel" data-esc="sel" aria-label="Escolher o mês"></select>
+      <span class="c-sp"></span>
+      <span class="c-pz" hidden>⏸ Rotação pausada — volta sozinha</span>
+      <button type="button" class="c-btn" data-esc="ano">Ver o ano inteiro</button>
+    </div>`;
+}
+function escInit(root, preview, o){
+  if(!root || root._escOk) return;
+  root._escOk = true;
+  const st = { o:o||data, hj:tvHoje ? pDate(tvHoje) : today0(), modo:"mes", ano:0, mes:0, auto:false, anos:[] };
+  const h = get(st.o,"escala","horarios") || {};
+  st.auto = !!h.auto;
+  st.ano = st.hj.getFullYear(); st.mes = st.hj.getMonth();
+  const anosManuais = Array.from(new Set(list(st.o,"escala","dias").map(d=>d.data && +d.data.slice(0,4)).filter(Boolean)));
+  st.anos = Array.from(new Set([st.hj.getFullYear()-1, st.hj.getFullYear(), st.hj.getFullYear()+1].concat(anosManuais))).sort();
+  const q = s => root.querySelector(s);
+  const view = q(".c-view"), tit = q(".c-tit"), sel = q("[data-esc=sel]"), pz = q(".c-pz"), bAno = q("[data-esc=ano]");
+  if(!view || !tit || !sel) return;
+  const ehPadrao = () => st.modo==="mes" && st.ano===st.hj.getFullYear() && st.mes===st.hj.getMonth();
+  const selOpts = () => {
+    sel.innerHTML = st.anos.map(a=>MESES.map((n,i)=>i?`<option value="${a}-${i-1}"${(a===st.ano&&i-1===st.mes&&st.modo==="mes")?" selected":""}>${n} ${a}</option>`:"").join("")).join("");
+  };
+  const pausa = () => {
+    if(preview) return; /* a prévia do editor não mexe na rotação da TV */
+    clearTimeout(calIdleT);
+    const fora = !ehPadrao();
+    calPausar(fora);
+    if(pz) pz.hidden = !fora;
+    if(fora) calIdleT = setTimeout(()=>{ st.modo="mes"; st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); desenha(); }, CAL_VOLTA_MS);
+  };
+  const desenha = () => {
+    tit.innerHTML = st.modo==="mes" ? `${esc(MESES[st.mes+1])} <em>${st.ano}</em>` : `Ano <em>${st.ano}</em>`;
+    if(bAno){ bAno.textContent = st.modo==="ano" ? "Voltar ao mês" : "Ver o ano inteiro"; bAno.classList.toggle("on", st.modo==="ano"); }
+    selOpts();
+    if(st.modo==="ano"){
+      view.innerHTML = `<div class="c-ano"><div class="ec-load" style="grid-column:1/-1">Carregando o ano…</div></div>`;
+      const pronto = j => {
+        if(!root.isConnected) return;
+        view.innerHTML = (j || !st.auto) ? escHtmlAno(st, j) : `<div class="c-ano"><div class="ec-load" style="grid-column:1/-1">Sem conexão com a escala agora — tente de novo.</div></div>`;
+        if(view.querySelector(".c-ano")){
+          calFitAno(view);
+          setTimeout(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); }, 350);
+          document.fonts && document.fonts.ready && document.fonts.ready.then(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); });
+        }
+        view.querySelectorAll(".c-mini").forEach(b=>b.onclick=()=>{ st.modo="mes"; st.mes=+b.dataset.m; desenha(); });
+        pausa();
+      };
+      if(st.auto) escAno(st.ano).then(pronto); else pronto(null);
+    } else if(st.auto){
+      view.innerHTML = `<div class="c-gr esc-gr"><div class="ec-load">Carregando a escala…</div></div>`;
+      escMes(st.ano, st.mes).then(j=>{
+        if(!root.isConnected) return;
+        view.innerHTML = j ? escHtmlMesAuto(st, j) : `<div class="c-gr esc-gr"><div class="ec-load">Sem conexão com a escala agora — tente de novo.</div></div>`;
+        pausa();
+      });
+    } else {
+      view.innerHTML = escHtmlMesManual(st);
+      pausa();
+    }
+  };
+  const passo = n => { if(st.modo==="ano"){ st.ano+=n; } else { st.mes+=n; if(st.mes<0){st.mes=11;st.ano--;} if(st.mes>11){st.mes=0;st.ano++;} } desenha(); };
+  root.querySelectorAll("[data-esc]").forEach(b=>{
+    const a = b.dataset.esc;
+    if(a==="prev") b.onclick = ()=>passo(-1);
+    else if(a==="next") b.onclick = ()=>passo(1);
+    else if(a==="hoje") b.onclick = ()=>{ st.modo="mes"; st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); desenha(); };
+    else if(a==="ano") b.onclick = ()=>{ st.modo = st.modo==="ano" ? "mes" : "ano"; desenha(); };
+  });
+  sel.onchange = () => { const v = sel.value.split("-"); st.ano = +v[0]; st.mes = +v[1]; st.modo = "mes"; desenha(); };
+  desenha();
 }
 
 /* ---------- renderização dos slides ---------- */
@@ -1293,20 +1484,15 @@ const R = {
   },
   escala(o){
     const h = get(o,"escala","horarios") || {};
-    if(h.auto) return renderEscalaAuto(o);   // modo automático: técnicos de hoje/amanhã da plataforma
-    const dias = list(o,"escala","dias").slice().sort((a,b)=>(a.data||"").localeCompare(b.data||"")).slice(0,7);
-    const tur = list(o,"escala","turmas");
-    if(!dias.length) return emptyBox("Escala não cadastrada","Preencha os dias e as letras no editor.");
-    const t=+today0();
-    const head = dias.map(d=>{const dd=pDate(d.data);const on=dd&&+dd===t;return `<div class="h ${on?"today":""}"><span>${dd?(on?"hoje":wk(dd)):""}</span><b class="num">${dd?fmtDM(dd):"—"}</b></div>`;}).join("");
-    const cell = (k)=>dias.map(d=>{const dd=pDate(d.data);const on=dd&&+dd===t;const l=d[k]||"";return `<div class="lt L-${esc(l)} ${on?"today":""}">${esc(l)||"–"}</div>`;}).join("");
-    return `<div class="s-esc">
-      <div class="esc" style="--n:${dias.length}">
-        <div></div>${head}
-        <div class="rl"><b>Diurno</b><span class="num">${esc(h.diurno)}</span></div>${cell("diurno")}
-        <div class="rl"><b>Noturno</b><span class="num">${esc(h.noturno)}</span></div>${cell("noturno")}
-      </div>
-      ${tur.length?`<div class="turmas">${tur.slice(0,4).map(x=>`<div class="card turma"><span class="lt2 L-${esc(x.letra)}">${esc(x.letra)}</span><div><b>${esc(x.lider)}</b><span>${esc(x.obs)}</span></div></div>`).join("")}</div>`:""}
+    if(!h.auto && !list(o,"escala","dias").length) return emptyBox("Escala não cadastrada","Preencha os dias e as letras no editor ou ligue “Puxar automaticamente” na aba Escala de turno.");
+    const hj = tvHoje ? pDate(tvHoje) : today0();
+    return `<div class="s-cal s-escx">
+      <header class="c-hd">
+        <div><small>ZAMine · ${esc(UNIDADE_TXT)} · Escala de turno${h.auto?" · equipes A/B/C/D":" · manual"}</small><h1 class="c-tit">${esc(MESES[hj.getMonth()+1])} <em>${hj.getFullYear()}</em></h1></div>
+        ${escLegenda}
+      </header>
+      ${escBarra()}
+      <div class="c-view"><div class="c-gr esc-gr"><div class="ec-load">Carregando a escala…</div></div></div>
     </div>`;
   },
   perdas(o){
@@ -2049,8 +2235,8 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else if(!((key==="calendario"||key==="planoAcao") && window.__calPausa)) {
-    /* tela interativa pausada (calendário no ano/mês escolhido, plano de ação filtrado):
+  } else if(!((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
+    /* tela interativa pausada (calendário/escala no ano ou mês escolhido, plano de ação filtrado):
        o poll de 30s não pode desmontar o que a pessoa está vendo */
     main.firstElementChild.innerHTML = html;
   }
@@ -2060,6 +2246,7 @@ function renderFrame(animate){
   /* telas interativas: ligam os botões ao montar; ao sair da tela, solta a pausa */
   if(key==="calendario") calInit(main.querySelector(".s-cal"), false);
   else if(key==="planoAcao") paInit(main.querySelector(".s-pa"), false);
+  else if(key==="escala") escInit(main.querySelector(".s-escx"), false);
   else if(window.__calPausa){ window.__calPausa = false; clearTimeout(calIdleT); }
   ajustarFotos(main);
   $("ftPos").innerHTML = sl.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("") + `<em class="num">${idx+1}/${sl.length}</em>`;
@@ -2308,7 +2495,7 @@ function montarMosaico(mos, rs, W, H){
    Pausar na tela (ex.: DDS), avançar/voltar, escolher a tela. EXCLUSIVO: uma pessoa por vez —
    as outras veem "em uso por ...". ADMIN assume por cima ou encerra. Sem heartbeat (PC fechou,
    dormiu), o controle expira e a TV volta sozinha à rotação automática. */
-let ctl = null, ctlAtivoAntes = false;
+let ctl = null, ctlAtivoAntes = false, euDonoAntes = false, ctlSoltei = false;
 const ctlUrl = `/api/tv/${PANEL_SLUG}/control`;
 function euControlo(){ return !!(ctl && ctl.ativo && meuEmail && String(ctl.donoEmail||"").toLowerCase()===meuEmail.toLowerCase()); }
 function curViewKey(){ const m=$("main"); return (m && m.dataset && m.dataset.key) || ""; }
@@ -2326,7 +2513,16 @@ async function pollControl(){
     const j = await r.json();
     const mudou = !ctl || j.rev!==ctl.rev || j.ativo!==ctl.ativo || j.pausado!==ctl.pausado || j.slide!==ctl.slide || j.donoNome!==ctl.donoNome;
     if(mudou){ ctl=j; aplicarLayoutCtl(); }
+    atualizaExpira();
   }catch(e){}
+}
+/* contagem regressiva dos 8 minutos de ociosidade (só para quem controla) */
+function atualizaExpira(){
+  const el = $("cExp"); if(!el) return;
+  if(euControlo() && ctl && ctl.expiraEmSeg!=null){
+    const s = Math.max(0, +ctl.expiraEmSeg||0), m = Math.floor(s/60);
+    el.textContent = `⏳ expira em ${m}:${String(s%60).padStart(2,"0")} sem usar`;
+  } else el.textContent = "";
 }
 function aplicarLayoutCtl(){
   const ativo = !!(ctl && ctl.ativo);
@@ -2344,7 +2540,12 @@ function aplicarLayoutCtl(){
     tag.hidden = true; tag.textContent = "";
     renderFrame(false); restartTimer();
   }
+  /* perdeu o controle sem ter sido por vontade própria = expirou (8 min sem usar) */
+  if(euDonoAntes && !ativo && !ctlSoltei) toast("Seu controle da TV expirou — 8 minutos sem usar. A TV voltou à rotação automática (é só assumir de novo).");
+  ctlSoltei = false;
+  euDonoAntes = ativo && !!(ctl.donoEmail && meuEmail && String(ctl.donoEmail||"").toLowerCase()===meuEmail.toLowerCase());
   ctlAtivoAntes = ativo;
+  atualizaExpira();
   atualizarPainelControle();
 }
 function passo(n){
@@ -2367,12 +2568,13 @@ function atualizarPainelControle(){
 $("bCtl").onclick = async ()=>{
   if(!canContrib){ openEditor(); return; }   // sem login: mesma porta de entrada do editor
   if(euControlo()){
+    ctlSoltei = true;
     const j = await postControl({acao:"release"});
     if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Controle encerrado — TV de volta à rotação automática."); } else toast(j.error);
     return;
   }
   const j = await postControl({acao:"acquire", slide:curViewKey(), pausado:true});
-  if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Você assumiu a TV — rotação pausada. Use a barra de controle."); }
+  if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Você assumiu a TV — rotação pausada. Use a barra de controle. O controle expira sozinho depois de 8 minutos sem usar (navegar renova o tempo)."); }
   else if(j.error==="em-uso"){
     if(canEdit && confirm(`O controle está com ${j.donoNome}. Assumir por cima (admin)?`)){
       const k = await postControl({acao:"acquire", slide:curViewKey(), pausado:true});
@@ -2389,7 +2591,7 @@ $("cIr").onchange = ()=>{
   const sl = activeSlides(), i = +$("cIr").value;
   if(sl[i]){ idx=i; renderFrame(true); postControl({acao:"goto", slide:sl[i].key+(sl[i].sub!=null?"#"+sl[i].sub:""), pausado: !!(ctl&&ctl.pausado)}); }
 };
-$("cSoltar").onclick = async ()=>{ const j=await postControl({acao:"release"}); if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Controle encerrado — TV de volta ao normal."); } else toast(j.error); };
+$("cSoltar").onclick = async ()=>{ ctlSoltei = true; const j=await postControl({acao:"release"}); if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Controle encerrado — TV de volta ao normal."); } else toast(j.error); };
 setInterval(()=>{ if(euControlo()) postControl({acao:"beat"}); }, 20000);          // mantém o lock vivo
 setInterval(pollControl, 2500);                                                   // TVs e PCs acompanham
 pollControl();
@@ -2680,6 +2882,10 @@ function renderSec(){
       h += `<p class="hint">Copie a tabela (NOME e NASCIMENTO) de onde ela estiver — Excel, Google Planilhas, PDF, WhatsApp, Word — clique no botão e cole (Ctrl+V). O painel acha a data em cada linha sozinho, atualiza quem já está na lista e adiciona os novos, sem duplicar ninguém. As fotos já enviadas continuam em cada pessoa.</p>
         <div class="bk"><button type="button" class="btn pri" id="colarOpen">Colar do Excel</button></div>
         <div id="colarBox"></div>`;
+    } else if(p.kind==="lanc"){
+      /* lançamentos da plataforma (atestados, spots, ADMs, eventos, relatório de turno):
+         vivem no MESMO banco que a plataforma e a TV já leem — salvos direto, fora do rascunho */
+      h += `<div class="lanc">${lancHtml()}</div>`;
     } else if(p.kind==="obj"){
       const o = draft[s.key][p.key] = draft[s.key][p.key] || {};
       h += `<div class="fields">` + p.fields.map((f,fi)=>{
@@ -2710,6 +2916,7 @@ function renderSec(){
   m.querySelectorAll("[data-pvt]").forEach(b=>b.onclick=()=>{ pvTheme=b.dataset.pvt; renderSec(); });
   m.querySelectorAll("[data-pvgo]").forEach(b=>b.onclick=()=>{ pvSlide+=+b.dataset.pvgo; renderPreview(); });
   if(s.key==="config") wireBackup();
+  if(s.key==="escala") wireLanc();
   if(s.key==="historico") wireHist();
   if(s.key==="aprovacoes") wireAprov();
   if(s.key==="permissoes") wirePerm();
@@ -2890,6 +3097,7 @@ function renderPreview(){
   if(curSec==="organograma") fitOrg(pm);
   if(curSec==="calendario") calInit(pm.querySelector(".s-cal"), true, draft);
   if(curSec==="planoAcao") paInit(pm.querySelector(".s-pa"), true, draft);
+  if(curSec==="escala") escInit(pm.querySelector(".s-escx"), true, draft);
 }
 addEventListener("resize", ()=>{ if(pvOn) renderPreview(); });
 $("edPrev").onclick=()=>{ pvOn=!pvOn; $("edPrev").setAttribute("aria-pressed",pvOn); $("edPrev").textContent = pvOn?"Esconder prévia":"Ver prévia"; renderSec(); };
@@ -2998,6 +3206,118 @@ function wireCanais(){
     toast("Canal salvo no rascunho — clique em “Salvar e enviar para a TV” para colocar no ar.");
   };
   cnValidar();
+}
+/* ---------- lançamentos da plataforma na aba Escala de turno ----------
+   Atestado, Horas Spot, ADM, Eventos e o RELATÓRIO DE ENTREGA DE TURNO — o mesmo
+   banco que a plataforma (EscalaModal) e a TV já usam. Carregados direto do servidor
+   e salvos com o botão próprio (não passam pelo rascunho das outras abas). */
+let lancSt = { ok:false, erro:"", lancamentos:null, relatorios:[], pessoas:[], remover:[] };
+function lancCarregar(forcar){
+  if(lancSt.ok && !forcar){ return; }
+  lancSt.ok = true; lancSt.erro = "";
+  api(`/api/tv/${PANEL_SLUG}/escala-lanc`,{headers:authHeaders()}).then(j=>{
+    lancSt.lancamentos = j.lancamentos; lancSt.pessoas = j.pessoas||[];
+    lancSt.relatorios = (j.relatorios||[]).map(r=>({...r,_db:true})); lancSt.remover = [];
+    if(curSec==="escala") renderSec();
+  }).catch(e=>{
+    lancSt.ok = false; lancSt.erro = (e && e.message) || "Falha ao carregar os lançamentos.";
+    if(curSec==="escala") renderSec();
+  });
+}
+function lancHoraTotais(){
+  const L = lancSt.lancamentos || {};
+  const diasDe = (a,b)=>{ if(!a||!b||a>b) return 0; return Math.round((pDate(b)-pDate(a))/864e5)+1; };
+  const spot = {}, adm = {};
+  (L.spots||[]).forEach(s=>{ const d=diasDe(s.startDate,s.endDate), h=+s.horasPorDia||0; if(d>0&&h>0) spot[s.person]=(spot[s.person]||0)+d*h; });
+  (L.adms||[]).forEach(a=>{ const d=diasDe(a.startDate,a.endDate); const mi=(String(a.horaFim||"").split(":")[0]*60+ +(String(a.horaFim||"").split(":")[1]||0))-(String(a.horaInicio||"").split(":")[0]*60+ +(String(a.horaInicio||"").split(":")[1]||0)); if(d>0&&mi>0) adm[a.person]=(adm[a.person]||0)+d*mi/60; });
+  const fmt = r => Object.entries(r).filter(([,v])=>v>0).map(([l,v])=>`${l} ${String(Math.round(v*10)/10).replace(".",",")}h`).join(" · ");
+  const ts = Object.values(spot).reduce((s,v)=>s+v,0), ta = Object.values(adm).reduce((s,v)=>s+v,0);
+  if(ts<=0 && ta<=0) return "";
+  return `<p class="hint" style="margin:12px 0 0"><b>Contagem de horas:</b> Spot ${ts>0?`${String(Math.round(ts*10)/10).replace(".",",")}h${fmt(spot)?" — "+fmt(spot):""}`:"0h"} · ADM ${ta>0?`${String(Math.round(ta*10)/10).replace(".",",")}h${fmt(adm)?" — "+fmt(adm):""}`:"0h"}</p>`;
+}
+function lancHtml(){
+  if(lancSt.erro) return `<p class="hint">⚠ ${esc(lancSt.erro)}</p>`;
+  if(!lancSt.lancamentos) return `<p class="hint">Carregando os lançamentos da plataforma…</p>`;
+  lancCarregar();
+  const L = lancSt.lancamentos;
+  const ps = lancSt.pessoas;
+  const selP = (key,i,v)=>`<select data-lancf="${key}:${i}:person" aria-label="Pessoa (equipe)">${(ps.length?ps:[{letra:v||"A",nome:v||"A"}]).map(p=>`<option value="${esc(p.letra)}"${p.letra===v?" selected":""}>${esc(p.letra)} · ${esc(p.nome)}</option>`).join("")}</select>`;
+  const inp = (key,i,k,v,t,extra)=>`<input type="${t||"text"}" data-lancf="${key}:${i}:${k}" value="${esc(v==null?"":v)}" ${extra||""}>`;
+  const bloco = (titulo, key, cols, novo) => {
+    const arr = L[key] = Array.isArray(L[key]) ? L[key] : [];
+    const rows = arr.map((r,i)=>`<div class="lanc-row">${cols(key,i,r)}<button type="button" class="btn del" data-lancdel="${key}:${i}" aria-label="Remover lançamento">Remover</button></div>`).join("");
+    return `<h4>${titulo} <small>(${arr.length})</small></h4><div class="lanc-rows">${rows||`<p class="hint" style="margin:0 0 6px">Nenhum lançamento.</p>`}</div>
+      <button type="button" class="btn add" data-lancadd="${key}" data-lancnovo="${esc(JSON.stringify(novo))}">+ Adicionar</button>`;
+  };
+  const tipos = [["folga","Folga agendada"],["férias","Férias"],["viagem","Viagem"],["treinamento","Treinamento"],["backup","Cobrir outra equipe"]];
+  return `<p class="hint" style="margin-top:0">Estes lançamentos entram SOZINHOS na TV (tela Escala de turno) e valem para a plataforma inteira — são os mesmos da Escala de Turno do site. Salve com o botão “Salvar lançamentos” abaixo (não usa o Salvar do topo).</p>
+    ${bloco("Atestados","atestados",(k,i,r)=>selP(k,i,r.person)+inp(k,i,"startDate",r.startDate,"date")+inp(k,i,"endDate",r.endDate,"date"),{person:"A",startDate:nextDate(),endDate:nextDate()})}
+    ${bloco("Horas Spot","spots",(k,i,r)=>selP(k,i,r.person)+inp(k,i,"startDate",r.startDate,"date")+inp(k,i,"endDate",r.endDate,"date")+inp(k,i,"horasPorDia",r.horasPorDia!=null?r.horasPorDia:"","number",'min="0" step="0.5" placeholder="horas/dia"'),{person:"A",startDate:nextDate(),endDate:nextDate(),horasPorDia:8})}
+    ${bloco("ADM","adms",(k,i,r)=>selP(k,i,r.person)+inp(k,i,"startDate",r.startDate,"date")+inp(k,i,"endDate",r.endDate,"date")+inp(k,i,"horaInicio",r.horaInicio,"time")+inp(k,i,"horaFim",r.horaFim,"time"),{person:"A",startDate:nextDate(),endDate:nextDate(),horaInicio:"08:00",horaFim:"12:00"})}
+    ${bloco("Eventos","eventos",(k,i,r)=>selP(k,i,r.person)+`<select data-lancf="${k}:${i}:tipo" aria-label="Tipo do evento">${tipos.map(t=>`<option value="${t[0]}"${r.tipo===t[0]?" selected":""}>${t[1]}</option>`).join("")}</select>`+inp(k,i,"startDate",r.startDate,"date")+inp(k,i,"endDate",r.endDate,"date")+(r.tipo==="backup"?selP2(k,i,r.backupOf):""),{person:"A",tipo:"folga",startDate:nextDate(),endDate:nextDate()})}
+    ${lancRelHtml()}
+    ${lancHoraTotais()}
+    <div style="margin-top:14px"><button type="button" class="btn pri" id="lancSalvar">Salvar lançamentos</button> <span class="hint" id="lancRes" style="display:inline-block;margin:0"></span></div>`;
+}
+function selP2(key,i,v){
+  const ps = lancSt.pessoas.length ? lancSt.pessoas : [{letra:v||"B",nome:v||"B"}];
+  return `<select data-lancf="${key}:${i}:backupOf" aria-label="Cobrir qual equipe">${ps.map(p=>`<option value="${esc(p.letra)}"${p.letra===v?" selected":""}>cobrir ${esc(p.letra)} · ${esc(p.nome)}</option>`).join("")}</select>`;
+}
+function lancRelHtml(){
+  const arr = lancSt.relatorios;
+  const rows = arr.map((r,i)=>`<div class="lanc-row"><input type="date" data-lancf="rel:${i}:data" value="${esc(r.data)}" ${r._db?"disabled":""}><select data-lancf="rel:${i}:letra" ${r._db?"disabled":""}>${["A","B","C","D"].map(l=>`<option value="${l}"${r.letra===l?" selected":""}>${l}</option>`).join("")}</select><select data-lancf="rel:${i}:entregue" aria-label="Relatório de entrega de turno"><option value="1"${r.entregue?" selected":""}>✓ Entregue</option><option value="0"${!r.entregue?" selected":""}>✗ Pendente</option></select>${r.atualizadoPor?`<span class="lanc-por">por ${esc(r.atualizadoPor)}</span>`:""}<button type="button" class="btn del" data-lancdel="rel:${i}" aria-label="Remover registro de relatório">Remover</button></div>`).join("");
+  return `<h4>Relatório de entrega de turno <small>(${arr.length})</small></h4>
+    <p class="hint" style="margin:0 0 6px">Marque por DIA e por TÉCNICO (equipe A–D) se o relatório de entrega do turno foi entregue ou não — a TV mostra ✓ Entregue / ✗ Pendente na tela da escala. Dias já salvos ficam travados: para mudar, remova e cadastre de novo.</p>
+    <div class="lanc-rows">${rows||`<p class="hint" style="margin:0 0 6px">Nenhum registro ainda.</p>`}</div>
+    <button type="button" class="btn add" data-lancadd="rel">+ Adicionar</button>`;
+}
+function wireLanc(){
+  lancCarregar();
+  const box = $("edMain"); if(!box || !box.querySelector(".lanc")) return;
+  box.oninput = lancCampo; box.onchange = lancCampo;
+  box.querySelectorAll("[data-lancadd]").forEach(b=>b.onclick=()=>{
+    const key = b.dataset.lancadd;
+    let novo = {}; try{ novo = JSON.parse(b.dataset.lancnovo||"{}"); }catch(e){}
+    if(key==="rel"){ lancSt.relatorios.push({data:nextDate(),letra:"A",entregue:false}); }
+    else { const L = lancSt.lancamentos; L[key] = Array.isArray(L[key]) ? L[key] : []; L[key].push(novo); }
+    renderSec();
+  });
+  box.querySelectorAll("[data-lancdel]").forEach(b=>b.onclick=()=>{
+    const [key,i] = b.dataset.lancdel.split(":");
+    if(key==="rel"){
+      const r = lancSt.relatorios[+i]; if(!r) return;
+      if(r._db) lancSt.remover.push({data:r.data,letra:r.letra});
+      lancSt.relatorios.splice(+i,1);
+    } else {
+      const L = lancSt.lancamentos; if(!L[key] || !L[key][+i]) return;
+      L[key].splice(+i,1);
+    }
+    renderSec();
+  });
+  const salvar = $("lancSalvar");
+  if(salvar) salvar.onclick = async ()=>{
+    salvar.disabled = true; salvar.textContent = "Salvando…";
+    const res = $("lancRes"); if(res) res.textContent = "";
+    try{
+      const j = await api(`/api/tv/${PANEL_SLUG}/escala-lanc`,{method:"POST",headers:authHeaders(),body:JSON.stringify({lancamentos:lancSt.lancamentos, relatorios:lancSt.relatorios.map(r=>({data:r.data,letra:r.letra,entregue:!!r.entregue})), removerRelatorios:lancSt.remover})});
+      lancSt.lancamentos = j.lancamentos; lancSt.pessoas = j.pessoas||lancSt.pessoas;
+      lancSt.relatorios = (j.relatorios||[]).map(r=>({...r,_db:true})); lancSt.remover = [];
+      toast("Lançamentos salvos — a TV atualiza no próximo poll (30s) e a plataforma enxerga na hora.");
+    }catch(e){ toast((e && e.message) || "Falha ao salvar os lançamentos."); }
+    salvar.disabled = false; salvar.textContent = "Salvar lançamentos";
+    renderSec();
+  };
+}
+function lancCampo(e){
+  const t = e.target;
+  const f = t.getAttribute && t.getAttribute("data-lancf"); if(!f) return;
+  const [key,i,k] = f.split(":");
+  const alvo = key==="rel" ? lancSt.relatorios[+i] : (lancSt.lancamentos[key]||[])[+i];
+  if(!alvo) return;
+  if(k==="entregue") alvo.entregue = t.value==="1";
+  else if(t.type==="number") alvo[k] = t.value===""?"":Number(t.value);
+  else alvo[k] = t.value;
+  if(key==="eventos" && k==="tipo") renderSec();   // backup aparece/some com o tipo
 }
 /* cópia de segurança */
 function wireBackup(){

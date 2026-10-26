@@ -15,14 +15,17 @@ import { panelValido, respostaPanelInvalido, tvUser, tvAdmin, permissoesDoUsuari
  * - Pode controlar quem tem permissão de editar alguma aba do painel (ou admin).
  * - O controle é EXCLUSIVO: enquanto alguém tem o controle, os outros recebem "em uso por ...".
  * - ADMIN pode assumir por cima ou encerrar o controle de qualquer um.
- * - Sem heartbeat (batido a cada ~20s por quem controla), o lock expira e a TV
- *   volta sozinha à rotação automática.
+ * - Expira SOZINHO: 8 minutos sem usar (navegar/pausar/escolher tela renova o tempo) ou
+ *   sem heartbeat (PC fechou/dormiu). A TV volta sozinha à rotação automática.
  */
 
 export const dynamic = 'force-dynamic';
 
 /** sem heartbeat nesse intervalo = quem controlava sumiu (PC dormiu/fechou) */
 const EXPIRA_MS = 70000;
+/** tempo total sem USAR o controle (ação real: acquire/goto) antes de expirar sozinho.
+ *  O heartbeat (beat) NÃO renova esse tempo — só prova que o PC está ligado. */
+const OCIOSO_MS = 8 * 60 * 1000;
 
 type TvControlRow = {
   panelSlug: string;
@@ -33,11 +36,14 @@ type TvControlRow = {
   slide: string;
   rev: number;
   beatAt: Date | null;
+  ultimaAcaoAt: Date | null;
   desde: Date | null;
 };
 
 function estadoDe(row: TvControlRow | null) {
   const ativo = !!row && !!row.donoEmail && !!row.beatAt;
+  const ancora = row?.ultimaAcaoAt ?? row?.desde ?? null;
+  const expiraEmSeg = ativo && ancora ? Math.max(0, Math.ceil((OCIOSO_MS - (Date.now() - ancora.getTime())) / 1000)) : null;
   return {
     ativo,
     donoEmail: ativo ? row!.donoEmail : null,
@@ -47,6 +53,8 @@ function estadoDe(row: TvControlRow | null) {
     slide: ativo ? row!.slide || '' : '',
     rev: row?.rev ?? 0,
     desde: ativo && row!.desde ? row!.desde.toISOString() : null,
+    // segundos restantes antes de expirar por ociosidade (8 min sem usar); null = sem limite conhecido
+    expiraEmSeg,
   };
 }
 
@@ -57,15 +65,19 @@ const LIVRE = {
   pausado: false,
   slide: '',
   beatAt: null as Date | null,
+  ultimaAcaoAt: null as Date | null,
   desde: null as Date | null,
 };
 
-/** Devolve o lock ao normal quando quem controlava parou de bater o heartbeat */
+/** Devolve o lock ao normal quando quem controlava sumiu (sem heartbeat)
+ *  ou ficou 8 minutos sem usar o controle (sem ação real) */
 async function linhaComExpiracao(panel: string): Promise<TvControlRow | null> {
   const row = await db.tvControl.findUnique({ where: { panelSlug: panel } });
   if (!row || !row.donoEmail) return row;
   const morto = !row.beatAt || Date.now() - row.beatAt.getTime() > EXPIRA_MS;
-  if (!morto) return row;
+  // sem últimaAcao (linhas antigas), cai no relógio do heartbeat como antes
+  const ocioso = !!row.ultimaAcaoAt && Date.now() - row.ultimaAcaoAt.getTime() > OCIOSO_MS;
+  if (!morto && !ocioso) return row;
   return db.tvControl.update({
     where: { panelSlug: panel },
     data: { ...LIVRE, rev: { increment: 1 } },
@@ -154,6 +166,7 @@ export async function POST(
         slide: String(body.slide || ''),
         rev: { increment: 1 },
         beatAt: new Date(),
+        ultimaAcaoAt: new Date(),
         desde: dono && ehDono ? undefined : new Date(),
       },
       create: {
@@ -164,6 +177,7 @@ export async function POST(
         pausado: body.pausado !== false,
         slide: String(body.slide || ''),
         beatAt: new Date(),
+        ultimaAcaoAt: new Date(),
         desde: new Date(),
         rev: 1,
       },
@@ -225,6 +239,7 @@ export async function POST(
         pausado: body.pausado !== false,
         rev: { increment: 1 },
         beatAt: new Date(),
+        ultimaAcaoAt: new Date(), // usar o controle renova os 8 minutos
       },
     });
     return NextResponse.json(estadoDe(upd));

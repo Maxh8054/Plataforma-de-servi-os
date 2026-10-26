@@ -426,6 +426,7 @@ model TvControl {
   slide     String    @default("") // tela no ar (key ou key#sub); vazia = mantém a atual
   rev       Int       @default(0)  // incrementa a cada mudança — TVs sabem quando aplicar
   beatAt    DateTime? @map("beatAt") // heartbeat de quem controla (lock expira sem ele)
+  ultimaAcaoAt DateTime? @map("ultimaAcaoAt") // última ação real (acquire/goto): expira o controle após 8 min sem usar
   desde     DateTime? @map("desde") // quando o controle foi assumido
   updatedAt DateTime  @updatedAt @map("updatedAt")
 
