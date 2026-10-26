@@ -659,8 +659,8 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .cn-form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:14px}
 .cn-form h4{margin:0 0 12px;font-size:16px}
 /* ---------- Calendário — feriados e pontes do mês (aba Calendário) ---------- */
-.s-cal{display:flex;flex-direction:column;height:100%;min-height:0;gap:18px;--fer:#d9464c;--fer-s:#d9464c2e;--pon:#c99a10;--pon-s:#e8c32e33}
-.th-light .s-cal{--fer:#c8363c;--pon:#a67c00}
+.s-cal{display:flex;flex-direction:column;height:100%;min-height:0;gap:18px;--fer:#d9464c;--fer-s:#d9464c2e;--pon:#e8c32e;--pon-s:#e8c32e2e}
+.th-light .s-cal{--fer:#c8363c;--pon:#b88e00;--pon-s:#e8c32e40}
 .s-cal .c-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:3px solid var(--accent);padding-bottom:12px}
 .s-cal .c-hd small{display:block;color:var(--accent);font-weight:700;letter-spacing:.24em;text-transform:uppercase;font-size:19px}
 .s-cal .c-hd h1{margin:6px 0 0;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;font-size:72px}
@@ -833,7 +833,7 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Atividades",cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora",t:"time",w:1},
       {k:"atividade",l:"Atividade",w:4},{k:"equipamento",l:"Equipamento",w:2},{k:"responsavel",l:"Responsável",w:2}]}]},
-  {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. A TV mostra sempre o mês atual: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. Sem nenhum item cadastrado, a tela fica fora da rotação.",
+  {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. A TV mostra sempre o mês atual: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. A tela JÁ ENTRA NO AR PREENCHIDA com os feriados padrão do ano — revise, ajuste e salve para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
     parts:[{kind:"list",key:"itens",label:"Feriados, pontes, eventos e DDS",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora (opcional)",ph:"Ex.: 07:30",w:1},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte","Evento","DDS"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
@@ -903,9 +903,11 @@ const SECTIONS = [
 ];
 const PANEL_SLUG = "goias";
 const PANEL_URL = "/html/painel-tv-goias.html";
-/* feriados padrão de 2026 (Goiás): entram pré-preenchidos na primeira vez que a aba
-   Calendário é aberta — o admin revisa, apaga ou adiciona e salva. Depois de salva
-   uma vez, nunca mais é sobrescrito. */
+/* feriados padrão de 2026 (Goiás, do arquivo enviado pela gestão): a TV usa esta lista
+   enquanto a aba Calendário nunca foi salva — assim a tela já entra no ar preenchida,
+   sem depender de alguém salvar a aba. Ao abrir a aba no editor, os itens aparecem para
+   revisar, apagar ou adicionar; depois de salva uma vez, vale sempre o que foi salvo
+   (nunca mais é sobrescrito). */
 const CAL_SEED = [
   {data:"2026-01-01",tipo:"Feriado",nome:"Ano Novo"},
   {data:"2026-01-02",tipo:"Ponte",nome:"Ponte"},
@@ -1366,12 +1368,20 @@ R.organograma = function(o){
    de DDS do mês corrente + aniversariantes do mês (puxados da aba Aniversariantes).
    Dados vêm do editor (data AAAA-MM-DD, hora opcional, tipo Feriado/Ponte/Evento/DDS,
    nome). A tela mostra SEMPRE o mês atual: a cada volta da rotação o HTML é
-   reconstruído, então a virada do dia/mês acontece sozinha. Sem item cadastrado,
-   a aba não entra na rotação (expandSlides). */
+   reconstruído, então a virada do dia/mês acontece sozinha. Com a aba nunca salva,
+   a TV usa os feriados padrão (CAL_SEED) e a tela entra na rotação preenchida;
+   só fica de fora se a aba for salva vazia. */
 const CAL_DS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+/* fonte dos itens do calendário: o que o admin salvou; aba NUNCA salva nasce
+   preenchida com os feriados padrão (CAL_SEED) — a tela entra na rotação sozinha.
+   Já salvou (mesmo vazio)? vale o que foi salvo. */
+function calFonte(o){
+  const l = list(o,"calendario");
+  return (l.length || (o && o.calendario) || !CAL_SEED.length) ? l : CAL_SEED;
+}
 function calItens(){
   const tipoDe = t => /^ponte/i.test(t)?"P":/^evento/i.test(t)?"E":/^dds/i.test(t)?"D":"F";
-  return list(data,"calendario")
+  return calFonte(data)
     .map(x=>({d:pDate(x.data), h:String(x.hora||"").trim(), t:tipoDe(String(x.tipo||"").trim()), n:String(x.nome||"").trim()}))
     .filter(x=>x.d && x.n)
     .sort((a,b)=>+a.d-+b.d || a.h.localeCompare(b.h));
@@ -1386,7 +1396,7 @@ function calAniversariantes(ano, mes){
 }
 R.calendario = function(){
   const it = calItens();
-  if(!it.length) return emptyBox("Calendário sem itens","Cadastre feriados, pontes, eventos e DDS no editor (aba Calendário) — sem eles esta tela fica fora da rotação.");
+  if(!it.length) return emptyBox("Calendário vazio","A aba Calendário foi salva sem itens no editor. Cadastre pelo menos um feriado, ponte, evento ou DDS para a tela voltar ao ar.");
   const hj = tvHoje ? pDate(tvHoje) : today0();
   const ano = hj.getFullYear(), mes = hj.getMonth();
   const mesIt = it.filter(x=>x.d.getFullYear()===ano && x.d.getMonth()===mes);
@@ -1591,7 +1601,7 @@ function expandSlides(o, sec){
     if(!d) return null;                       // sem DDS: renderer mostra o aviso de cadastro
     return janelaHora(d) ? null : [];         // dentro da janela: slide normal; fora: aba some
   }
-  if(sec==="calendario") return list(o,"calendario").some(x=>x.data&&x.nome) ? null : [];
+  if(sec==="calendario") return calFonte(o).some(x=>x.data&&x.nome) ? null : [];
   return null;
 }
 /* aniversariantes do DIA (tvHoje = fuso da operação, como no slide do mês) */
