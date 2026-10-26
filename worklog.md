@@ -925,3 +925,23 @@ Stage Summary:
 - Poda de logs: 30 dias, automática, sem botão necessário
 - CSVs abrem direto no Excel BR (; + BOM); botões no editor e no sino
 - package.json (env -u DATABASE_URL no dev) e .env (banco de produção) seguem da Task 40
+
+---
+Task ID: 42
+Agent: Z.ai Code (principal)
+Task: "aba calendarios aparece mas n ta aparecendo nas apresentações, consta 13 slides — quero preenchido do jeito que eu mandei o html"
+
+Work Log:
+- Causa raiz encontrada: a tela Calendário só entrava na rotação depois de SALVAR a aba no editor (expandSlides devolvia [] com 0 itens); o CAL_SEED (feriados do HTML do usuário) existia só no rascunho do editor. Banco de produção confirmado: tv_sections não tem NENhuma linha 'calendario' (goias tem 10 seções salvas; minas/araxá/usiminas nenhuma) — por isso a TV contava 13 slides sem o calendário
+- HTML enviado pelo usuário localizado (upload/Pasted Content_1793018035271.txt — "Calendário Goiás · ZAMine", tema zm-cal): os feriados 2026 dele já eram o CAL_SEED do painel goias
+- Correção (painel-tv-goias.html + painel-tv-minas.html): nova função calFonte(o) — aba NUNCA salva = TV usa CAL_SEED (tela entra na rotação preenchida sozinha); aba salva (mesmo vazia) = vale o que foi salvo; calItens e expandSlides passam a usar calFonte
+- Goiás/Alto Horizonte: lista 2026 completa do arquivo do usuário (Aniversário/Padroeira de Alto Horizonte, Dia do Evangélico etc.); Minas/Araxá/Usiminas: CAL_SEED antes vazio foi preenchido com feriados nacionais + pontes da empresa (20 itens)
+- Fidelidade visual ao HTML enviado: cores exatas (ponte #e8c32e no escuro, #b88e00 no claro), dica da aba atualizada ("A tela JÁ ENTRA NO AR PREENCHIDA…"), emptyBox reescrito (só aparece se salvar a aba vazia)
+- Testes browser (agent-browser): goias → TELA 5 DE 14 (era 13), Outubro 2026 preenchido, 12/10 Aparecida vermelha riscada na lista, HOJE no 26, Próximo feriado "7 dias Finados", resumo 21 dias úteis/1 feriado, aniversariantes reais (Reinaldo 15, Victor 28); minas → TELA 5 DE 13, seed nacional, tema escuro, zero erros de console; dev.log limpo; lint no baseline 31 (após apagar script temporário .zscripts/check-cal.js)
+- Commit 87f6d02 pushado (c95e3d3..87f6d02) e remote limpo do token. Nota: um push errado para repo inexistente (zaminebrasil/painel-zamine) foi corrigido na sequência — origin é Maxh8054/Plataforma-de-servi-os e segue sem token salvo
+
+Stage Summary:
+- A tela Calendário agora APARECE nas apresentações de todos os 4 painéis, preenchida com os feriados do HTML que a gestão mandou — sem precisar salvar nada
+- Regra definitiva: nunca salvou = feriados padrão no ar; salvou = vale o que foi salvo; salvou vazio = tela sai da rotação
+- No editor, a aba Calendário continua vindo preenchida para revisar/ajustar e salvar por cima
+- TVs atualizam sozinhas no próximo poll (30s) ou ao recarregar a página
