@@ -945,3 +945,24 @@ Stage Summary:
 - Regra definitiva: nunca salvou = feriados padrão no ar; salvou = vale o que foi salvo; salvou vazio = tela sai da rotação
 - No editor, a aba Calendário continua vindo preenchida para revisar/ajustar e salvar por cima
 - TVs atualizam sozinhas no próximo poll (30s) ou ao recarregar a página
+
+---
+Task ID: 43
+Agent: Z.ai Code (principal)
+Task: Botões na tela do Calendário da TV — ver o ANO inteiro de uma vez e escolher o mês (igual ao HTML que a gestão mandou)
+
+Work Log:
+- Portado o controle do HTML da gestão (upload/Pasted Content_1793018035271.txt) para dentro da tela Calendário dos painéis TV (painel-tv-goias.html + painel-tv-minas.html, blocos idênticos): nova barra de BOTÕES na própria tela — ◀ ▶ passam o mês (no modo ano, passam o ano), “Hoje” volta ao mês atual, seletor escolhe qualquer mês direto e “Ver o ano inteiro” mostra os 12 mini-calendários de uma vez; clicar num mini abre o mês dele
+- Nova visão do ANO (calHtmlAno): grade 4×3 com os 12 meses, números dos dias coloridos por tipo (feriado vermelho, ponte amarelo, evento verde, DDS laranja), HOJE com anel, contagem “N datas” por mês + lista de notas sob cada mini (fidelidade ao zm-cal do usuário); mês atual destacado com borda
+- R.calendario reescrito em 3 peças (calBarra + calHtmlMes + calHtmlAno) com estado interativo por tela montada (calInit liga os botões; ao sair da rotação o estado volta ao mês atual sozinho); calHtmlMes agora aceita qualquer mês/ano escolhido e só marca HOJE/aniversário do dia quando o mês visto é o corrente (bug latente se fosse navegar p/ outro mês)
+- Rotação da TV integrada: interagiu (ano inteiro ou mês diferente) → rotação PAUSA com chip “⏸ Rotação pausada — volta sozinha” (restartTimer respeita window.__calPausa; calPausar congela a barra de progresso); voltou ao mês atual (Hoje) → rotação retoma; sem toque por 2 minutos → volta sozinho ao mês atual (a TV nunca fica presa); poll de 30s (carregarConteudo→onData→renderFrame) NÃO desmonta mais a tela quando o calendário está pausado (guarda no branch in-place); ao trocar de tela manual (▶/controle remoto) a pausa é liberada
+- Prévia do editor também ganhou os botões (calInit com preview=true usa o RASCUNHO — R.calendario(o) agora honra o argumento, antes ignorava o draft — e NÃO mexe na rotação da TV)
+- Correções de bugs pré-existentes achadas no caminho: grid do mês usava classes “e”/“d” mas o CSS esperava “eve”/“dds” — eventos e DDS ficavam SEM cor na grade (agora calMarcaDe unifica f/p/eve/dds no grid, minis e listas); calAniversariantes/calItens aceitam a fonte (draft) por parâmetro
+- Hint da aba Calendário atualizado explicando os botões e a pausa automática
+- Testes browser (agent-browser, goias claro+escuro e minas escuro): mês→ano (12 minis, chip, pausa=true), poll de 36s NÃO derrubou o modo ano, mini Dezembro→mês com Natal/HOJE correto, Hoje→Outubro+retoma (pausa=false), seletor 12 opções, Janeiro→◀→Dezembro 2025 (virada de ano), ano ◀▶→Ano 2027 vazio sem quebrar, prévia isolada não toca a rotação; zero erros de página; lint no baseline (31 pré-existentes)
+
+Stage Summary:
+- A tela Calendário da TV agora é interativa igual ao HTML da gestão: botões ◀ ▶ · Hoje · seletor de mês · “Ver o ano inteiro” com os 12 mini-calendários clicáveis
+- Enquanto navega no ano/mês, a rotação para (chip avisa) e volta sozinha: ao apertar Hoje ou após 2 minutos sem toque — a TV nunca fica presa
+- Nos 4 painéis (goias, minas, minas-araxa, minas-usiminas — mesmos 2 arquivos HTML); TVs atualizam no próximo poll (30s) ou recarregando
+- Eventos e DDS agora também aparecem COLORIDOS na grade do mês (bug de classe que os deixava apagados, corrigido de quebra)

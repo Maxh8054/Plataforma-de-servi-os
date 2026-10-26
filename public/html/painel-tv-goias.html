@@ -729,6 +729,41 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-nx p{font-size:20px}
 .s-cal .c-hjx p{font-size:17px;margin:3px 0}
 .s-cal .c-flx .c-fl{max-height:190px}
+/* botões na própria tela (igual ao HTML da gestão): ◀ ▶ mês, Hoje, seletor e "Ver o ano inteiro" */
+.s-cal .c-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.s-cal .c-bar{display:flex;align-items:center;gap:12px;flex:none;margin:-4px 0 2px}
+.s-cal .c-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 22px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer}
+.s-cal .c-btn:hover{border-color:var(--muted)}
+.s-cal .c-btn:focus-visible,.s-cal .c-sel:focus-visible,.s-cal .c-mini:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.s-cal .c-btn.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.s-cal .c-btn.ic{padding:12px 17px}
+.s-cal .c-sel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer;max-width:320px}
+.s-cal .c-sp{flex:1}
+.s-cal .c-pz{font-size:16px;font-weight:600;color:var(--muted);white-space:nowrap}
+.s-cal .c-pz[hidden]{display:none}
+/* visão do ANO: 12 mini-calendários (4 × 3) — clicar num mini abre o mês dele */
+.s-cal .c-ano{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:14px}
+.s-cal .c-mini{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 12px 6px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:0;min-height:0;font:600 16px/1.2 var(--f-body);color:var(--fg)}
+.s-cal .c-mini:hover{border-color:var(--accent)}
+.s-cal .c-mini.at{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.s-cal .c-mini h4{margin:0 0 4px;font-family:var(--f-display);font-size:22px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.s-cal .c-mini h4 small{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--muted);text-transform:none;white-space:nowrap}
+.s-cal .c-mg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-variant-numeric:tabular-nums}
+.s-cal .c-mg i{font-style:normal;font-size:11px;color:var(--muted);text-align:center;font-weight:700}
+.s-cal .c-mg span{font-size:13px;text-align:center;padding:1px 0;border-radius:6px;font-weight:600}
+.s-cal .c-mg span.fds{color:var(--muted)}
+.s-cal .c-mg span.f{background:var(--fer-s);color:var(--fer)}
+.s-cal .c-mg span.p{background:var(--pon-s);color:var(--pon)}
+.s-cal .c-mg span.eve{background:var(--eve-s);color:var(--eve)}
+.s-cal .c-mg span.dds{background:var(--dds-s);color:var(--dds)}
+.s-cal .c-mg span.hj{box-shadow:inset 0 0 0 2px var(--accent);font-weight:800}
+.s-cal .c-mn{list-style:none;margin:5px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden}
+.s-cal .c-mn li{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-cal .c-mn li b{font-variant-numeric:tabular-nums}
+.s-cal .c-mn li.f b{color:var(--fer)}
+.s-cal .c-mn li.p b{color:var(--pon)}
+.s-cal .c-mn li.eve b{color:var(--eve)}
+.s-cal .c-mn li.dds b{color:var(--dds)}
 </style>
 
 <div id="viewport">
@@ -833,7 +868,7 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Atividades",cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora",t:"time",w:1},
       {k:"atividade",l:"Atividade",w:4},{k:"equipamento",l:"Equipamento",w:2},{k:"responsavel",l:"Responsável",w:2}]}]},
-  {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. A TV mostra sempre o mês atual: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. A tela JÁ ENTRA NO AR PREENCHIDA com os feriados padrão do ano — revise, ajuste e salve para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
+  {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. Na TV a tela abre no mês atual com BOTÕES na própria tela: ◀ ▶ passam o mês, “Hoje” volta ao atual, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez — clicar num mini-calendário abre o mês. Enquanto estiver no modo ano ou num mês diferente, a rotação pausa e volta sozinha depois de 2 minutos. Cores: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. A tela JÁ ENTRA NO AR PREENCHIDA com os feriados padrão do ano — revise, ajuste e salve para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
     parts:[{kind:"list",key:"itens",label:"Feriados, pontes, eventos e DDS",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora (opcional)",ph:"Ex.: 07:30",w:1},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte","Evento","DDS"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
@@ -1367,8 +1402,12 @@ R.organograma = function(o){
 /* ---------- Calendário dinâmico — feriados, pontes, eventos da empresa e agenda
    de DDS do mês corrente + aniversariantes do mês (puxados da aba Aniversariantes).
    Dados vêm do editor (data AAAA-MM-DD, hora opcional, tipo Feriado/Ponte/Evento/DDS,
-   nome). A tela mostra SEMPRE o mês atual: a cada volta da rotação o HTML é
-   reconstruído, então a virada do dia/mês acontece sozinha. Com a aba nunca salva,
+   nome). A tela abre SEMPRE no mês atual e tem BOTÕES na própria tela, igual ao HTML
+   da gestão: ◀ ▶ passam o mês (no modo ano, o ano), “Hoje” volta ao mês atual, o
+   seletor escolhe qualquer mês direto e “Ver o ano inteiro” mostra os 12 meses de
+   uma vez — clicar num mini-calendário abre o mês dele. Enquanto estiver no modo
+   ano ou num mês que não é o atual, a rotação PAUSA (chip avisa) e volta sozinha
+   depois de 2 minutos sem toque — a TV nunca fica presa. Com a aba nunca salva,
    a TV usa os feriados padrão (CAL_SEED) e a tela entra na rotação preenchida;
    só fica de fora se a aba for salva vazia. */
 const CAL_DS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
@@ -1379,45 +1418,56 @@ function calFonte(o){
   const l = list(o,"calendario");
   return (l.length || (o && o.calendario) || !CAL_SEED.length) ? l : CAL_SEED;
 }
-function calItens(){
+function calItens(o){
   const tipoDe = t => /^ponte/i.test(t)?"P":/^evento/i.test(t)?"E":/^dds/i.test(t)?"D":"F";
-  return calFonte(data)
+  return calFonte(o||data)
     .map(x=>({d:pDate(x.data), h:String(x.hora||"").trim(), t:tipoDe(String(x.tipo||"").trim()), n:String(x.nome||"").trim()}))
     .filter(x=>x.d && x.n)
     .sort((a,b)=>+a.d-+b.d || a.h.localeCompare(b.h));
 }
 /* aniversariantes do mês — zero cadastro extra: puxa da aba Aniversariantes */
-function calAniversariantes(ano, mes){
+function calAniversariantes(ano, mes, o){
   const mesDe = a => { const i = MESES.indexOf(a.mes); if(i>0) return i; const n = String(a.nascimento||"").match(/^\d{4}-(\d{2})/); return n?+n[1]:0; };
-  return list(data,"aniversarios").filter(a=>a.nome)
+  return list(o||data,"aniversarios").filter(a=>a.nome)
     .map(a=>({...a,_m:mesDe(a),_d:num(a.dia)}))
     .filter(a=>a._m===mes+1 && a._d>=1 && a._d<=31)
     .sort((a,b)=>a._d-b._d);
 }
-R.calendario = function(){
-  const it = calItens();
-  if(!it.length) return emptyBox("Calendário vazio","A aba Calendário foi salva sem itens no editor. Cadastre pelo menos um feriado, ponte, evento ou DDS para a tela voltar ao ar.");
-  const hj = tvHoje ? pDate(tvHoje) : today0();
-  const ano = hj.getFullYear(), mes = hj.getMonth();
+/* classe de cor de cada tipo (F/P/E/D → f/p/eve/dds, igual no grid e nos minis) */
+const calMarcaDe = t => t==="F"?"f":t==="P"?"p":t==="E"?"eve":"dds";
+/* pausa/retoma a rotação enquanto o calendário é manuseado na TV;
+   sem toque por 2 minutos num mês que não é o atual (ou no modo ano),
+   volta sozinho ao mês atual — a TV nunca fica presa numa tela */
+const CAL_VOLTA_MS = 120000;
+let calIdleT = null;
+function calPausar(v){
+  window.__calPausa = !!v;
+  if(v){ clearTimeout(timer); const p = $("prog"); if(p) p.style.animation = "none"; }
+  else restartTimer();
+}
+/* --- HTML do MÊS (o mesmo desenho de sempre, agora para qualquer mês/ano escolhido) --- */
+function calHtmlMes(st){
+  const it = calItens(st.o), hj = st.hj, ano = st.ano, mes = st.mes;
   const mesIt = it.filter(x=>x.d.getFullYear()===ano && x.d.getMonth()===mes);
   const mapa = {}; mesIt.forEach(x=>{ (mapa[x.d.getDate()] = mapa[x.d.getDate()] || []).push(x); });
-  const anis = calAniversariantes(ano, mes);
+  const anis = calAniversariantes(ano, mes, st.o);
   const aniMap = {}; anis.forEach(a=>{ (aniMap[a._d] = aniMap[a._d] || []).push(a); });
   const ini = new Date(ano,mes,1).getDay(), dias = new Date(ano,mes+1,0).getDate();
+  const noMes = mes===hj.getMonth() && ano===hj.getFullYear(), hjDia = noMes ? hj.getDate() : -1;
   let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
   for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
   let uteis = 0;
   for(let d=1;d<=dias;d++){
     const wd = (ini+d-1)%7, fs = mapa[d], fds = wd===0||wd===6, f = fs ? fs[0] : null;
     if(!fds && !f) uteis++;
-    const marca = fs ? fs.map(x=>x.t.toLowerCase()).join(" ") : "";
+    const marca = fs ? fs.map(x=>calMarcaDe(x.t)).join(" ") : "";
     const tip = fs ? ` title="${esc(fs.map(x=>x.n).join(" · "))}"` : (aniMap[d] ? ` title="Aniversário: ${esc(aniMap[d].map(a=>a.nome).join(", "))}"` : "");
-    const cls = "c-d"+(fds?" fds":"")+(marca?" "+marca:"")+(d===hj.getDate()?" hj":"");
+    const cls = "c-d"+(fds?" fds":"")+(marca?" "+marca:"")+(d===hjDia?" hj":"");
     g += `<div class="${cls}"${tip}><b>${d}</b>${f?`<span>${esc(f.n)}</span>`:""}${aniMap[d]?`<i class="ani-p" aria-hidden="true"></i>`:""}</div>`;
   }
-  /* card HOJE: aniversariantes do dia + DDS/eventos/feriados de hoje */
-  const hjEventos = mesIt.filter(x=>+x.d===+hj);
-  const hjAnis = aniMap[hj.getDate()] || [];
+  /* card HOJE: aniversariantes do dia + DDS/eventos/feriados de hoje (só no mês corrente) */
+  const hjEventos = noMes ? mesIt.filter(x=>+x.d===+hj) : [];
+  const hjAnis = noMes ? (aniMap[hj.getDate()] || []) : [];
   let hjh = "";
   if(hjEventos.length || hjAnis.length){
     hjh = `<div class="c-card c-hjx"><h3>Hoje · ${hj.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}</h3>`;
@@ -1442,20 +1492,14 @@ R.calendario = function(){
     : `<p class="c-none">Nenhum feriado, evento ou DDS neste mês.</p>`;
   const lstA = anis.length
     ? `<ul class="c-fl">${anis.map(a=>{
-        const hjA = a._d===hj.getDate();
+        const hjA = a._d===hjDia;
         return `<li class="A${hjA?" hj-ani":""}"><span class="dd">${("0"+a._d).slice(-2)}</span><div><span class="nm">${esc(a.nome)}${hjA?" 🎂":""}</span><em>${hjA?"Parabéns, hoje é o dia!":"Aniversariante do mês"}</em></div></li>`;
       }).join("")}</ul>`
     : "";
   const nf = mesIt.filter(x=>x.t==="F").length, np = mesIt.filter(x=>x.t==="P").length, ne = mesIt.filter(x=>x.t==="E").length, nd = mesIt.filter(x=>x.t==="D").length;
   const anos = new Set(it.map(x=>x.d.getFullYear()));
   const av = anos.has(ano) ? "" : `<div class="c-card c-av">⚠ Feriados e eventos de ${ano} ainda não foram cadastrados — avise o responsável pelo painel.</div>`;
-  return `<div class="s-cal">
-    <header class="c-hd">
-      <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>${esc(MESES[mes+1])} <em>${ano}</em></h1></div>
-      <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span><span><i style="background:var(--eve)"></i>Evento</span><span><i style="background:var(--dds)"></i>DDS</span><span><i style="background:var(--ani)"></i>Aniversário</span></div>
-      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
-    </header>
-    <div class="c-body">
+  return `<div class="c-body">
       <div class="c-left">
         <div class="c-gr">${g}</div>
         <div class="c-card c-resumo"><h3>Resumo do mês</h3><div class="c-tot c-tot5">
@@ -1471,7 +1515,102 @@ R.calendario = function(){
         ${lstA?`<div class="c-card c-flx"><h3>Aniversariantes</h3>${lstA}</div>`:""}
         ${av}
       </div>
-    </div>
+    </div>`;
+}
+/* --- HTML do ANO: os 12 meses de uma vez (igual ao HTML da gestão) --- */
+function calHtmlAno(st){
+  const it = calItens(st.o), hj = st.hj, ano = st.ano;
+  const porMes = Array.from({length:12},()=>[]);
+  it.forEach(x=>{ if(x.d.getFullYear()===ano) porMes[x.d.getMonth()].push(x); });
+  let h = `<div class="c-ano">`;
+  for(let m=0;m<12;m++){
+    const ini = new Date(ano,m,1).getDay(), dias = new Date(ano,m+1,0).getDate();
+    const notas = porMes[m], nMap = {};
+    notas.forEach(x=>{ (nMap[x.d.getDate()] = nMap[x.d.getDate()] || []).push(x); });
+    let g = CAL_DS.map(d=>`<i>${d[0]}</i>`).join("");
+    for(let i=0;i<ini;i++) g += `<span></span>`;
+    for(let d=1;d<=dias;d++){
+      const wd = (ini+d-1)%7, fs = nMap[d], fds = wd===0||wd===6;
+      const cls = ((fds?"fds ":"")+(fs?fs.map(x=>calMarcaDe(x.t)).join(" ")+" ":"")+((ano===hj.getFullYear()&&m===hj.getMonth()&&d===hj.getDate())?"hj":"")).trim();
+      const tip = fs ? ` title="${esc(("0"+d).slice(-2)+"/"+("0"+(m+1)).slice(-2)+" · "+fs.map(x=>x.n).join(" · "))}"` : "";
+      g += `<span class="${cls}"${tip}>${d}</span>`;
+    }
+    h += `<button type="button" class="c-mini${(ano===hj.getFullYear()&&m===hj.getMonth())?" at":""}" data-m="${m}" aria-label="Abrir ${esc(MESES[m+1])} de ${ano}">`
+      + `<h4>${esc(MESES[m+1])}<small>${notas.length ? notas.length+(notas.length===1?" data":" datas") : ""}</small></h4>`
+      + `<div class="c-mg">${g}</div>`
+      + (notas.length ? `<ul class="c-mn">${notas.map(x=>`<li class="${calMarcaDe(x.t)}"><b>${("0"+x.d.getDate()).slice(-2)}</b> ${esc(x.n)}</li>`).join("")}</ul>` : "")
+      + `</button>`;
+  }
+  return h+`</div>`;
+}
+/* --- barra de botões da tela (◀ ▶ · Hoje · seletor · Ver o ano inteiro) --- */
+function calBarra(){
+  return `<div class="c-bar">
+      <button type="button" class="c-btn ic" data-cal="prev" aria-label="Anterior (mês ou ano)" title="Mês/ano anterior">◀</button>
+      <button type="button" class="c-btn ic" data-cal="next" aria-label="Próximo (mês ou ano)" title="Próximo mês/ano">▶</button>
+      <button type="button" class="c-btn" data-cal="hoje">Hoje</button>
+      <select class="c-sel" data-cal="sel" aria-label="Escolher o mês"></select>
+      <span class="c-sp"></span>
+      <span class="c-pz" hidden>⏸ Rotação pausada — volta sozinha</span>
+      <button type="button" class="c-btn" data-cal="ano">Ver o ano inteiro</button>
+    </div>`;
+}
+/* --- liga os botões da tela (na TV e na prévia do editor) ---
+   preview=true (prévia do editor): os botões funcionam mas NÃO mexem na rotação da TV.
+   Cada tela montada tem o estado dela: saiu da rotação, volta sozinho ao mês atual. */
+function calInit(root, preview, o){
+  if(!root || root._calOk) return;
+  root._calOk = true;
+  const st = { o:o||data, hj:tvHoje ? pDate(tvHoje) : today0(), modo:"mes", ano:0, mes:0 };
+  st.ano = st.hj.getFullYear(); st.mes = st.hj.getMonth();
+  const q = s => root.querySelector(s);
+  const view = q(".c-view"), tit = q(".c-tit"), sel = q("[data-cal=sel]"), pz = q(".c-pz"), bAno = q("[data-cal=ano]");
+  if(!view || !tit || !sel) return;
+  const anos = Array.from(new Set(calItens(st.o).map(x=>x.d.getFullYear()).concat(st.hj.getFullYear()))).sort();
+  const ehPadrao = () => st.modo==="mes" && st.ano===st.hj.getFullYear() && st.mes===st.hj.getMonth();
+  const selOpts = () => {
+    sel.innerHTML = anos.map(a=>MESES.map((n,i)=>i?`<option value="${a}-${i-1}"${(a===st.ano&&i-1===st.mes)?" selected":""}>${n} ${a}</option>`:"").join("")).join("");
+  };
+  const pausa = () => {
+    if(preview) return; /* a prévia do editor não mexe na rotação da TV */
+    clearTimeout(calIdleT);
+    const fora = !ehPadrao();
+    calPausar(fora);
+    if(pz) pz.hidden = !fora;
+    if(fora) calIdleT = setTimeout(()=>{ st.modo="mes"; st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); desenha(); }, CAL_VOLTA_MS);
+  };
+  const desenha = () => {
+    view.innerHTML = st.modo==="mes" ? calHtmlMes(st) : calHtmlAno(st);
+    tit.innerHTML = st.modo==="mes" ? `${esc(MESES[st.mes+1])} <em>${st.ano}</em>` : `Ano <em>${st.ano}</em>`;
+    if(bAno){ bAno.textContent = st.modo==="ano" ? "Voltar ao mês" : "Ver o ano inteiro"; bAno.classList.toggle("on", st.modo==="ano"); }
+    selOpts();
+    view.querySelectorAll(".c-mini").forEach(b=>b.onclick=()=>{ st.modo="mes"; st.mes=+b.dataset.m; desenha(); });
+    pausa();
+  };
+  const passo = n => { if(st.modo==="ano"){ st.ano+=n; } else { st.mes+=n; if(st.mes<0){st.mes=11;st.ano--;} if(st.mes>11){st.mes=0;st.ano++;} } desenha(); };
+  root.querySelectorAll("[data-cal]").forEach(b=>{
+    const a = b.dataset.cal;
+    if(a==="prev") b.onclick = ()=>passo(-1);
+    else if(a==="next") b.onclick = ()=>passo(1);
+    else if(a==="hoje") b.onclick = ()=>{ st.modo="mes"; st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); desenha(); };
+    else if(a==="ano") b.onclick = ()=>{ st.modo = st.modo==="ano" ? "mes" : "ano"; desenha(); };
+  });
+  sel.onchange = () => { const v = sel.value.split("-"); st.ano = +v[0]; st.mes = +v[1]; st.modo = "mes"; desenha(); };
+  selOpts(); pausa();
+}
+R.calendario = function(o){
+  const it = calItens(o);
+  if(!it.length) return emptyBox("Calendário vazio","A aba Calendário foi salva sem itens no editor. Cadastre pelo menos um feriado, ponte, evento ou DDS para a tela voltar ao ar.");
+  const hj = tvHoje ? pDate(tvHoje) : today0();
+  const st = { o:o||data, hj, modo:"mes", ano:hj.getFullYear(), mes:hj.getMonth() };
+  return `<div class="s-cal">
+    <header class="c-hd">
+      <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1 class="c-tit">${esc(MESES[st.mes+1])} <em>${st.ano}</em></h1></div>
+      <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span><span><i style="background:var(--eve)"></i>Evento</span><span><i style="background:var(--dds)"></i>DDS</span><span><i style="background:var(--ani)"></i>Aniversário</span></div>
+      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
+    </header>
+    ${calBarra()}
+    <div class="c-view">${calHtmlMes(st)}</div>
   </div>`;
 };
 function fitOrg(root){
@@ -1705,12 +1844,16 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else {
+  } else if(!(key==="calendario" && window.__calPausa)) {
+    /* calendário pausado (modo ano/outro mês): o poll de 30s não pode desmontar o que a pessoa está vendo */
     main.firstElementChild.innerHTML = html;
   }
   if(key==="organograma"){ fitOrg(); main.querySelectorAll(".org img").forEach(i=>i.addEventListener("load",fitOrg,{once:true})); }
   if(key==="aniversarios"){ aniDots(main.querySelector(".s-ani")); }
   else if(aniRaf){ cancelAnimationFrame(aniRaf); aniRaf = 0; }
+  /* calendário interativo: liga os botões ao montar; ao sair da tela, solta a pausa */
+  if(key==="calendario") calInit(main.querySelector(".s-cal"), false);
+  else if(window.__calPausa){ window.__calPausa = false; clearTimeout(calIdleT); }
   ajustarFotos(main);
   $("ftPos").innerHTML = sl.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("") + `<em class="num">${idx+1}/${sl.length}</em>`;
   const dias = (segurancaAuto && segurancaAuto.dias!=null) ? segurancaAuto.dias : diasSemAcidente(data);
@@ -1740,8 +1883,9 @@ function go(step){
 function restartTimer(){
   clearTimeout(timer);
   const p = $("prog"); p.style.animation="none"; void p.offsetWidth;
-  /* controle manual ativo e pausado: a TV fica parada na tela escolhida */
-  if(state!=="ready" || (ctl && ctl.ativo && ctl.pausado)) return;
+  /* controle manual ativo e pausado: a TV fica parada na tela escolhida.
+     Calendário sendo manuseado na TV (ano inteiro/mês escolhido): também para */
+  if(state!=="ready" || (ctl && ctl.ativo && ctl.pausado) || window.__calPausa) return;
   p.style.animation = `grow ${duration()}ms linear forwards`; timer = setTimeout(()=>go(1), duration());
 }
 
@@ -2537,6 +2681,7 @@ function renderPreview(){
   const sc = box.clientWidth/1920; pm.style.transform = `scale(${sc})`;
   ajustarFotos(pm);
   if(curSec==="organograma") fitOrg(pm);
+  if(curSec==="calendario") calInit(pm.querySelector(".s-cal"), true, draft);
 }
 addEventListener("resize", ()=>{ if(pvOn) renderPreview(); });
 $("edPrev").onclick=()=>{ pvOn=!pvOn; $("edPrev").setAttribute("aria-pressed",pvOn); $("edPrev").textContent = pvOn?"Esconder prévia":"Ver prévia"; renderSec(); };
