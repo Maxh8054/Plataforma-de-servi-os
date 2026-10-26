@@ -741,29 +741,79 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-sp{flex:1}
 .s-cal .c-pz{font-size:16px;font-weight:600;color:var(--muted);white-space:nowrap}
 .s-cal .c-pz[hidden]{display:none}
-/* visão do ANO: 12 mini-calendários (4 × 3) — clicar num mini abre o mês dele */
-.s-cal .c-ano{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:14px}
-.s-cal .c-mini{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px 12px 6px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:0;min-height:0;font:600 16px/1.2 var(--f-body);color:var(--fg)}
+/* visão do ANO: 12 mini-calendários (4 × 3) — mesmo visual do HTML da gestão no PC:
+   fim de semana com fundo, feriado/ponte/evento/DDS com COR CHEIA e HOJE com anel.
+   Clicar num mini abre o mês dele; a grade escala inteira se passar da altura da TV. */
+.s-cal{--fds:#2a2520}
+.th-light .s-cal{--fds:#f1e7da}
+.s-cal .c-ano{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(3,auto);gap:clamp(12px,1.1vw,20px);align-content:start}
+.s-cal .c-mini{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;min-width:0;font:600 16px/1.2 var(--f-body);color:var(--fg)}
 .s-cal .c-mini:hover{border-color:var(--accent)}
-.s-cal .c-mini.at{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
-.s-cal .c-mini h4{margin:0 0 4px;font-family:var(--f-display);font-size:22px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.s-cal .c-mini.at{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.s-cal .c-mini h4{margin:0 0 6px;font-family:var(--f-display);font-size:22px;text-transform:uppercase;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .s-cal .c-mini h4 small{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--muted);text-transform:none;white-space:nowrap}
 .s-cal .c-mg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-variant-numeric:tabular-nums}
-.s-cal .c-mg i{font-style:normal;font-size:11px;color:var(--muted);text-align:center;font-weight:700}
-.s-cal .c-mg span{font-size:13px;text-align:center;padding:1px 0;border-radius:6px;font-weight:600}
-.s-cal .c-mg span.fds{color:var(--muted)}
-.s-cal .c-mg span.f{background:var(--fer-s);color:var(--fer)}
-.s-cal .c-mg span.p{background:var(--pon-s);color:var(--pon)}
-.s-cal .c-mg span.eve{background:var(--eve-s);color:var(--eve)}
-.s-cal .c-mg span.dds{background:var(--dds-s);color:var(--dds)}
-.s-cal .c-mg span.hj{box-shadow:inset 0 0 0 2px var(--accent);font-weight:800}
-.s-cal .c-mn{list-style:none;margin:5px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden}
+.s-cal .c-mg i{font-style:normal;font-size:11px;color:var(--muted);text-align:center;font-weight:700;padding-bottom:2px}
+.s-cal .c-mg span{font-size:13px;text-align:center;padding:4px 0;border-radius:4px;font-weight:600}
+.s-cal .c-mg span.fds{background:var(--fds)}
+.s-cal .c-mg span.f{background:var(--fer);color:#fff}
+.s-cal .c-mg span.p{background:var(--pon);color:#1a1300}
+.s-cal .c-mg span.eve{background:var(--eve);color:#fff}
+.s-cal .c-mg span.dds{background:var(--dds);color:#fff}
+.s-cal .c-mg span.hj{outline:2px solid var(--accent);outline-offset:-2px;font-weight:800}
+.s-cal .c-mn{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden;font-size:12px;color:var(--muted);line-height:1.4}
 .s-cal .c-mn li{font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s-cal .c-mn li b{font-variant-numeric:tabular-nums}
 .s-cal .c-mn li.f b{color:var(--fer)}
 .s-cal .c-mn li.p b{color:var(--pon)}
 .s-cal .c-mn li.eve b{color:var(--eve)}
 .s-cal .c-mn li.dds b{color:var(--dds)}
+/* barra de botões da tela — o Plano de Ação reusa o desenho do calendário */
+.s-pa .c-bar{display:flex;align-items:center;gap:12px;flex:none;margin:-4px 0 2px}
+.s-pa .c-btn{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 22px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer}
+.s-pa .c-btn:hover{border-color:var(--muted)}
+.s-pa .c-btn:focus-visible,.s-pa .c-sel:focus-visible,.s-pa .pa-k:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.s-pa .c-btn.ic{padding:12px 17px}
+.s-pa .c-sel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:600 20px/1 var(--f-body);color:var(--fg);cursor:pointer;max-width:360px}
+.s-pa .c-sp{flex:1}
+.s-pa .c-pz{font-size:16px;font-weight:600;color:var(--muted);white-space:nowrap}
+.s-pa .c-pz[hidden]{display:none}
+/* ---------- Plano de Ação — ações do mês com status automático (igual ao HTML da gestão) ---------- */
+.s-pa{--ok:#3fbf6f;--and:#ff8a3d;--atr:#e5484d;--ni:#7d8a99;display:flex;flex-direction:column;height:100%;min-height:0;gap:14px}
+.th-light .s-pa{--ok:#1e9a52;--and:#e06a12;--atr:#d4363c;--ni:#66727f}
+.s-pa .pa-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:3px solid var(--accent);padding-bottom:12px;flex:none}
+.s-pa .pa-hd small{display:block;color:var(--accent);font-weight:700;letter-spacing:.24em;text-transform:uppercase;font-size:19px}
+.s-pa .pa-hd h1{margin:6px 0 0;font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-weight:800;text-transform:uppercase;line-height:.9;font-size:72px}
+.s-pa .pa-hd h1 em{font-style:normal;color:var(--accent)}
+.s-pa .pa-leg{display:flex;gap:22px;font-size:19px;font-weight:600;color:var(--muted);padding-bottom:12px;flex:none}
+.s-pa .pa-leg i{display:inline-block;width:15px;height:15px;border-radius:5px;margin-right:9px}
+.s-pa .pa-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.s-pa .pa-kp{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;flex:none}
+.s-pa .pa-k{--c:var(--fg);background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--c);border-radius:12px;padding:12px 20px 10px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px;font:600 17px/1.2 var(--f-body);color:var(--fg)}
+.s-pa .pa-k:hover{border-color:var(--muted)}
+.s-pa .pa-k.on{box-shadow:0 0 0 2px var(--c)}
+.s-pa .pa-k b{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif;font-size:52px;font-weight:800;line-height:.95;color:var(--c)}
+.s-pa .pa-k span{font-weight:700;font-size:19px}
+.s-pa .pa-k small{color:var(--muted);font-size:14px}
+.s-pa .s-ok{--c:var(--ok)}.s-pa .s-and{--c:var(--and)}.s-pa .s-atr{--c:var(--atr)}.s-pa .s-ni{--c:var(--ni)}
+.s-pa .pa-sb{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--panel2);margin:12px 0 0;flex:none}
+.s-pa .pa-sb i{display:block;height:100%;background:var(--c)}
+.s-pa .pa-tw{flex:1;min-height:0;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto}
+.s-pa .pa-tw::-webkit-scrollbar{width:9px}
+.s-pa .pa-tw::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.s-pa table{width:100%;border-collapse:collapse}
+.s-pa th{text-align:left;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:13px 20px;border-bottom:2px solid var(--line);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+.s-pa td{padding:11px 20px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:20px}
+.s-pa tr:last-child td{border-bottom:0}
+.s-pa td.ac{font-weight:600;line-height:1.3;box-shadow:inset 5px 0 0 var(--c)}
+.s-pa td.qm{white-space:nowrap}
+.s-pa td.pz{white-space:nowrap;font-weight:700}
+.s-pa td.pz small{display:block;font-weight:500;color:var(--muted);font-size:14px}
+.s-pa td.pz.late small{color:var(--atr);font-weight:700}
+.s-pa .pa-st{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c);white-space:nowrap;background:color-mix(in srgb,var(--c) 14%,transparent);padding:6px 12px;border-radius:999px}
+.s-pa .pa-st::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c)}
+.s-pa .pa-vazio{margin:2px 0;color:var(--muted);font-size:18px}
+.s-pa .pa-ft{margin:10px 0 0;font-size:14px;color:var(--muted);flex:none}
 </style>
 
 <div id="viewport">
@@ -871,6 +921,9 @@ const SECTIONS = [
   {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. Na TV a tela abre no mês atual com BOTÕES na própria tela: ◀ ▶ passam o mês, “Hoje” volta ao atual, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez — clicar num mini-calendário abre o mês. Enquanto estiver no modo ano ou num mês diferente, a rotação pausa e volta sozinha depois de 2 minutos. Cores: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. A tela JÁ ENTRA NO AR PREENCHIDA com os feriados padrão do ano — revise, ajuste e salve para valer o seu conteúdo. Só fica fora da rotação se a aba for salva vazia.",
     parts:[{kind:"list",key:"itens",label:"Feriados, pontes, eventos e DDS",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora (opcional)",ph:"Ex.: 07:30",w:1},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte","Evento","DDS"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
+  {key:"planoAcao", label:"Plano de Ação", hint:"Plano de ação da operação, igual ao quadro da gestão: cada linha tem a AÇÃO (o que será feito), o RESPONSÁVEL e o PRAZO — o mês que a TV mostra é o do prazo. O STATUS sai sozinho: Concluída (preencheu “Concluída em”), Atrasada (prazo já passou), Em andamento (progresso maior que 0) ou Não iniciada. Na TV a tela abre no mês atual com botões na própria tela: ◀ ▶ passam o mês, “Mês atual” volta, o seletor escolhe qualquer mês, os CARDS grandes filtram por status (toque de novo para limpar) e o filtro por RESPONSÁVEL isola as ações de uma pessoa. Enquanto estiver num mês diferente ou com filtro ligado, a rotação pausa (chip avisa) e volta sozinha depois de 2 minutos sem toque. A tela entra na rotação assim que a primeira ação for salva; a aba salva vazia fica de fora.",
+    parts:[{kind:"list",key:"itens",label:"Ações",newRow:()=>({acao:"",quem:"",prazo:nextDate(),progresso:0}),cols:[
+      {k:"acao",l:"Ação (o que será feito)",w:4},{k:"quem",l:"Responsável",w:2},{k:"prazo",l:"Prazo (define o mês)",t:"date",w:2},{k:"progresso",l:"Progresso %",t:"number",w:1},{k:"concluida",l:"Concluída em (opcional)",t:"date",def:"",w:2}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
     parts:[{kind:"list",key:"itens",label:"Treinamentos",cols:[
       {k:"treinamento",l:"Treinamento",ph:"Ex.: NR-35 Trabalho em altura",w:3},{k:"tipo",l:"Tipo",t:"select",opts:["Formação","Reciclagem","Integração","Interno"],w:2},
@@ -1026,7 +1079,7 @@ cfgPart("ativos").fields = SLIDE_KEYS.map(k=>({k,l:SECTIONS.find(s=>s.key===k).l
 cfgPart("duracoes").fields = SLIDE_KEYS.map(k=>({k,l:SECTIONS.find(s=>s.key===k).label,t:"number",ph:"padrão"}));
 cfgPart("cores").fields = SLIDE_KEYS.map(k=>({k,l:SECTIONS.find(s=>s.key===k).label,t:"select",opts:["Automático","Preto","Branco"]}));
 /* telas cheias de cores de status ficam fora do sorteio do laranja */
-const NO_ORANGE = new Set(["maquinas","escala","perdas","programacao","organograma"]);
+const NO_ORANGE = new Set(["maquinas","escala","perdas","programacao","organograma","planoAcao"]);
 const THEME_CLS = {Preto:"th-dark",Branco:"th-light"};
 let lastTheme = "th-dark";
 function pickTheme(key){
@@ -1582,6 +1635,7 @@ function calInit(root, preview, o){
   const desenha = () => {
     view.innerHTML = st.modo==="mes" ? calHtmlMes(st) : calHtmlAno(st);
     tit.innerHTML = st.modo==="mes" ? `${esc(MESES[st.mes+1])} <em>${st.ano}</em>` : `Ano <em>${st.ano}</em>`;
+    if(st.modo==="ano"){ calFitAno(view); setTimeout(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); }, 350); document.fonts && document.fonts.ready && document.fonts.ready.then(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); }); } else view.querySelector(".c-ano")?.style.removeProperty("transform");
     if(bAno){ bAno.textContent = st.modo==="ano" ? "Voltar ao mês" : "Ver o ano inteiro"; bAno.classList.toggle("on", st.modo==="ano"); }
     selOpts();
     view.querySelectorAll(".c-mini").forEach(b=>b.onclick=()=>{ st.modo="mes"; st.mes=+b.dataset.m; desenha(); });
@@ -1613,6 +1667,132 @@ R.calendario = function(o){
     <div class="c-view">${calHtmlMes(st)}</div>
   </div>`;
 };
+/* o ano inteiro precisa caber na TV sem cortar nem espremer: se os 12 meses
+   passarem da altura do palco, a grade inteira escala (mesmo truque do organograma).
+   A largura é compensada antes da escala para as proporções ficarem iguais às do PC. */
+function calFitAno(view){
+  const ca = view.querySelector(".c-ano"); if(!ca) return;
+  ca.style.transform = "none"; ca.style.width = "";
+  const W = view.clientWidth, H = view.clientHeight;
+  const s = Math.min(1, W/Math.max(1,ca.scrollWidth), H/Math.max(1,ca.scrollHeight));
+  if(s < 1){
+    ca.style.width = (100/s)+"%";                       /* alarga p/ compensar a escala */
+    const s2 = Math.min(s, H/Math.max(1,ca.scrollHeight)); /* nota pode embrulhar menos */
+    ca.style.transform = `scale(${s2})`;
+    ca.style.transformOrigin = "top left";
+  }
+}
+/* ---------- Plano de Ação — ações do mês com status automático ----------
+   Igual ao HTML da gestão: cada ação tem AÇÃO, RESPONSÁVEL e PRAZO (o mês da tela
+   é o do prazo), progresso 0-100 e "concluída em" opcional. O status sai sozinho:
+   Concluída (tem data de conclusão) / Atrasada (prazo já passou) / Em andamento
+   (progresso > 0) / Não iniciada. Na TV a tela abre no mês atual com os MESMOS
+   botões do calendário: ◀ ▶ passam o mês, “Mês atual” volta, o seletor escolhe
+   qualquer mês, os CARDS filtram por status e há filtro por RESPONSÁVEL. Enquanto
+   houver filtro ou mês diferente do atual, a rotação pausa (chip avisa) e volta
+   sozinha depois de 2 minutos sem toque — a TV nunca fica presa. */
+const PA_ST = {atr:"Atrasada",and:"Em andamento",ni:"Não iniciada",ok:"Concluída"};
+const PA_ORD = ["atr","and","ni","ok"];
+function paItens(o){
+  const hj = tvHoje ? pDate(tvHoje) : today0();
+  return list(o,"planoAcao")
+    .map(a=>({acao:String(a.acao||"").trim(), quem:String(a.quem||"").trim(), prazo:pDate(a.prazo), prog:num(a.progresso), conc:pDate(a.concluida)}))
+    .filter(a=>a.acao && a.quem && a.prazo)
+    .map(a=>{ a.s = a.conc ? "ok" : (+a.prazo < +hj ? "atr" : (a.prog>0 ? "and" : "ni")); return a; });
+}
+function paQuando(a, hj){
+  if(a.s==="ok" && a.conc) return "Concluída em "+a.conc.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+  const n = Math.round((+a.prazo - +hj)/864e5);
+  return n<0 ? (-n)+(n===-1?" dia de atraso":" dias de atraso") : n===0 ? "Vence hoje" : n===1 ? "Vence amanhã" : "Faltam "+n+" dias";
+}
+function paHtmlView(st){
+  const doMes = paItens(st.o).filter(a=>a.prazo.getFullYear()===st.ano && a.prazo.getMonth()===st.mes && (!st.pessoa || a.quem===st.pessoa));
+  const c = {ok:0,and:0,atr:0,ni:0}; doMes.forEach(a=>c[a.s]++);
+  const t = doMes.length;
+  const pc = n => t ? Math.round(n/t*100)+"% do mês" : "—";
+  const card = (cls,key,n,lab,sub) => `<button type="button" class="pa-k ${cls}${st.filtro===key?" on":""}" data-f="${key}"><b class="num">${n}</b><span>${lab}</span><small>${sub}</small></button>`;
+  const L = doMes.filter(a=>!st.filtro||a.s===st.filtro).sort((a,b)=>PA_ORD.indexOf(a.s)-PA_ORD.indexOf(b.s) || +a.prazo-+b.prazo);
+  return `<div class="pa-kp">
+      ${card("pa-all","",t,"Ações no mês",st.pessoa?esc(st.pessoa.split(" ")[0]):"Todas as pessoas")}
+      ${card("s-ok","ok",c.ok,"Concluídas",pc(c.ok))}
+      ${card("s-and","and",c.and,"Em andamento",pc(c.and))}
+      ${card("s-ni","ni",c.ni,"Não iniciadas",pc(c.ni))}
+      ${card("s-atr","atr",c.atr,"Atrasadas",pc(c.atr))}
+    </div>
+    <div class="pa-sb">${t?PA_ORD.map(s=>c[s]?`<i class="s-${s}" style="width:${(c[s]/t*100).toFixed(2)}%" title="${PA_ST[s]}: ${c[s]}"></i>`:"").join(""):""}</div>
+    <div class="pa-tw"><table>
+      <thead><tr><th>Ação</th><th>Responsável</th><th>Prazo</th><th>Status</th></tr></thead>
+      <tbody>${L.length ? L.map(a=>`<tr class="s-${a.s}"><td class="ac">${esc(a.acao)}</td><td class="qm">${esc(a.quem)}</td><td class="pz num${a.s==="atr"?" late":""}">${a.prazo.toLocaleDateString("pt-BR")}<small>${paQuando(a,st.hj)}</small></td><td><span class="pa-st">${PA_ST[a.s]}</span></td></tr>`).join("")
+        : `<tr><td colspan="4"><p class="pa-vazio">${t?"Nenhuma ação com esse status neste mês.":"Nenhuma ação com prazo em "+esc(MESES[st.mes+1].toLowerCase())+"."}</p></td></tr>`}</tbody>
+    </table></div>
+    <p class="pa-ft">${st.filtro?"Mostrando só "+PA_ST[st.filtro].toLowerCase()+". Toque no card de novo para ver todas.":"Toque em um card para ver só aquele status."}</p>`;
+}
+function paBarra(){
+  return `<div class="c-bar">
+      <button type="button" class="c-btn ic" data-pa="prev" aria-label="Mês anterior" title="Mês anterior">◀</button>
+      <button type="button" class="c-btn ic" data-pa="next" aria-label="Próximo mês" title="Próximo mês">▶</button>
+      <button type="button" class="c-btn" data-pa="hoje">Mês atual</button>
+      <select class="c-sel" data-pa="sel" aria-label="Escolher o mês"></select>
+      <select class="c-sel" data-pa="pes" aria-label="Filtrar por responsável"></select>
+      <span class="c-sp"></span>
+      <span class="c-pz" hidden>⏸ Rotação pausada — volta sozinha</span>
+    </div>`;
+}
+R.planoAcao = function(o){
+  const it = paItens(o);
+  if(!it.length) return emptyBox("Plano de Ação vazio","Cadastre ações na aba Plano de Ação do editor (ação, responsável e prazo) para a tela entrar no ar.");
+  const hj = tvHoje ? pDate(tvHoje) : today0();
+  const st = { o:o||data, hj, ano:hj.getFullYear(), mes:hj.getMonth(), filtro:"", pessoa:"" };
+  return `<div class="s-pa">
+    <header class="pa-hd">
+      <div><small>ZAMine · ${esc(UNIDADE_TXT)} · Planos de ação</small><h1 class="pa-tit">${esc(MESES[st.mes+1])} <em>${st.ano}</em></h1></div>
+      <div class="pa-leg" aria-hidden="true"><span><i style="background:var(--atr)"></i>Atrasada</span><span><i style="background:var(--and)"></i>Em andamento</span><span><i style="background:var(--ni)"></i>Não iniciada</span><span><i style="background:var(--ok)"></i>Concluída</span></div>
+      ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
+    </header>
+    ${paBarra()}
+    <div class="pa-view">${paHtmlView(st)}</div>
+  </div>`;
+};
+/* liga os botões do plano de ação (mesma mecânica do calendário):
+   preview=true na prévia do editor — funciona sem mexer na rotação da TV */
+function paInit(root, preview, o){
+  if(!root || root._paOk) return;
+  root._paOk = true;
+  const st = { o:o||data, hj:tvHoje ? pDate(tvHoje) : today0(), ano:0, mes:0, filtro:"", pessoa:"" };
+  st.ano = st.hj.getFullYear(); st.mes = st.hj.getMonth();
+  const q = s => root.querySelector(s);
+  const view = q(".pa-view"), tit = q(".pa-tit"), sel = q("[data-pa=sel]"), pes = q("[data-pa=pes]"), pz = q(".c-pz");
+  if(!view || !tit || !sel || !pes) return;
+  const todos = () => paItens(st.o);
+  const anos = () => Array.from(new Set(todos().map(a=>a.prazo.getFullYear()).concat(st.hj.getFullYear()))).sort();
+  const ehPadrao = () => st.ano===st.hj.getFullYear() && st.mes===st.hj.getMonth() && !st.filtro && !st.pessoa;
+  const pausa = () => {
+    if(preview) return;
+    clearTimeout(calIdleT);
+    const fora = !ehPadrao();
+    calPausar(fora);
+    if(pz) pz.hidden = !fora;
+    if(fora) calIdleT = setTimeout(()=>{ st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); st.filtro=""; st.pessoa=""; desenha(); }, CAL_VOLTA_MS);
+  };
+  const desenha = () => {
+    view.innerHTML = paHtmlView(st);
+    tit.innerHTML = `${esc(MESES[st.mes+1])} <em>${st.ano}</em>`;
+    sel.innerHTML = anos().map(a=>MESES.map((n,i)=>i?`<option value="${a}-${i-1}"${(a===st.ano&&i-1===st.mes)?" selected":""}>${n} ${a}</option>`:"").join("")).join("");
+    pes.innerHTML = `<option value="">Todas as pessoas</option>`+Array.from(new Set(todos().map(a=>a.quem))).sort((a,b)=>a.localeCompare(b,"pt-BR")).map(n=>`<option${st.pessoa===n?" selected":""}>${esc(n)}</option>`).join("");
+    view.querySelectorAll(".pa-k").forEach(b=>b.onclick=()=>{ st.filtro = st.filtro===b.dataset.f ? "" : b.dataset.f; desenha(); });
+    pausa();
+  };
+  const passo = n => { st.mes+=n; if(st.mes<0){st.mes=11;st.ano--;} if(st.mes>11){st.mes=0;st.ano++;} st.filtro=""; desenha(); };
+  root.querySelectorAll("[data-pa]").forEach(b=>{
+    const a = b.dataset.pa;
+    if(a==="prev") b.onclick = ()=>passo(-1);
+    else if(a==="next") b.onclick = ()=>passo(1);
+    else if(a==="hoje") b.onclick = ()=>{ st.ano=st.hj.getFullYear(); st.mes=st.hj.getMonth(); st.filtro=""; desenha(); };
+  });
+  sel.onchange = () => { const v = sel.value.split("-"); st.ano = +v[0]; st.mes = +v[1]; st.filtro = ""; desenha(); };
+  pes.onchange = () => { st.pessoa = pes.value; desenha(); };
+  desenha();
+}
 function fitOrg(root){
   /* root pode ser um elemento (prévia do editor) ou vir de um addEventListener("load", …)
      — nesse caso é um evento, não um elemento, então usa o palco da TV */
@@ -1741,6 +1921,7 @@ function expandSlides(o, sec){
     return janelaHora(d) ? null : [];         // dentro da janela: slide normal; fora: aba some
   }
   if(sec==="calendario") return calFonte(o).some(x=>x.data&&x.nome) ? null : [];
+  if(sec==="planoAcao") return list(o,"planoAcao").some(x=>x.acao&&x.prazo) ? null : [];
   return null;
 }
 /* aniversariantes do DIA (tvHoje = fuso da operação, como no slide do mês) */
@@ -1844,15 +2025,17 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else if(!(key==="calendario" && window.__calPausa)) {
-    /* calendário pausado (modo ano/outro mês): o poll de 30s não pode desmontar o que a pessoa está vendo */
+  } else if(!((key==="calendario"||key==="planoAcao") && window.__calPausa)) {
+    /* tela interativa pausada (calendário no ano/mês escolhido, plano de ação filtrado):
+       o poll de 30s não pode desmontar o que a pessoa está vendo */
     main.firstElementChild.innerHTML = html;
   }
   if(key==="organograma"){ fitOrg(); main.querySelectorAll(".org img").forEach(i=>i.addEventListener("load",fitOrg,{once:true})); }
   if(key==="aniversarios"){ aniDots(main.querySelector(".s-ani")); }
   else if(aniRaf){ cancelAnimationFrame(aniRaf); aniRaf = 0; }
-  /* calendário interativo: liga os botões ao montar; ao sair da tela, solta a pausa */
+  /* telas interativas: ligam os botões ao montar; ao sair da tela, solta a pausa */
   if(key==="calendario") calInit(main.querySelector(".s-cal"), false);
+  else if(key==="planoAcao") paInit(main.querySelector(".s-pa"), false);
   else if(window.__calPausa){ window.__calPausa = false; clearTimeout(calIdleT); }
   ajustarFotos(main);
   $("ftPos").innerHTML = sl.map((_,i)=>`<i class="${i===idx?"on":""}"></i>`).join("") + `<em class="num">${idx+1}/${sl.length}</em>`;
@@ -2682,6 +2865,7 @@ function renderPreview(){
   ajustarFotos(pm);
   if(curSec==="organograma") fitOrg(pm);
   if(curSec==="calendario") calInit(pm.querySelector(".s-cal"), true, draft);
+  if(curSec==="planoAcao") paInit(pm.querySelector(".s-pa"), true, draft);
 }
 addEventListener("resize", ()=>{ if(pvOn) renderPreview(); });
 $("edPrev").onclick=()=>{ pvOn=!pvOn; $("edPrev").setAttribute("aria-pressed",pvOn); $("edPrev").textContent = pvOn?"Esconder prévia":"Ver prévia"; renderSec(); };

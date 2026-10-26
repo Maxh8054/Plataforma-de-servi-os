@@ -966,3 +966,24 @@ Stage Summary:
 - Enquanto navega no ano/mês, a rotação para (chip avisa) e volta sozinha: ao apertar Hoje ou após 2 minutos sem toque — a TV nunca fica presa
 - Nos 4 painéis (goias, minas, minas-araxa, minas-usiminas — mesmos 2 arquivos HTML); TVs atualizam no próximo poll (30s) ou recarregando
 - Eventos e DDS agora também aparecem COLORIDOS na grade do mês (bug de classe que os deixava apagados, corrigido de quebra)
+
+---
+Task ID: 44
+Agent: Z.ai Code (principal)
+Task: Ano inteiro do Calendário na TV ficou diferente do PC → ficar IGUAL; + nova tela Plano de Ação na TV (a partir do HTML zm-pa enviado pela gestão)
+
+Work Log:
+- Diagnóstico da diferença do modo ANO vs PC (referência upload/Pasted Content_1793018035271.txt): a TV usava cores SUAVES (fundo translúcido + texto colorido), fim de semana só com texto apagado, HOJE com box-shadow inset e notas com reticências; o PC usa COR CHEIA (feriado vermelho sólido c/ texto branco, ponte amarela sólida c/ texto escuro), fim de semana com FUNDO (--fds #2a2520 escuro / #f1e7da claro), HOJE com outline e notas completas — e as linhas da grade eram espremidas (grid-auto-rows:1fr) cortando o rodapé dos minis
+- Corrigido nos 2 painéis (goias+minas, blocos idênticos): CSS dos minis agora é o do PC exato (padding 4px 0 nos dias, raio 4px, .fds com fundo, .f/.p com cor sólida — eve/dds também ganharam cor sólida verde/laranja p/ manter a família), HOJE com outline, notas .c-mn completas (12px, line-height 1.4), linhas naturais (repeat(3,auto) + align-content:start)
+- A TV não rola página: se os 12 meses passarem da altura do palco, calFitAno escala a grade INTEIRA (mesmo truque do organograma) com compensação de largura (width:100/s% antes do scale) — proporções ficam idênticas às do PC e a grade preenche a tela toda; re-medido 350ms depois e no document.fonts.ready (troca de fonte não deixa corte); medido em teste: natural 864px → scale 0.67 com width 149% → tudo visível, sem cortes, nos 2 temas
+- NOVA TELA "Plano de Ação" (key planoAcao, entre Calendário e Treinamentos) portada do HTML zm-pa da gestão (upload/Pasted Content_1793031902938.txt): cabeçalho "ZAMine · UNIDADE · Planos de ação" + MÊS ANO grande, botões ◀ ▶ · Mês atual · seletor de mês · filtro por RESPONSÁVEL, 5 CARDS de KPI clicáveis (Ações no mês / Concluídas / Em andamento / Não iniciadas / Atrasadas, com % do mês), barra de status empilhada e tabela Ação | Responsável | Prazo (+ "Vence hoje/Faltam N dias/N dias de atraso/Concluída em dd/mm") | Status em pílula colorida — ordem Atrasada→Em andamento→Não iniciada→Concluída
+- Status AUTOMÁTICO igual ao HTML da gestão: Concluída (preencheu "Concluída em"), Atrasada (prazo < hoje), Em andamento (progresso>0), Não iniciada; o mês da tela é o do PRAZO; cores --ok/--and/--atr/--ni com variantes no tema claro
+- Editor: aba "Plano de Ação" com lista (Ação, Responsável, Prazo (define o mês), Progresso %, Concluída em opcional) + prévia ao vivo (paInit com preview=true não mexe na rotação); rotação: tela entra com a 1ª ação salva, some se a aba for salva vazia (expandSlides como no calendário); NO_ORANGE para não sortear tema laranja
+- Pausa da rotação reaproveitada do calendário (window.__calPausa + calIdleT): navegar mês/filtrar pausa (chip avisa) e volta sozinha em 2min; poll de 30s não desmonta a tela pausada (branch renderFrame estendido p/ planoAcao); renderFrame liga paInit ao montar
+- Testes browser (goias claro 1920×1080, mock client-side via fetch patch — SEM escrita no banco de produção): plano Out/2026 com 5 KPIs corretos (5/1/1/2/1 e %), ordem da tabela, "2 dias de atraso", "Vence hoje", "Faltam 4/5 dias", "Concluída em 14/10"; card Atrasadas filtra (1 linha, chip de pausa aparece, rodapé explica), ◀ Setembro vazio com mensagem, ▶▶ Novembro com NR-35 "Faltam 15 dias", Mês atual retoma rotação (pausa=false), filtro por pessoa mostra só ela ("Ações no mês · Girlene"); ano do calendário: 12 minis, cores sólidas, HOJE anel, Outubro com borda, notas completas, mini Dezembro abre o mês (Natal 25 vermelho), Ano 2027/2025 navegáveis sem quebrar, Hoje volta ao mês; minas: plano no tema claro com --atr #d4363c e ano 0.69 scale cabendo; JS OK (new Function) nos 2 arquivos; lint no baseline 31; dev.log sem erro novo
+- worklog + commit + push (token removido do remote na sequência)
+
+Stage Summary:
+- Modo "Ver o ano inteiro" do Calendário na TV agora é visualmente IGUAL ao HTML do PC (cores cheias, fim de semana com fundo, HOJE com anel, notas completas) e a grade escala p/ caber na tela inteira sem cortar
+- Nova tela Plano de Ação no ar nos 4 painéis (goias, minas, minas-araxa, minas-usiminas — mesmos 2 arquivos HTML): status automático, cards que filtram, navegação de mês e filtro por responsável, com pausa/retoma da rotação igual ao calendário
+- Zero mudança de schema/rotas/backend; TVs atualizam no próximo poll (30s) ou recarregando a página
