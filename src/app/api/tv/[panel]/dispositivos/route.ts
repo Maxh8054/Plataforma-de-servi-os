@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido, tvUser, tvAdmin, permissoesDoUsuario } from '@/lib/tv';
 import { aparelhoParaResposta, ensureTabelasMonitor } from '@/lib/tv-monitor';
+import { csvResponse, csvData, csvCarimbo } from '@/lib/csv';
 
 /**
  * GET /api/tv/[panel]/dispositivos — aparelhos (TVs) deste painel, com
@@ -35,6 +36,19 @@ export async function GET(
       orderBy: { ultimaVez: 'desc' },
       take: 50,
     });
+
+    // download CSV das TVs conectadas (chip "TVs conectadas" do editor)
+    if (request.nextUrl.searchParams.get('formato') === 'csv') {
+      return csvResponse(
+        `tvs-${panel}-${csvCarimbo()}.csv`,
+        ['Aparelho', 'Status', 'Última vez', 'Canal', 'Telas na rotação'],
+        rows.map((r) => {
+          const a = aparelhoParaResposta(r);
+          return [a.id, a.online ? 'Online' : 'Offline', csvData(a.ultimaVez), a.canal, a.telas ?? ''];
+        })
+      );
+    }
+
     return NextResponse.json({ dispositivos: rows.map(aparelhoParaResposta) });
   } catch (e) {
     console.error('[tv/dispositivos] erro:', (e as Error)?.message?.slice(0, 160));

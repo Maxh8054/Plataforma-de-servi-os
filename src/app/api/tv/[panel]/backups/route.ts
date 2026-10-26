@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { auditLog } from '@/lib/audit-log';
 import { panelValido, respostaPanelInvalido, tvUser, tvAdmin } from '@/lib/tv';
 import { capturarSnapshot, ensureTabelasMonitor } from '@/lib/tv-monitor';
+import { csvResponse, csvData, csvCarimbo } from '@/lib/csv';
 
 function safeJson(str: string | null | undefined): unknown {
   if (!str) return null;
@@ -56,6 +57,17 @@ export async function GET(
       take: 40,
       select: { id: true, origem: true, criadoEm: true, dados: true },
     });
+
+    // download CSV da lista de backups (aba Cópia de segurança do editor)
+    if (request.nextUrl.searchParams.get('formato') === 'csv') {
+      const origemTxt = (o: string) => (o === 'auto' ? 'Automático' : o === 'pre-edicao' ? 'Pré-edição' : 'Manual');
+      return csvResponse(
+        `backups-${panel}-${csvCarimbo()}.csv`,
+        ['Data', 'Origem', 'Tamanho (KB)', 'Id'],
+        rows.map((r) => [csvData(r.criadoEm), origemTxt(r.origem), Math.round((r.dados.length / 1024) * 10) / 10, r.id])
+      );
+    }
+
     return NextResponse.json({
       backups: rows.map((r) => ({
         id: r.id,

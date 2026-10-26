@@ -460,6 +460,34 @@ export default function Home() {
     }
     setNotifAberto(!notifAberto);
   };
+  // Dispensar notificações do sino: uma ({ id }) ou várias ({ ids }) — some na hora,
+  // o servidor guarda por ocorrência (problema novo volta a notificar)
+  const dispensarNotifs = (ids: string[]) => {
+    if (!ids.length) return;
+    setNotifs((atual) => atual.filter((n) => !ids.includes(n.id)));
+    authFetch('/api/notificacoes/dispensar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    }).catch(() => {});
+  };
+  // Baixar CSV das notificações visíveis agora (abre no Excel)
+  const baixarNotifsCsv = () => {
+    authFetch('/api/notificacoes?formato=csv')
+      .then((r) => (r.ok ? r.blob() : null))
+      .then((b) => {
+        if (!b) return;
+        const url = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'notificacoes.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      })
+      .catch(() => {});
+  };
   const iconeNotif = (tipo: string) =>
     tipo === 'tv_offline' ? 'tv_off' : tipo === 'pendente' ? 'hourglass_top' : tipo === 'backup' ? 'check_circle' : 'schedule';
   const corNotif = (tipo: string) =>
@@ -976,9 +1004,28 @@ export default function Home() {
                           aria-label="Central de notificações"
                           className="absolute right-0 top-full mt-2 z-50 w-80 max-w-[92vw] bg-neutral-900 border border-neutral-700 rounded-xl shadow-2xl overflow-hidden"
                         >
-                          <div className="px-4 py-2.5 text-sm font-semibold border-b border-neutral-800 flex items-center justify-between">
+                          <div className="px-4 py-2.5 text-sm font-semibold border-b border-neutral-800 flex items-center justify-between gap-2">
                             <span>Notificações</span>
-                            <span className="text-[10px] font-normal text-neutral-400">atualiza sozinho</span>
+                            <span className="flex items-center gap-2">
+                              {notifs.length > 0 && (
+                                <>
+                                  <button
+                                    onClick={baixarNotifsCsv}
+                                    title="Baixar estas notificações em CSV (abre no Excel)"
+                                    className="text-[10px] font-normal text-neutral-400 hover:text-white underline underline-offset-2 transition-colors"
+                                  >
+                                    CSV
+                                  </button>
+                                  <button
+                                    onClick={() => dispensarNotifs(notifs.map((n) => n.id))}
+                                    className="text-[10px] font-normal text-neutral-400 hover:text-red-400 underline underline-offset-2 transition-colors"
+                                  >
+                                    Limpar todas
+                                  </button>
+                                </>
+                              )}
+                              {notifs.length === 0 && <span className="text-[10px] font-normal text-neutral-400">atualiza sozinho</span>}
+                            </span>
                           </div>
                           <div className="max-h-80 overflow-y-auto divide-y divide-neutral-800">
                             {notifs.length === 0 ? (
@@ -989,7 +1036,7 @@ export default function Home() {
                                   <span className="material-icons text-base mt-0.5 shrink-0" style={{ color: corNotif(n.tipo) }}>
                                     {iconeNotif(n.tipo)}
                                   </span>
-                                  <div className="min-w-0">
+                                  <div className="min-w-0 flex-1">
                                     <p className="text-sm font-medium leading-snug flex items-center gap-1.5 flex-wrap">
                                       {n.titulo}
                                       {n.novo && (
@@ -998,6 +1045,14 @@ export default function Home() {
                                     </p>
                                     <p className="text-xs text-neutral-400 leading-snug mt-0.5">{n.descricao}</p>
                                   </div>
+                                  <button
+                                    onClick={() => dispensarNotifs([n.id])}
+                                    aria-label={`Dispensar: ${n.titulo}`}
+                                    title="Dispensar esta notificação"
+                                    className="shrink-0 w-7 h-7 -mr-1 -mt-1 rounded-md text-neutral-500 hover:text-white hover:bg-neutral-700 flex items-center justify-center transition-colors"
+                                  >
+                                    <span className="material-icons text-sm">close</span>
+                                  </button>
                                 </div>
                               ))
                             )}

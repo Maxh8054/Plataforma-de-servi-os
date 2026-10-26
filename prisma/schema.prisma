@@ -528,6 +528,23 @@ model NotificacaoLeitura {
 }
 
 // ==========================================
+// Sino: itens dispensados individualmente (o X em cada notificação).
+// itemKey muda quando a OCORRÊNCIA é nova (nova queda da TV, nova pendência,
+// novo backup), então dispensar não esconde problemas futuros — só o aviso atual.
+// Tabela também criada por CREATE TABLE IF NOT EXISTS em src/lib/tv-monitor.ts.
+// ==========================================
+
+model NotificacaoDispensa {
+  id        String   @id @default(cuid())
+  userEmail String   @map("userEmail")
+  itemKey   String   @map("itemKey")
+  criadoEm  DateTime @default(now()) @map("criadoEm")
+
+  @@unique([userEmail, itemKey])
+  @@map("notificacoes_dispensas")
+}
+
+// ==========================================
 // [OBSOLETO] Organograma da plataforma via modal no rodapé — desativado.
 // O organograma agora vive no PAINEL TV (aba Organograma → TvSection
 // "organograma"), com as fotos casadas PELO NOME no cadastro de

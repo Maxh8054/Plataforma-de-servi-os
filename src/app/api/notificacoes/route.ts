@@ -4,6 +4,7 @@ import { tvUser, tvAdmin } from '@/lib/tv';
 import { TV_PANEIS, infoPainel } from '@/lib/tv-panels';
 import { ensureTabelasMonitor, estaOnline } from '@/lib/tv-monitor';
 import { TZ_PADRAO, hojeNoFuso } from '@/lib/escala-auto';
+import { csvResponse, csvData, csvCarimbo } from '@/lib/csv';
 
 /**
  * GET /api/notificacoes — central de notificações (sino na plataforma).
@@ -76,11 +77,13 @@ export async function GET(request: NextRequest) {
       novo: boolean;
     }[] = [];
 
-    // TVs offline (aparelho que SUMIU do ar — online deixa de ser notificado)
+    // TVs offline (aparelho que SUMIU do ar — online deixa de ser notificado).
+    // O id leva o momento da queda: se a TV cair de novo depois, é um id NOVO
+    // e a notificação volta a aparecer mesmo depois de dispensada.
     for (const d of dispositivos) {
       if (estaOnline(d.ultimaVez)) continue;
       itens.push({
-        id: `tv_offline|${d.panelSlug}|${d.deviceId}`,
+        id: `tv_offline|${d.panelSlug}|${d.deviceId}|${d.ultimaVez.toISOString()}`,
         tipo: 'tv_offline',
         panel: d.panelSlug,
         painelNome: nomePainel(d.panelSlug),
@@ -91,10 +94,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // pendências de aprovação
+    // pendências de aprovação (id leva o momento do envio: novo envio = nova notificação)
     for (const p of pendentes) {
       itens.push({
-        id: `pendente|${p.panelSlug}|${p.sectionKey}`,
+        id: `pendente|${p.panelSlug}|${p.sectionKey}|${(p.pendingEm ?? new Date()).toISOString()}`,
         tipo: 'pendente',
         panel: p.panelSlug,
         painelNome: nomePainel(p.panelSlug),
@@ -154,9 +157,40 @@ export async function GET(request: NextRequest) {
     for (const it of itens) it.novo = +new Date(it.desde) > ultimaVez;
     itens.sort((a, b) => (a.novo === b.novo ? +new Date(b.desde) - +new Date(a.desde) : a.novo ? -1 : 1));
 
+    // itens que o usuário dispensou individualmente (X no sino) saem da lista —
+    // mas se o problema sumir e voltar (nova ocorrência), o id muda e volta a notificar
+    let visiveis = itens;
+    if (itens.length) {
+      try {
+        const dispensas = await db.notificacaoDispensa.findMany({
+          where: { userEmail: user.email.toLowerCase() },
+          select: { itemKey: true },
+        });
+        const dispensados = new Set(dispensas.map((x) => x.itemKey));
+        visiveis = itens.filter((i) => !dispensados.has(i.id));
+      } catch {
+        // sem a tabela ainda: mostra tudo (comportamento antigo)
+      }
+    }
+
+    // download CSV do sino (mesma lista que o usuário vê agora)
+    if (request.nextUrl.searchParams.get('formato') === 'csv') {
+      const rotulo: Record<string, string> = {
+        tv_offline: 'TV offline',
+        pendente: 'Aprovação pendente',
+        backup: 'Backup automático',
+        expiracao: 'Conteúdo expirando',
+      };
+      return csvResponse(
+        `notificacoes-${csvCarimbo()}.csv`,
+        ['Tipo', 'Painel', 'Título', 'Descrição', 'Desde'],
+        visiveis.map((i) => [rotulo[i.tipo] || i.tipo, i.painelNome, i.titulo, i.descricao, csvData(i.desde)])
+      );
+    }
+
     return NextResponse.json({
-      itens: itens.slice(0, 50),
-      naoLidas: itens.filter((i) => i.novo).length,
+      itens: visiveis.slice(0, 50),
+      naoLidas: visiveis.filter((i) => i.novo).length,
       admin,
     });
   } catch (e) {

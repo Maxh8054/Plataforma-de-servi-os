@@ -704,6 +704,31 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-tot b{display:block;font-size:46px;line-height:1.05}
 .s-cal .c-tot small{font-size:15px;color:var(--muted);font-weight:600}
 .s-cal .c-av{font-size:17px;font-weight:600;color:var(--muted)}
+/* calendário dinâmico: eventos, DDS e aniversariantes */
+.s-cal{--eve:#1f9d55;--eve-s:#1f9d5529;--dds:#e0731d;--dds-s:#e0731d2e;--ani:#d9469c;--ani-s:#d9469c2e}
+.th-light .s-cal{--eve:#187a41;--dds:#b5590f;--ani:#b03a7e}
+.s-cal .c-d.eve{border-color:var(--eve);background:var(--eve-s)}
+.s-cal .c-d.eve b{color:var(--eve)}
+.s-cal .c-d.dds{border-color:var(--dds);background:var(--dds-s)}
+.s-cal .c-d.dds b{color:var(--dds)}
+.s-cal .ani-p{position:absolute;bottom:9px;right:10px;width:12px;height:12px;border-radius:50%;background:var(--ani);box-shadow:0 0 0 3px var(--ani-s)}
+.s-cal .c-fl li.E .dd{background:var(--eve-s);color:var(--eve);box-shadow:inset 0 0 0 2px var(--eve)}
+.s-cal .c-fl li.D .dd{background:var(--dds-s);color:var(--dds);box-shadow:inset 0 0 0 2px var(--dds)}
+.s-cal .c-fl li.A .dd{background:var(--ani-s);color:var(--ani);box-shadow:inset 0 0 0 2px var(--ani)}
+.s-cal .c-fl li.hj-ani{background:var(--ani-s);border-radius:10px;padding:4px 8px;margin:0 -8px}
+.s-cal .c-hjx p{margin:5px 0;font-size:20px;font-weight:600;overflow-wrap:anywhere}
+.s-cal .c-hjx p small{font-weight:700;color:var(--muted)}
+.s-cal .c-hjx p.hj-ani{color:var(--ani)}
+.s-cal .c-tot5{grid-template-columns:repeat(5,1fr)}
+.s-cal .c-tot5 b{font-size:34px}
+/* redistribuição: resumo vai para baixo da grade, listas ganham folga */
+.s-cal .c-left{display:flex;flex-direction:column;gap:14px;min-height:0}
+.s-cal .c-left .c-gr{flex:1;min-height:0}
+.s-cal .c-resumo .c-tot b{font-size:30px}
+.s-cal .c-nx b{font-size:44px}
+.s-cal .c-nx p{font-size:20px}
+.s-cal .c-hjx p{font-size:17px;margin:3px 0}
+.s-cal .c-flx .c-fl{max-height:190px}
 </style>
 
 <div id="viewport">
@@ -810,9 +835,9 @@ const SECTIONS = [
     parts:[{kind:"list",key:"itens",label:"Atividades",cols:[
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora",t:"time",w:1},
       {k:"atividade",l:"Atividade",w:4},{k:"equipamento",l:"Equipamento",w:2},{k:"responsavel",l:"Responsável",w:2}]}]},
-  {key:"calendario", label:"Calendário", hint:"Feriados e pontes do ano (ponte = dia encaixado entre feriado e fim de semana). A TV mostra sempre o mês atual: dias marcados em vermelho (feriado) e amarelo (ponte), card com a contagem para o próximo feriado e resumo do mês (dias úteis, feriados e pontes). Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. Sem nenhum feriado cadastrado, a tela fica fora da rotação.",
-    parts:[{kind:"list",key:"itens",label:"Feriados e pontes",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
-      {k:"data",l:"Data",t:"date",w:2},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
+  {key:"calendario", label:"Calendário", hint:"O calendário dinâmico da TV: feriados e pontes do ano + EVENTOS da empresa + agenda de DDS. Os aniversariantes do mês aparecem sozinhos, puxados da aba Aniversariantes. A TV mostra sempre o mês atual: vermelho = feriado, amarelo = ponte, verde = evento, laranja = DDS, rosa = aniversário. Cadastre pelo menos o ano atual; dias já passados aparecem riscados na lista. Sem nenhum item cadastrado, a tela fica fora da rotação.",
+    parts:[{kind:"list",key:"itens",label:"Feriados, pontes, eventos e DDS",newRow:()=>({data:nextDate(),tipo:"Feriado",nome:""}),cols:[
+      {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Hora (opcional)",ph:"Ex.: 07:30",w:1},{k:"tipo",l:"Tipo",t:"select",opts:["Feriado","Ponte","Evento","DDS"],w:2},{k:"nome",l:"Nome (como aparece na TV)",w:4}]}]},
   {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
     parts:[{kind:"list",key:"itens",label:"Treinamentos",cols:[
       {k:"treinamento",l:"Treinamento",ph:"Ex.: NR-35 Trabalho em altura",w:3},{k:"tipo",l:"Tipo",t:"select",opts:["Formação","Reciclagem","Integração","Interno"],w:2},
@@ -1359,66 +1384,104 @@ R.organograma = function(o){
     + (base.length?`<div class="base"><div class="bl">${base.map(p=>`<div class="bi"><i class="hst${dash(p)?" dash":""}"></i>${orgCard(p,true)}</div>`).join("")}</div></div>`:"");
   return `<div class="org"><div class="tree" style="grid-template-columns:repeat(${Math.max(total,1)},auto)">${celulas}</div></div>`;
 };
-/* ---------- Calendário — feriados e pontes do mês corrente (aba Calendário) ----------
-   Dados vêm do editor (data AAAA-MM-DD, tipo Feriado/Ponte, nome). A tela mostra
-   SEMPRE o mês atual: a cada volta da rotação o HTML é reconstruído, então a
-   virada do dia/mês acontece sozinha. Sem feriado cadastrado, a aba não entra
-   na rotação (expandSlides). */
+/* ---------- Calendário dinâmico — feriados, pontes, eventos da empresa e agenda
+   de DDS do mês corrente + aniversariantes do mês (puxados da aba Aniversariantes).
+   Dados vêm do editor (data AAAA-MM-DD, hora opcional, tipo Feriado/Ponte/Evento/DDS,
+   nome). A tela mostra SEMPRE o mês atual: a cada volta da rotação o HTML é
+   reconstruído, então a virada do dia/mês acontece sozinha. Sem item cadastrado,
+   a aba não entra na rotação (expandSlides). */
 const CAL_DS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 function calItens(){
+  const tipoDe = t => /^ponte/i.test(t)?"P":/^evento/i.test(t)?"E":/^dds/i.test(t)?"D":"F";
   return list(data,"calendario")
-    .map(x=>({d:pDate(x.data), t:/^ponte/i.test(String(x.tipo||"").trim())?"P":"F", n:String(x.nome||"").trim()}))
+    .map(x=>({d:pDate(x.data), h:String(x.hora||"").trim(), t:tipoDe(String(x.tipo||"").trim()), n:String(x.nome||"").trim()}))
     .filter(x=>x.d && x.n)
-    .sort((a,b)=>+a.d-+b.d);
+    .sort((a,b)=>+a.d-+b.d || a.h.localeCompare(b.h));
+}
+/* aniversariantes do mês — zero cadastro extra: puxa da aba Aniversariantes */
+function calAniversariantes(ano, mes){
+  const mesDe = a => { const i = MESES.indexOf(a.mes); if(i>0) return i; const n = String(a.nascimento||"").match(/^\d{4}-(\d{2})/); return n?+n[1]:0; };
+  return list(data,"aniversarios").filter(a=>a.nome)
+    .map(a=>({...a,_m:mesDe(a),_d:num(a.dia)}))
+    .filter(a=>a._m===mes+1 && a._d>=1 && a._d<=31)
+    .sort((a,b)=>a._d-b._d);
 }
 R.calendario = function(){
   const it = calItens();
-  if(!it.length) return emptyBox("Calendário sem feriados","Cadastre feriados e pontes no editor (aba Calendário) — sem eles esta tela fica fora da rotação.");
+  if(!it.length) return emptyBox("Calendário sem itens","Cadastre feriados, pontes, eventos e DDS no editor (aba Calendário) — sem eles esta tela fica fora da rotação.");
   const hj = tvHoje ? pDate(tvHoje) : today0();
   const ano = hj.getFullYear(), mes = hj.getMonth();
   const mesIt = it.filter(x=>x.d.getFullYear()===ano && x.d.getMonth()===mes);
-  const mapa = {}; mesIt.forEach(x=>{ mapa[x.d.getDate()] = x; });
+  const mapa = {}; mesIt.forEach(x=>{ (mapa[x.d.getDate()] = mapa[x.d.getDate()] || []).push(x); });
+  const anis = calAniversariantes(ano, mes);
+  const aniMap = {}; anis.forEach(a=>{ (aniMap[a._d] = aniMap[a._d] || []).push(a); });
   const ini = new Date(ano,mes,1).getDay(), dias = new Date(ano,mes+1,0).getDate();
   let g = CAL_DS.map(d=>`<div class="c-dw">${d}</div>`).join("");
   for(let i=0;i<ini;i++) g += `<div class="c-d" aria-hidden="true"></div>`;
   let uteis = 0;
   for(let d=1;d<=dias;d++){
-    const wd = (ini+d-1)%7, f = mapa[d], fds = wd===0||wd===6;
+    const wd = (ini+d-1)%7, fs = mapa[d], fds = wd===0||wd===6, f = fs ? fs[0] : null;
     if(!fds && !f) uteis++;
-    const cls = "c-d"+(fds?" fds":"")+(f?" "+f.t.toLowerCase():"")+(d===hj.getDate()?" hj":"");
-    g += `<div class="${cls}"${f?` title="${esc(f.n)}"`:""}><b>${d}</b>${f?`<span>${esc(f.n)}</span>`:""}</div>`;
+    const marca = fs ? fs.map(x=>x.t.toLowerCase()).join(" ") : "";
+    const tip = fs ? ` title="${esc(fs.map(x=>x.n).join(" · "))}"` : (aniMap[d] ? ` title="Aniversário: ${esc(aniMap[d].map(a=>a.nome).join(", "))}"` : "");
+    const cls = "c-d"+(fds?" fds":"")+(marca?" "+marca:"")+(d===hj.getDate()?" hj":"");
+    g += `<div class="${cls}"${tip}><b>${d}</b>${f?`<span>${esc(f.n)}</span>`:""}${aniMap[d]?`<i class="ani-p" aria-hidden="true"></i>`:""}</div>`;
   }
+  /* card HOJE: aniversariantes do dia + DDS/eventos/feriados de hoje */
+  const hjEventos = mesIt.filter(x=>+x.d===+hj);
+  const hjAnis = aniMap[hj.getDate()] || [];
+  let hjh = "";
+  if(hjEventos.length || hjAnis.length){
+    hjh = `<div class="c-card c-hjx"><h3>Hoje · ${hj.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}</h3>`;
+    hjh += hjAnis.map(a=>`<p class="hj-ani">🎂 <b>${esc(a.nome)}</b></p>`).join("");
+    hjh += hjEventos.map(x=>`<p>${x.t==="D"?"🦺":x.t==="E"?"📌":"🎉"} <b>${esc(x.n)}</b>${x.h?` <small>${esc(x.h)}</small>`:""}</p>`).join("");
+    hjh += `</div>`;
+  }
+  /* próximo marcado: feriado primeiro; sem feriado à frente, mostra evento/DDS */
+  const cardNx = (x, rot) => {
+    const n = Math.round((+x.d - +hj)/864e5);
+    return `<div class="c-card c-nx"><h3>${rot}</h3><b>${n===0?"HOJE":n===1?"AMANHÃ":n+" dias"}</b><p>${esc(x.n)}</p><small>${x.d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}${x.h?` · ${esc(x.h)}`:""}</small></div>`;
+  };
   const nx = it.filter(x=>x.t==="F" && +x.d>=+hj)[0] || null;
-  let nxh = "";
-  if(nx){
-    const n = Math.round((+nx.d - +hj)/864e5);
-    nxh = `<div class="c-card c-nx"><h3>Próximo feriado</h3><b>${n===0?"HOJE":n===1?"AMANHÃ":n+" dias"}</b><p>${esc(nx.n)}</p><small>${nx.d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long"})}</small></div>`;
-  }
+  const nxE = it.filter(x=>(x.t==="E"||x.t==="D") && +x.d>=+hj)[0] || null;
+  const nxh = nx ? cardNx(nx,"Próximo feriado") : (nxE ? cardNx(nxE, nxE.t==="D"?"Próximo DDS":"Próximo evento") : "");
+  const rotDe = x => x.t==="F"?"Feriado":x.t==="P"?"Ponte":x.t==="E"?"Evento":"DDS";
   const lst = mesIt.length
     ? `<ul class="c-fl">${mesIt.map(x=>{
         const ps = +x.d < +hj;
-        return `<li class="${x.t}${ps?" ps":""}"><span class="dd">${("0"+x.d.getDate()).slice(-2)}</span><div><span class="nm">${esc(x.n)}</span><em>${x.t==="F"?"Feriado":"Ponte"} · ${x.d.toLocaleDateString("pt-BR",{weekday:"long"})}</em></div></li>`;
+        return `<li class="${x.t}${ps?" ps":""}"><span class="dd">${("0"+x.d.getDate()).slice(-2)}</span><div><span class="nm">${esc(x.n)}</span><em>${rotDe(x)} · ${x.d.toLocaleDateString("pt-BR",{weekday:"long"})}${x.h?` · ${esc(x.h)}`:""}</em></div></li>`;
       }).join("")}</ul>`
-    : `<p class="c-none">Nenhum feriado ou ponte neste mês.</p>`;
-  const nf = mesIt.filter(x=>x.t==="F").length, np = mesIt.length - nf;
+    : `<p class="c-none">Nenhum feriado, evento ou DDS neste mês.</p>`;
+  const lstA = anis.length
+    ? `<ul class="c-fl">${anis.map(a=>{
+        const hjA = a._d===hj.getDate();
+        return `<li class="A${hjA?" hj-ani":""}"><span class="dd">${("0"+a._d).slice(-2)}</span><div><span class="nm">${esc(a.nome)}${hjA?" 🎂":""}</span><em>${hjA?"Parabéns, hoje é o dia!":"Aniversariante do mês"}</em></div></li>`;
+      }).join("")}</ul>`
+    : "";
+  const nf = mesIt.filter(x=>x.t==="F").length, np = mesIt.filter(x=>x.t==="P").length, ne = mesIt.filter(x=>x.t==="E").length, nd = mesIt.filter(x=>x.t==="D").length;
   const anos = new Set(it.map(x=>x.d.getFullYear()));
-  const av = anos.has(ano) ? "" : `<div class="c-card c-av">⚠ Feriados de ${ano} ainda não foram cadastrados — avise o responsável pelo painel.</div>`;
+  const av = anos.has(ano) ? "" : `<div class="c-card c-av">⚠ Feriados e eventos de ${ano} ainda não foram cadastrados — avise o responsável pelo painel.</div>`;
   return `<div class="s-cal">
     <header class="c-hd">
       <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>${esc(MESES[mes+1])} <em>${ano}</em></h1></div>
-      <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span></div>
+      <div class="c-leg" aria-hidden="true"><span><i style="background:var(--fer)"></i>Feriado</span><span><i style="background:var(--pon)"></i>Ponte</span><span><i style="background:var(--eve)"></i>Evento</span><span><i style="background:var(--dds)"></i>DDS</span><span><i style="background:var(--ani)"></i>Aniversário</span></div>
       ${LOGO_TV?`<img class="vh-logo" alt="ZAMine" src="${esc(LOGO_TV)}">`:""}
     </header>
     <div class="c-body">
-      <div class="c-gr">${g}</div>
-      <div class="c-side">${nxh}
-        <div class="c-card c-flx"><h3>Feriados e pontes do mês</h3>${lst}</div>
-        ${av}
-        <div class="c-card"><h3>Resumo do mês</h3><div class="c-tot">
+      <div class="c-left">
+        <div class="c-gr">${g}</div>
+        <div class="c-card c-resumo"><h3>Resumo do mês</h3><div class="c-tot c-tot5">
           <div><b>${uteis}</b><small>dias úteis</small></div>
           <div><b style="color:var(--fer)">${nf}</b><small>feriados</small></div>
           <div><b style="color:var(--pon)">${np}</b><small>pontes</small></div>
+          <div><b style="color:var(--eve)">${ne}</b><small>eventos</small></div>
+          <div><b style="color:var(--dds)">${nd}</b><small>DDS</small></div>
         </div></div>
+      </div>
+      <div class="c-side">${hjh}${nxh}
+        <div class="c-card c-flx"><h3>Do mês</h3>${lst}</div>
+        ${lstA?`<div class="c-card c-flx"><h3>Aniversariantes</h3>${lstA}</div>`:""}
+        ${av}
       </div>
     </div>
   </div>`;
@@ -2264,7 +2327,8 @@ function renderSec(){
     if(p.kind==="backup"){
       h += `<p class="hint">Baixa um arquivo com o conteúdo de todas as telas e das configurações. Guarde no computador. Se alguém apagar algo sem querer, use Restaurar com esse arquivo. As fotos continuam guardadas no painel; o arquivo guarda a ligação com elas.</p>
         <div class="bk"><button type="button" class="btn" id="bkDown">Baixar cópia de segurança</button>
-        <label class="btn" for="bkFile">Restaurar de um arquivo</label><input type="file" id="bkFile" accept="application/json,.json" class="fileIn"></div><div id="bkAsk"></div>`;
+        <label class="btn" for="bkFile">Restaurar de um arquivo</label><input type="file" id="bkFile" accept="application/json,.json" class="fileIn">
+        <button type="button" class="btn ghost" id="bkCsv" title="Lista dos backups automáticos salvos no servidor (data, origem, tamanho) — abre no Excel">⬇ CSV dos backups</button></div><div id="bkAsk"></div>`;
     } else if(p.kind==="links"){
       h += `<p class="hint">Mande para cada pessoa o link da tela que ela vai cuidar. Ela abre, preenche e salva — e o administrador aprova para entrar na TV. O link só funciona para quem tiver permissão concedida na aba Permissões de edição.</p><div class="links">` +
         SECTIONS.filter(x=>!x.admin).map(x=>{const u=`${PANEL_URL}#editar-${x.key}`;return `<div class="lk"><b>${esc(x.label)}</b><code>${esc(u)}</code><button type="button" class="btn" data-copy="${esc(u)}">Copiar</button></div>`;}).join("") + `</div>`;
@@ -2508,12 +2572,14 @@ const HIST_TIPOS = {
 const HIST_ROTULOS = {todos:"Tudo","edição":"Edições","aprovação":"Aprovações",controle:"Controles",erro:"Erros"};
 function histHtml(){
   const tabs = Object.keys(HIST_ROTULOS).map(f=>`<button type="button" class="btn ${histFiltro===f?"pri":""}" data-hf="${f}">${HIST_ROTULOS[f]}</button>`).join("");
-  return `<div class="hist"><div class="hist-top">${tabs}<button type="button" class="btn ghost" id="histRe">Atualizar</button></div><div id="histLista" class="hist-lista"><p class="hint" style="margin:0">Carregando…</p></div></div>`;
+  return `<div class="hist"><div class="hist-top">${tabs}<button type="button" class="btn ghost" id="histCsv" title="Baixa o histórico completo em CSV — abre no Excel">⬇ CSV</button><button type="button" class="btn ghost" id="histRe">Atualizar</button></div><div id="histLista" class="hist-lista"><p class="hint" style="margin:0">Carregando…</p></div></div>`;
 }
 async function wireHist(){
   const lista = $("histLista"); if(!lista) return;
   $("edMain").querySelectorAll("[data-hf]").forEach(b=>b.onclick=()=>{ histFiltro=b.dataset.hf; renderSec(); });
   $("histRe").onclick=()=>{ histCache=null; renderSec(); };
+  const histCsv = $("histCsv");
+  if(histCsv) histCsv.onclick=()=>ZTV.baixarCsv(`/api/tv/${PANEL_SLUG}/auditoria?formato=csv&take=400`, `historico-${PANEL_SLUG}.csv`, window.tokenHeaders);
   try{
     if(!histCache || Date.now()-histCache.t > 60000){ const j = await api(`/api/tv/${PANEL_SLUG}/auditoria?take=200`,{headers:authHeaders()}); histCache = {t:Date.now(), itens:j.itens||[]}; }
     const itens = histCache.itens.filter(i=>histFiltro==="todos" || (HIST_TIPOS[i.acao]||[])[0]===histFiltro);
@@ -2595,6 +2661,8 @@ function wireCanais(){
 /* cópia de segurança */
 function wireBackup(){
   const d = $("bkDown"), f = $("bkFile"); if(!d) return;
+  const bkCsv = $("bkCsv");
+  if(bkCsv) bkCsv.onclick=()=>ZTV.baixarCsv(`/api/tv/${PANEL_SLUG}/backups?formato=csv`, `backups-${PANEL_SLUG}.csv`, window.tokenHeaders);
   d.onclick = async ()=>{
     const pack = {app:"painel-tv-zamine", versao:1, geradoEm:new Date().toISOString(), secoes:secData, config:cfgData||{}};
     try{

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { panelValido, respostaPanelInvalido, tvUser, tvAdmin, permissoesDoUsuario } from '@/lib/tv';
+import { csvResponse, csvData, csvCarimbo } from '@/lib/csv';
 
 /**
  * GET /api/tv/[panel]/auditoria — histórico do painel para o editor (aba Histórico).
@@ -30,6 +31,7 @@ export async function GET(
   }
 
   try {
+    const formato = request.nextUrl.searchParams.get('formato');
     const take = Math.min(Number(request.nextUrl.searchParams.get('take')) || 200, 400);
     const rows = await db.auditLog.findMany({
       where: {
@@ -54,6 +56,31 @@ export async function GET(
         info,
       };
     });
+
+    // download CSV do histórico (aba Histórico do editor — abre direto no Excel BR)
+    if (formato === 'csv') {
+      const rotulo: Record<string, string> = {
+        tv_secao_publicada: 'Publicou na TV',
+        tv_secao_pendente: 'Enviou para aprovação',
+        tv_secao_aprovada: 'Aprovou para a TV',
+        tv_secao_rejeitada: 'Rejeitou alteração',
+        tv_secao_conflito: 'Conflito de edição',
+        tv_config_salva: 'Salvou as configurações',
+        tv_config_conflito: 'Conflito nas configurações',
+        tv_permissoes_definidas: 'Definiu permissões',
+        tv_permissoes_removidas: 'Removeu permissões',
+        tv_controle_assumido: 'Assumiu o controle da TV',
+        tv_controle_liberado: 'Encerrou o controle da TV',
+        tv_backup_manual: 'Criou backup manual',
+        tv_backup_restaurado: 'Restaurou backup',
+        tv_erro: 'Problema reportado pela TV',
+      };
+      return csvResponse(
+        `historico-${panel}-${csvCarimbo()}.csv`,
+        ['Quando', 'Ação', 'Aba', 'Usuário', 'Detalhes'],
+        itens.map((i) => [csvData(i.quando), rotulo[i.acao] || i.acao, i.aba, i.usuario, i.info])
+      );
+    }
 
     return NextResponse.json(
       { itens },

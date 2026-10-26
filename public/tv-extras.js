@@ -287,6 +287,25 @@
   };
 
   /* ---------- 6. CHIP "TVs conectadas" no editor (admin) ---------- */
+  /* Baixa um CSV da plataforma com as credenciais do editor (fetch + blob). */
+  ZTV.baixarCsv = function (caminho, nomeArquivo, authH) {
+    var opts = { credentials: "include" };
+    if (authH) opts.headers = authH();
+    fetch(caminho, opts)
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.blob(); })
+      .then(function (b) {
+        var url = URL.createObjectURL(b);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = nomeArquivo || "download.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      })
+      .catch(function () { alert("Não foi possível baixar o CSV agora."); });
+  };
+
   ZTV.chipTVs = function (mount, authH) {
     if (!mount) return;
     var chip = mount.querySelector("#edTVs");
@@ -324,8 +343,11 @@
         box.className = "ztv-ia";
         box.innerHTML = '<div class="ztv-ia-box" role="dialog" aria-label="TVs conectadas"><h3>🖥 TVs deste painel</h3>' +
           '<ul style="margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font:15px/1.4 Barlow,sans-serif">' + linhas + "</ul>" +
-          '<div class="ztv-ia-btns"><button type="button" class="btn ghost" id="zFechar">Fechar</button></div></div>';
+          '<div class="ztv-ia-btns"><button type="button" class="btn ghost" id="zCsv">⬇ CSV</button><button type="button" class="btn ghost" id="zFechar">Fechar</button></div></div>';
         document.body.appendChild(box);
+        box.querySelector("#zCsv").onclick = function () {
+          ZTV.baixarCsv("/api/tv/" + (ZTV.panel || "") + "/dispositivos?formato=csv", "tvs-" + (ZTV.panel || "painel") + ".csv", authH);
+        };
         box.querySelector("#zFechar").onclick = function () { box.remove(); };
         box.addEventListener("click", function (ev) { if (ev.target === box) box.remove(); });
       });

@@ -34,6 +34,25 @@ const SEVERITY_BY_ACTION: Record<string, AuditSeverity> = {
   seed_imported: 'critical',
 };
 
+/** Poda automática do histórico de atividades: guarda os registros por 30 dias
+ *  (decisão do admin — rastreabilidade suficiente e tabela nunca cresce sem limite).
+ *  Roda em segundo plano no máximo 1x por hora por processo, sem travar o log. */
+const PODA_DIAS = 30;
+const PODA_INTERVALO_MS = 60 * 60 * 1000;
+const GP = globalThis as typeof globalThis & { __auditPodaEm?: number };
+
+function podarAntigos(): void {
+  const agora = Date.now();
+  if (GP.__auditPodaEm && agora - GP.__auditPodaEm < PODA_INTERVALO_MS) return;
+  GP.__auditPodaEm = agora;
+  db.auditLog
+    .deleteMany({ where: { createdAt: { lt: new Date(agora - PODA_DIAS * 86400e3) } } })
+    .then((r) => {
+      if (r.count) console.log(`[audit-log] poda automática: ${r.count} registro(s) com mais de ${PODA_DIAS} dias apagados`);
+    })
+    .catch(() => {});
+}
+
 export function auditLog(params: {
   action: string;
   userId?: string;
@@ -44,6 +63,7 @@ export function auditLog(params: {
   severity?: AuditSeverity;
 }): void {
   const severity = params.severity ?? SEVERITY_BY_ACTION[params.action] ?? 'info';
+  podarAntigos();
   db.auditLog
     .create({ data: { ...params, severity } })
     .catch(() => {});

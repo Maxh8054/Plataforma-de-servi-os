@@ -60,6 +60,15 @@ const DDL = [
     "ultimaVez" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "notificacoes_leitura_pkey" PRIMARY KEY ("userEmail")
   )`,
+  `CREATE TABLE IF NOT EXISTS "notificacoes_dispensas" (
+    "id" TEXT NOT NULL,
+    "userEmail" TEXT NOT NULL,
+    "itemKey" TEXT NOT NULL,
+    "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "notificacoes_dispensas_pkey" PRIMARY KEY ("id")
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "notificacoes_dispensas_userEmail_itemKey_key"
+    ON "notificacoes_dispensas"("userEmail", "itemKey")`,
 ];
 
 /** Garante as tabelas do monitor (uma vez por processo). true = pode usar. */
