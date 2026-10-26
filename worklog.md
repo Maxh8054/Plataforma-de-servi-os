@@ -881,3 +881,24 @@ Work Log (conclusão da Task 41):
 
 Stage Summary:
 - Calendário dinâmico no ar nos 2 painéis: admin cadastra feriados/pontes por painel (Goiás já nasce com 2026 preenchido), TV mostra o mês corrente com contagem para o próximo feriado e resumo do mês; tela some da rotação se não houver cadastro. Zero mudança de schema/rotas.
+
+---
+Task ID: 40
+Agent: Z.ai Code (principal)
+Task: Conectar a sandbox ao banco PostgreSQL de produção do Render (pedido do usuário após erro "Email nao cadastrado no sistema" na tela de login)
+
+Work Log:
+- Diagnosticado a causa raiz: a sandbox não tinha banco nenhum conectado — o ambiente injeta DATABASE_URL=file:/home/z/my-project/db/custom.db (SQLite), que sobrescreve qualquer .env; a API /api/auth/check-email falhava 500 e a tela interpretava como "email não existe"
+- Hostname informado pelo usuário (dpg-d6h0d4ma2pns7388dgq0-a) é o INTERNO do Render (só acessível na rede deles); descoberto o hostname externo testando as regiões: dpg-d6h0d4ma2pns7388dgq0-a.oregon-postgres.render.com (autenticou com sucesso)
+- Validação direta no banco via pg: 25 usuários, 30 tabelas (todas as do painel TV presentes: tv_sections, tv_panel_configs, tv_dispositivos, tv_backups, notificacoes_leitura etc.)
+- Criado .env (gitignored, nunca versionado) com DATABASE_URL de produção + ?sslmode=require
+- Corrigido script dev no package.json: "env -u DATABASE_URL next dev -p 3000 ..." para remover a injeção da sandbox e deixar o Next usar o .env
+- prisma generate + restart do dev server
+- Testes: check-email retorna exists:true para cicero-c@zaminebrasil.com; endpoints TV protegidos respondem "Faça login" (correto); /api/contador-seguranca 200 lendo tabela de produção
+- Verificação no navegador (agent-browser): login renderiza, email cadastrado avança para o passo da SENHA (erro sumiu), sem erros de console, lint no baseline (31 problemas pré-existentes)
+
+Stage Summary:
+- Sandbox agora opera 100% no banco PostgreSQL de produção do Render (região Oregon) — mesmo dado, mesmo usuário, mesmo conteúdo de painéis
+- ATENÇÃO: qualquer alteração feita na sandbox afeta a plataforma real (editor, TVs, usuários)
+- package.json alterado (script dev) — commit pendente junto com próxima entrega
+- .env permanece local (gitignored); credencial NÃO vai para o git
