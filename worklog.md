@@ -902,3 +902,26 @@ Stage Summary:
 - ATENÇÃO: qualquer alteração feita na sandbox afeta a plataforma real (editor, TVs, usuários)
 - package.json alterado (script dev) — commit pendente junto com próxima entrega
 - .env permanece local (gitignored); credencial NÃO vai para o git
+
+---
+Task ID: 41
+Agent: Z.ai Code (principal)
+Task: Calendário dinâmico na TV (eventos da empresa + agenda de DDS + aniversariantes), dispensa individual do sino, poda de logs em 30 dias e download CSV por aba (pedido explícito do usuário, com poda aprovada em 30 dias e IA_API_KEY confirmada no Render)
+
+Work Log:
+- Investigado por que o usuário "não achava" o calendário na TV: a aba/screen existem, mas com 0 itens cadastrados a tela fica FORA da rotação de propósito (expandSlides retorna []); API content do painel goias confirmou calendario com 0 itens e aniversarios com 79 pessoas
+- Calendário dinâmico (painel-tv-goias.html + painel-tv-minas.html, blocos idênticos): editor ganhou tipos Feriado/Ponte/Evento/DDS + campo Hora opcional + hint novo; TV ganhou calItens com tipoDe (F/P/E/D), calAniversariantes (puxa da aba Aniversariantes sem cadastro extra), R.calendario reescrito com marcação por tipo no grid, bolinha rosa de aniversário nos dias, card HOJE (🎂 aniversariantes + 📌/🦺 eventos e DDS com hora), Próximo feriado/evento/DDS, listas Do mês e Aniversariantes (passados riscados, hoje com 🎂), resumo com 5 contadores
+- Layout corrigido após teste visual: Resumo do mês movido para baixo da grade (c-left) porque 5 cards na lateral espremiam as listas (51px); cards compactados (Próximo 44px, Hoje 17px) e listas com max-height 190px + scroll
+- Sino (page.tsx + APIs): tabela notificacoes_dispensas (modelo NotificacaoDispensa no schema + DDL em ensureTabelasMonitor), rota POST /api/notificacoes/dispensar ({id} ou {ids}), GET filtra dispensados; ids de tv_offline e pendente agora incluem a ocorrência (nova queda/novo envio = nova notificação mesmo após dispensar); UI com X em cada item + "Limpar todas" + CSV
+- Poda do AuditLog: 30 dias (PODA_DIAS), disparada ao gravar log, no máx 1x/hora por processo (globalThis), deleteMany fire-and-forget
+- CSV (novo src/lib/csv.ts): csvResponse com ; + BOM UTF-8 + Content-Disposition; aplicado em auditoria, dispositivos, backups e notificacoes via ?formato=csv; botões ⬇ CSV na aba Histórico, na Cópia de segurança e no popup do chip TVs (ZTV.baixarCsv em tv-extras.js com token)
+- Testes: browser com renderFrame + dados de teste client-side (print /tmp/calendario-tv5.png — TELA 7 DE 15 CALENDÁRIO, cores/card HOJE/aniversariantes reais ok); backend com usuário temp admin (criado por script, APAGADO no fim junto com dispensas e logs): dispensa individual e lote ✅, 4 CSVs com ; e nome de arquivo ✅ (62 linhas histórico, 6 TVs, 8 backups); lint no baseline 31
+- Commit da9ac1b pushado para origin/main (f66cc83..da9ac1b) com token antigo autorizado; remote limpo após push (verificado)
+
+Stage Summary:
+- Calendário dinâmico entregue nos 4 painéis (goias, minas, minas-araxa, minas-usiminas — mesmos 2 arquivos HTML)
+- ATENÇÃO para o usuário: a tela Calendário só entra na rotação depois de SALVAR conteúdo na aba Calendário do editor (os feriados 2026 já vêm pré-preenchidos no editor na primeira abertura — basta revisar e clicar em Salvar conteúdo); aniversariantes aparecem sozinhos
+- Sino dispensa por OCORRÊNCIA: problema novo sempre re-notifica
+- Poda de logs: 30 dias, automática, sem botão necessário
+- CSVs abrem direto no Excel BR (; + BOM); botões no editor e no sino
+- package.json (env -u DATABASE_URL no dev) e .env (banco de produção) seguem da Task 40
