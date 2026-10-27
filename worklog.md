@@ -1125,5 +1125,20 @@ Work Log:
 Stage Summary:
 - A apresentação de benefícios agora é TELA INTEIRA na TV: cobre o viewport inteiro, sem o cabeçalho nem o rodapé do painel em volta (enquanto ela roda, o contador de dias/letreiro/pontos voltam na tela seguinte)
 - Editor, toasts, botões flutuantes, seletor de canal, barra de controle e aviso offline continuam por cima — nada quebrou
-- Prévia do editor continua mostrando o deck dentro da caixa (não virou fullscreen lá)
-- Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+---
+Task ID: 51-b
+Agent: Z.ai Code (principal)
+Task: Continuação da 51 — re-verificação pós-reset do sandbox + conciliação do repositório git
+
+Work Log:
+- Sandbox reiniciado: git sem remote e sem histórico local (só "Initial commit"), dependências ausentes (bun install refeito) e o dev server é encerrado ao fim de cada comando (a plataforma mata o processo) — a verificação browser foi feita com servidor + testes no MESMO comando
+- Re-verificação browser (goias+minas, 1920x1080): iframe .bn-fr position:fixed com rect [0,0,1920,1080] exato, z-index 10; elementFromPoint no topo/rodapé/margem esquerda = IFRAME (cabeçalho/rodapé/margens 100% cobertos); bnDur medido 130000 nos dois; poll renderFrame(false) preserva o mesmo nó (sameNode:true); screenshot /tmp/panel-iframe.png confirma a capa "NOSSOS BENEFÍCIOS" de ponta a ponta SEM cabeçalho/rodapé; #offTag[hidden] funcionando (display:none); zero erros de página
+- Print anterior em branco era lag de primeira pintura do headless (swiftshader); deck aberto direto sem ?tv=1 demora a iniciar no sandbox porque o CSS remoto de fontes bloqueia a execução do script do deck (CSSOM) — em produção com internet funciona (validado na 50); o caminho crítico (embutido no painel) foi validado com slide 0 ativo e filhos opacity 1
+- Git conciliado: origin readicionado e main local = 501da61 — o commit da TELA INTEIRA JÁ ESTAVA no remote (push da sessão anterior OK); o snapshot havia perdido apenas src/app/api/tv/upload/route.ts (restaurado de origin/main) e mudado permissões 644→755 em ~82 arquivos (restaurado via checkout origin/main -- .); hashes sha1 confirmaram conteúdo idêntico em todos os arquivos existentes; 6 itens não tracked (aniversariantes/organograma da plataforma, sem referências no código commitado) deixados como estão
+- Lint no baseline 31; JS válido (new Function) nos 2 painéis + deck + tv-sw
+
+Stage Summary:
+- Nada a commitar: o fix de tela inteira já está no origin/main (501da61) e o conteúdo em disco é idêntico ao push — re-verificado no browser hoje com screenshot ponta a ponta
+- Repositório reconciliado com origin/main; rota /api/tv/upload recuperada do remote
+- Pendente no chat: embed do Power BI no Perfil de Perdas — o link enviado (app.powerbi.com/groups/me/...) é interno, pede login e não pode ir em iframe; aguardando o usuário gerar o link "Publicar na web" (app.powerbi.com/view?r=...) para plugar na tela como foi feito com os Benefícios
