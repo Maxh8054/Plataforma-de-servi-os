@@ -36,7 +36,7 @@ self.addEventListener("fetch", (event) => {
   // apresentação de benefícios: rede primeiro, cache como reserva (slug aceita
   // painel por local: minas-araxa etc.)
   const conteudo = /^\/api\/tv\/[a-z0-9-]+\/content$/.test(url.pathname);
-  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname) || url.pathname === "/html/beneficios-zamine.html";
+  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname) || url.pathname === "/html/beneficios-zamine.html" || url.pathname === "/html/aniversarios-zamine.html";
   const script = /^\/tv-(extras|qrcode)\.js$/.test(url.pathname);
   if (conteudo || pagina || script) {
     const chave = url.pathname + (url.search || "");

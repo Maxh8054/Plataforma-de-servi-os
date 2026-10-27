@@ -1160,3 +1160,24 @@ Stage Summary:
 - A TV agora exibe a NOVA apresentação de benefícios (tema claro, 13 slides, ~2min45s) em TELA INTEIRA; a apresentação antiga saiu de cena por completo
 - A rotação espera o deck acabar; o poll de 30s não interrompe; a lista antiga segue no editor como backup, fora do ar
 - Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+---
+Task ID: 53
+Agent: Z.ai Code (principal)
+Task: "o banco de dados de aniversario continua sendo o mesmo, mas eu quero que vc implemente esse layout aqui" — tela Aniversariantes vira a apresentação cinematográfica anexada (upload/Pasted Content_1793134692738.txt) com o MESMO banco de dados da aba
+
+Work Log:
+- Novo deck public/html/aniversarios-zamine.html (561 linhas): capa, parabéns do dia (retrato grande), galerias em cartões (6 por tela), fecho — bolo 3D de cilindros, confete, balões, mesma paleta/motor do deck de benefícios; montado por recorte exato das peças do anexo (helpers 3D, telas, motor) para evitar erros de transcrição
+- Dados NÃO ficam mais no deck: o painel manda via postMessage ({ztvAni:{unidade, pessoas, hoje:{d,m}}}) — mesmo banco do editor (aba Aniversariantes, com filtro do mês atual e tvHoje do servidor); o deck responde {ztvAniDur} (duração total em s) e pede dados ao montar ({ztvAniPede}); dados demo hardcoded mantidos SÓ para abertura direta sem ?tv=1 (pré-visualizar o layout); mesma carga não recomeça a apresentação (checagem por assinatura)
+- Modo TV ?tv=1: esconde #ui e iguala o fundo (#e9ecf1) — igual ao deck de benefícios
+- Painéis goias+minas (10 edições idênticas em ambos): CSS .ani-fr herdando as regras de tela inteira do .bn-fr; R.aniversarios → iframe do deck (emptyBox se o mês não tem gente); expandSlides sem sub-slides de aniversariantes; promoção do slide em dia de festa simplificada (aniversariantesDeHoje); duration() usa anDur; bloco anDur+aniPacote+aniPost+listener (duração real REAGENDA a troca de tela; pede responde com data ou draft conforme o contexto); hook no renderFrame (animation none + aniPost); poll de 30s pula aniversarios (não recarrega o deck); prévia do editor manda o rascunho; hint da aba reescrito
+- tv-sw.js: deck de aniversariantes entrou na lista network-first das páginas
+- 2 bugs apanhados no caminho e corrigidos: aspas duplicada no hint (quebrava o JS dos painéis) e off-by-2 na extração das peças (esc/ini fora do escopo → ReferenceError: esc is not defined); validação com new Function + node --check nos 3 arquivos
+- Verificação browser (server+browser na mesma sessão, sandbox mata o server entre comandos): demo standalone 5 slides com fallback demo; painéis goias/minas com dados mockados do banco — iframe fixed [0,0,1920,1080] z-10, 4 slides, capa com a unidade do config (GO/MG), festa do dia 27 em cena, pessoa de novembro excluída, anDur 90000→60000 postada pelo deck, poll sameNode:true; screenshots ponta a ponta (capa com bolo 3D e confete em tela cheia)
+- Lint no baseline 31; erros Prisma no dev.log são ambientais do sandbox (sem DATABASE_URL), pré-existentes
+
+Stage Summary:
+- A tela Aniversariantes da TV agora roda a apresentação cinematográfica anexada com o MESMO banco da aba (via postMessage — nada é digitado no deck)
+- A rotação espera a apresentação acabar (duração medida dinamicamente — varia com o número de gente do mês); o poll de 30s não interrompe; em dia de festa o slide sobe para o começo da rotação
+- Mês sem aniversariantes continua mostrando o aviso de cadastro; a prévia do editor reflete o rascunho em tempo real
+- Zero mudança de schema/rotas; TVs atualizam recarregando a página

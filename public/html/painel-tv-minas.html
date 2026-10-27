@@ -69,8 +69,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hid
 /* benefícios: apresentação pronta (deck) — ocupa a TELA INTEIRA da TV (por cima do
    cabeçalho e do rodapé; fica abaixo dos botões flutuantes, toasts, editor, seletor
    de canal e barra de controle). Na prévia do editor segue dentro da caixa. */
-.bn-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#e9ecf1}
-main .bn-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}
+.bn-fr,.ani-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#e9ecf1}
+main .bn-fr,main .ani-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.slide{animation:none}.bar i{animation:none!important}}
 
@@ -1103,7 +1103,7 @@ const SECTIONS = [
       {k:"titulo",l:"Evento",w:3},{k:"data",l:"Data",t:"date",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:4},
       {k:"inicio",l:"Entra no ar em",t:"date",def:"",w:2},{k:"fim",l:"Sai do ar depois de",t:"date",def:"",w:2},
       {k:"horaInicio",l:"Exibir a partir das",t:"time",def:"",w:2},{k:"horaFim",l:"Exibir até",t:"time",def:"",w:2}]},]},
-  {key:"aniversarios", label:"Aniversariantes do mês", hint:"Cadastre a equipe inteira uma vez, com dia e mês. A TV mostra sozinha só quem faz aniversário no mês atual, e na virada do mês troca a lista. Quem faz aniversário hoje aparece em destaque. A foto é opcional; sem foto aparecem as iniciais. Use Colar do Excel para cadastrar/atualizar todo mundo de uma vez, e Fotos em lote para enviar várias fotos — o nome do arquivo casa com o nome da pessoa.",
+  {key:"aniversarios", label:"Aniversariantes do mês", hint:"A TV mostra a apresentação cinematográfica de aniversariantes (capa, parabéns do dia, galerias em cartões e fecho) usando exatamente os dados desta aba. Cadastre a equipe inteira uma vez, com dia e mês — só quem faz aniversário no mês atual entra no ar, e a lista troca sozinha na virada do mês. A foto é opcional; sem foto aparecem as iniciais. Use Colar do Excel para cadastrar/atualizar todo mundo de uma vez, e Fotos em lote para enviar várias fotos — o nome do arquivo casa com o nome da pessoa.",
     parts:[
       {kind:"list",key:"itens",label:"Aniversariantes",cols:[
         {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"dia",l:"Dia",t:"number",w:1},{k:"mes",l:"Mês",t:"select",opts:MESES,w:2},{k:"nascimento",l:"Nascimento",t:"date",w:2},{k:"setor",l:"Setor / função",w:3}]},
@@ -1866,31 +1866,13 @@ const R = {
       </div></div>`;
   },
   aniversarios(o){
-    /* data: servidor manda (fuso da operação); sem resposta, usa o relógio do aparelho */
-    const hj = tvHoje ? new Date(tvHoje+"T12:00:00") : new Date(), mAt = hj.getMonth()+1, dHoje = hj.getDate();
-    const mesNomes=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-    const abrev=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
-    const mesDe = a => { const i = MESES.indexOf(a.mes); if(i>0) return i; const n = String(a.nascimento||"").match(/^\d{4}-(\d{2})/); return n?+n[1]:0; };
-    const it = list(o,"aniversarios").filter(a=>a.nome).map(a=>({...a,_m:mesDe(a),_d:num(a.dia)})).filter(a=>a._m===mAt&&a._d>=1&&a._d<=31).sort((a,b)=>a._d-b._d);
-    const mes = mesNomes[mAt-1];
-    if(!it.length) return emptyBox("Sem aniversariantes neste mês","Adicione os aniversariantes de "+mes+" no editor (aba Aniversariantes).");
-    const festas = it.filter(a=>a._d===dHoje);
-    const n=it.length, c=n<=4?Math.max(n,1):n<=6?n:n<=8?4:n<=10?5:6;
-    const ini = v => String(v||"").trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join("").toUpperCase();
-    const bonito = v => String(v||"").toLowerCase().split(/\s+/).filter(Boolean).map((w,i)=>(i&&["de","da","do","dos","das","e"].includes(w))?w:w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
-    const primeiro = a => bonito(a.nome).split(" ")[0];
-    const quem = !festas.length ? "" : festas.length===1 ? primeiro(festas[0]) : festas.slice(0,-1).map(primeiro).join(", ")+" e "+primeiro(festas[festas.length-1]);
-    return `<div class="s-ani${festas.length?" festa":""}" data-ani="${festas.length?1:0}">
-      <canvas class="ani-dots" aria-hidden="true"></canvas>
-      <header class="ani-hd">
-        <div><small>ZAMine · ${esc(UNIDADE_TXT)}</small><h1>Aniversariantes<br>de <em>${esc(mes)}</em></h1></div>
-        <div class="ani-meta"><p><b>${it.length}</b>aniversariante${it.length===1?"":"s"}<br>no mês</p></div>
-      </header>
-      ${festas.length?`<div class="ani-festa" aria-live="polite"><svg class="bolo" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="30" width="44" height="24" rx="4" fill="currentColor"/><path d="M10 38c5 4 9 4 14 0s9-4 14 0 9 4 14 0" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/><rect x="20" y="18" width="4" height="12" rx="2" fill="currentColor"/><rect x="30" y="16" width="4" height="14" rx="2" fill="currentColor"/><rect x="40" y="18" width="4" height="12" rx="2" fill="currentColor"/><path d="M22 10c2 3 2 5 0 7-2-2-2-4 0-7zM32 8c2 3 2 5 0 7-2-2-2-4 0-7zM42 10c2 3 2 5 0 7-2-2-2-4 0-7z" fill="#fff"/></svg><div><small>Hoje é dia de festa</small><b>Parabéns, ${esc(quem)}!</b></div></div>`:""}
-      <ol class="ani-grid" style="--c:${c}">${it.map(a=>{const hj2=a._d===dHoje, passou=a._d<dHoje;
-        return `<li class="ani-card${hj2?" hoje":passou?" passou":""}"><div class="ani-ph"><div class="ani-av">${a.foto?img(a.foto):`<span>${esc(ini(a.nome))}</span>`}</div><span class="ani-day">${hj2?"HOJE":String(a._d).padStart(2,"0")+" "+abrev[mAt-1]}</span></div><b>${esc(bonito(a.nome))}</b>${a.setor?`<small>${esc(bonito(a.setor))}</small>`:""}</li>`;}).join("")}</ol>
-      <div class="ani-ft"><span>Parabéns a todos! A ZAMine deseja um novo ano cheio de saúde e segurança.</span><i></i></div>
-    </div>`;
+    /* Tela virou APRESENTAÇÃO PRONTA (arquivo /html/aniversarios-zamine.html):
+       capa, parabéns do dia, galerias em cartões e fecho — mesmo motor da
+       apresentação de benefícios. Os dados são os MESMOS desta aba: o painel
+       manda a lista do mês via postMessage (na prévia, o rascunho). */
+    const pac = aniPacote(o);
+    if(!pac.pessoas.length) return emptyBox("Sem aniversariantes neste mês","Adicione os aniversariantes de "+MESES[pac.hoje.m].toLowerCase()+" no editor (aba Aniversariantes).");
+    return `<iframe class="ani-fr" src="/html/aniversarios-zamine.html?tv=1" title="Aniversariantes do mês"></iframe>`;
   },
   beneficios(o){
     /* Tela virou APRESENTAÇÃO PRONTA (arquivo /html/beneficios-zamine.html): capa,
@@ -2437,11 +2419,7 @@ function expandSlides(o, sec){
   if(sec==="eventos"){
     return list(o,"eventos").filter(e=>e.titulo && noAr(e)).slice().sort((a,b)=>(b.data||"").localeCompare(a.data||"")).map(e=>()=>evSlide(e));
   }
-  if(sec==="aniversarios"){
-    /* dia de festa: slide "Parabéns" para cada aniversariante de hoje + a lista do mês */
-    const b = aniversariantesDeHoje(o);
-    return b.length ? [...b.map(f=>()=>aniSlide(f)), ()=>R.aniversarios(o)] : null;
-  }
+  /* aniversarios: apresentação pronta com sub-telas internas — slide único aqui */
   if(sec==="dds"){
     /* aviso do DDS pode ficar preso a um horário (ex.: 13:00–14:00): fora da
        janela o slide sai da rotação sozinho (mesma regra de comunicados etc.) */
@@ -2500,13 +2478,10 @@ function activeSlides(){
     if(exp) exp.forEach((fn,i)=>out.push({key:k,sub:i,fn}));
     else out.push({key:k});
   });
-  /* dia de festa: o bloco de aniversariantes (Parabéns + lista do mês) sobe
-     para logo depois da primeira tela — todo mundo vê no começo da rotação */
+  /* dia de festa: a apresentação de aniversariantes sobe para logo depois da
+     primeira tela — todo mundo vê no começo da rotação */
   const aIdx = out.findIndex(s=>s.key==="aniversarios");
-  if(aIdx>0){
-    const nAni = out.filter(s=>s.key==="aniversarios").length;
-    if(nAni>1){ const bloco = out.splice(aIdx,nAni); out.splice(1,0,...bloco); }
-  }
+  if(aIdx>0 && aniversariantesDeHoje(data).length){ out.splice(1,0,out.splice(aIdx,1)[0]); }
   /* marcos comemorativos: slide de festa nos dias redondos (100, 200 … 1000, 1500…)
      entra logo depois da tela do contador, só no dia do marco (toggle em Configurações) */
   if(window.ZTV && ZTV.marcoSlide){
@@ -2535,11 +2510,43 @@ function bnMede(){
     if(t>=60) bnDur = (t+3)*1000;
   }catch(e){}
 }
+/* apresentação de aniversariantes: dados vão do painel pro deck (mesmo banco do
+   editor; na prévia, o rascunho) e a duração real volta via postMessage */
+let anDur = 90000;
+function aniPacote(o){
+  const hj = tvHoje ? new Date(tvHoje+"T12:00:00") : new Date();
+  const mAt = hj.getMonth()+1, dHoje = hj.getDate();
+  const mesDe = a => { const i = MESES.indexOf(a.mes); if(i>0) return i; const n = String(a.nascimento||"").match(/^\d{4}-(\d{2})/); return n?+n[1]:0; };
+  const g = get(o,"config","geral")||{};
+  return { unidade:"Zamine · "+(String(g.unidade||"").trim()||UNIDADE_TXT)+" · "+UF_TXT,
+    hoje:{d:dHoje,m:mAt},
+    pessoas:list(o,"aniversarios").filter(a=>a.nome).map(a=>({...a,_m:mesDe(a),_d:num(a.dia)}))
+      .filter(a=>a._m===mAt && a._d>=1 && a._d<=31).sort((a,b)=>a._d-b._d)
+      .map(a=>({nome:a.nome,dia:a._d,mes:a._m,setor:a.setor||"",foto:a.foto||""})) };
+}
+function aniPost(root, src){
+  const f = (root||document).querySelector("iframe.ani-fr"); if(!f) return;
+  const envia = ()=>{ try{ f.contentWindow.postMessage({ztvAni:aniPacote(src)},"*"); }catch(e){} };
+  envia(); setTimeout(envia,500); setTimeout(envia,1600);
+}
+addEventListener("message", e=>{
+  const d = e && e.data; if(!d) return;
+  if(d.ztvAniDur>=30){ anDur = (d.ztvAniDur+3)*1000;
+    /* a apresentação avisou a duração real: reagenda a troca de tela (o timer
+       tinha partido com a estimativa padrão) — só se ela estiver no ar agora */
+    if(state==="ready"){ const sl2 = activeSlides();
+      const kk = sl2.length ? sl2[((idx%sl2.length)+sl2.length)%sl2.length].key : null;
+      if(kk==="aniversarios") restartTimer(); } }
+  if(d.ztvAniPede){ const f=[...document.querySelectorAll("iframe.ani-fr")].find(x=>x.contentWindow===e.source);
+    if(f){ const src=f.closest("#pvMain")?draft:data; try{ e.source.postMessage({ztvAni:aniPacote(src)},"*"); }catch(err){} } }
+});
+
 function duration(){
   const sl = activeSlides(); const key = sl[((idx % sl.length)+sl.length)%sl.length].key;
   const own = num(get(data,"config","duracoes")?.[key]);
   const def = num(get(data,"config","geral")?.duracao);
   if(key==="beneficios" && !(own>=5)) return bnDur;
+  if(key==="aniversarios" && !(own>=5)) return anDur;
   const d = own>=5 ? own : def>=5 ? def : 15;
   return d*1000;
 }
@@ -2571,7 +2578,7 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else if(key!=="beneficios" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
+  } else if(key!=="beneficios" && key!=="aniversarios" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
     /* tela interativa pausada (calendário/escala no ano ou mês escolhido, plano de ação filtrado):
        o poll de 30s não pode desmontar o que a pessoa está vendo. Na tela de
        benefícios o mesmo: recriar o slide recarregaria a apresentação do zero. */
@@ -2579,7 +2586,7 @@ function renderFrame(animate){
   }
   if(key==="organograma"){ fitOrg(); main.querySelectorAll(".org img").forEach(i=>i.addEventListener("load",fitOrg,{once:true})); }
   if(key==="beneficios"){ main.firstElementChild.style.animation="none"; const bf=main.querySelector(".bn-fr"); if(bf && !bf.dataset.med){ bf.dataset.med="1"; bf.addEventListener("load",bnMede,{once:true}); setTimeout(bnMede,1500); } }
-  if(key==="aniversarios"){ aniDots(main.querySelector(".s-ani")); }
+  if(key==="aniversarios"){ main.firstElementChild.style.animation="none"; aniPost(main, data); }
   else if(aniRaf){ cancelAnimationFrame(aniRaf); aniRaf = 0; }
   /* telas interativas: ligam os botões ao montar; ao sair da tela, solta a pausa */
   if(key==="calendario") calInit(main.querySelector(".s-cal"), false);
@@ -3435,6 +3442,7 @@ function renderPreview(){
   if(curSec==="organograma") fitOrg(pm);
   if(curSec==="calendario") calInit(pm.querySelector(".s-cal"), true, draft);
   if(curSec==="planoAcao") paInit(pm.querySelector(".s-pa"), true, draft);
+  if(curSec==="aniversarios") aniPost(pm, draft);
   if(curSec==="escala") escInit(pm.querySelector(".s-escx"), true, draft);
 }
 addEventListener("resize", ()=>{ if(pvOn) renderPreview(); });
