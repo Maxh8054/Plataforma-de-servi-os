@@ -69,7 +69,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hid
 /* benefícios: apresentação pronta (deck) — ocupa a TELA INTEIRA da TV (por cima do
    cabeçalho e do rodapé; fica abaixo dos botões flutuantes, toasts, editor, seletor
    de canal e barra de controle). Na prévia do editor segue dentro da caixa. */
-.bn-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#0d0c0b}
+.bn-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#e9ecf1}
 main .bn-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.slide{animation:none}.bar i{animation:none!important}}
@@ -1107,7 +1107,7 @@ const SECTIONS = [
         {k:"foto",l:"Foto",t:"image",w:2},{k:"nome",l:"Nome",w:3},{k:"dia",l:"Dia",t:"number",w:1},{k:"mes",l:"Mês",t:"select",opts:MESES,w:2},{k:"nascimento",l:"Nascimento",t:"date",w:2},{k:"setor",l:"Setor / função",w:3}]},
       {kind:"lote",label:"Fotos em lote"},
       {kind:"colar",label:"Colar do Excel (cadastro em lote)"}]},
-  {key:"beneficios", label:"Benefícios da empresa", hint:"A TV mostra nesta tela a APRESENTAÇÃO PRONTA de benefícios: capa, saúde (Unimed e Amil Dental), day off no aniversário, educação com desconto (Una, Newton Paiva, Anhanguera, FIAP e Senac EAD), Open English, Movida e encerramento. Ela roda sozinha, com animação, e a rotação espera ela terminar (~2 minutos) antes de trocar de tela. A lista abaixo continua salva aqui como backup, mas NÃO entra mais no ar.",
+  {key:"beneficios", label:"Benefícios da empresa", hint:"A TV mostra nesta tela a APRESENTAÇÃO PRONTA de benefícios (tema claro): capa, saúde, odontologia, bem-estar, educação com desconto (Anhanguera, UNA, Newton Paiva, FIAP e Senac EAD), Open English, Movida e encerramento — 13 slides. Ela roda sozinha, com animação, e a rotação espera ela terminar (~2min45s) antes de trocar de tela. A lista abaixo continua salva aqui como backup, mas NÃO entra mais no ar.",
     parts:[{kind:"list",key:"itens",label:"Benefícios (backup — não entra no ar)",cols:[
       {k:"titulo",l:"Benefício",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:5}]}]},
   {key:"valores", label:"Valores da empresa", hint:"Cada valor vira uma linha na TV: letra grande em laranja + nome do valor + o que significa na prática. As letras formam a assinatura (ex.: C-O-N-T-A-G). Deixe os 6 valores da empresa nesta ordem.",
@@ -1850,9 +1850,10 @@ const R = {
   },
   beneficios(o){
     /* Tela virou APRESENTAÇÃO PRONTA (arquivo /html/beneficios-zamine.html): capa,
-       saúde, day off, educação (Una, Newton Paiva, Anhanguera, FIAP, Senac EAD),
-       Open English, Movida e encerramento — roda sozinha e a rotação espera ela
-       terminar. A lista salva na aba continua guardada, mas não entra mais no ar. */
+       saúde, odontologia, bem-estar, educação (Anhanguera, UNA, Newton Paiva,
+       FIAP, Senac EAD), Open English, Movida e encerramento (13 slides) — roda
+       sozinha e a rotação espera ela terminar. A lista salva na aba continua
+       guardada, mas não entra mais no ar. */
     return `<iframe class="bn-fr" src="/html/beneficios-zamine.html?tv=1" title="Apresentação de benefícios ZAMine"></iframe>`;
   }
 };

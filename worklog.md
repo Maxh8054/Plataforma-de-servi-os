@@ -1142,3 +1142,21 @@ Stage Summary:
 - Nada a commitar: o fix de tela inteira já está no origin/main (501da61) e o conteúdo em disco é idêntico ao push — re-verificado no browser hoje com screenshot ponta a ponta
 - Repositório reconciliado com origin/main; rota /api/tv/upload recuperada do remote
 - Pendente no chat: embed do Power BI no Perfil de Perdas — o link enviado (app.powerbi.com/groups/me/...) é interno, pede login e não pode ir em iframe; aguardando o usuário gerar o link "Publicar na web" (app.powerbi.com/view?r=...) para plugar na tela como foi feito com os Benefícios
+
+---
+Task ID: 52
+Agent: Z.ai Code (principal)
+Task: "imputa nos beneficios esse aqui e tira oque ja existe inteiro" — substituir a apresentação de benefícios pela nova enviada (upload/Pasted Content_1793115931767.txt)
+
+Work Log:
+- Novo deck (163KB, tema CLARO #e9ecf1): 13 slides — capa, saúde, odontologia, bem-estar, educação (intro + Anhanguera, UNA, Newton Paiva, FIAP, Senac EAD), Open English, Movida, encerramento; soma dos data-t = 161s
+- public/html/beneficios-zamine.html substituído INTEIRO (deck antigo escuro removido); CRLF→LF; adicionado bloco modo TV ?tv=1 antes do go(0) (esconde #ui — dots/botões — e iguala o fundo #e9ecf1); conferido que #pb fica FORA do #ui (remoção segura no modo TV) e que o motor (.sl[data-t], dots, pausar) é o mesmo do anterior
+- Painéis goias+minas: .bn-fr background #0d0c0b→#e9ecf1 (sem flash escuro; letterbox combina com o tema claro), hint da aba Benefícios reescrito (novo conteúdo, 13 slides, ~2min45s) e comentário do R.beneficios atualizado; lógica de rotação/medição (bnMede/bnDur) intocada — funciona porque o novo deck usa o mesmo motor
+- tv-sw.js: nada a mudar (a página já entra no cache network-first)
+- Verificação browser (goias+minas, 1920x1080): iframe fixed [0,0,1920,1080], bnDur=164000 medido pelo próprio painel (161s+3s), 13 slides, capa no ar, #ui removido dentro do iframe, fundo rgb(233,236,241), poll sameNode:true; screenshots ponta a ponta com a nova capa SEM cabeçalho/rodapé do painel; zero erros de página
+- Lint no baseline 31; JS válido (new Function) nos 2 painéis + deck
+
+Stage Summary:
+- A TV agora exibe a NOVA apresentação de benefícios (tema claro, 13 slides, ~2min45s) em TELA INTEIRA; a apresentação antiga saiu de cena por completo
+- A rotação espera o deck acabar; o poll de 30s não interrompe; a lista antiga segue no editor como backup, fora do ar
+- Zero mudança de schema/rotas; TVs atualizam recarregando a página
