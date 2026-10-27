@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aniversariantes do mês · ZAMine</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Apresentação cinematográfica — Aniversariantes do mês · ZAMine.
+   Mesmo motor e mesma paleta da apresentação de benefícios.
+   Palco 1920x1080 que se ajusta à tela. Mouse inclina os objetos em 3D.
+   Setas = trocar · Espaço = pausar · F = tela cheia · Clique no bolo/presente = girar */
+html,body{height:100%;margin:0;background:#e9ecf1;overflow:hidden;font-family:"Barlow","Segoe UI",Arial,sans-serif}
+:root{--fd:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--logo:url("data:image/webp;base64,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")}
+/* paleta Claro — idêntica à do deck de benefícios */
+#st{--bg:#f3f5f8;--panel:#ffffff;--panel2:#e8ebf0;--line:#d5dae1;--fg:#121620;--muted:#58616f;--accent:#e35300;--on:#ffffff;
+  --fst:#c2255c;--bem:#7538d8;--idi:#1a6cce;--saude:#0e9b6e;--mob:#9c7400;
+  --track:rgba(16,22,32,.09);--glass:rgba(16,22,32,.045);
+  --vig:radial-gradient(ellipse at 50% 45%,transparent 42%,rgba(90,100,118,.2) 100%)}
+#vp{position:fixed;inset:0;overflow:hidden;background:#e9ecf1;cursor:default}
+#st{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;background:var(--bg);color:var(--fg);overflow:hidden;perspective:1700px}
+.sl{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .55s ease,visibility .55s}
+.sl.on{opacity:1;visibility:visible}
+.c-acc{--c:var(--accent)}.c-fst{--c:var(--fst)}.c-bem{--c:var(--bem)}.c-idi{--c:var(--idi)}.c-sau{--c:var(--saude)}.c-mob{--c:var(--mob)}
+
+/* ----- fundo cinematográfico ----- */
+.bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:0;background:radial-gradient(circle,color-mix(in srgb,var(--c) 70%,transparent) 0,transparent 70%)}
+.sl.on .orb{animation:orbIn 1.6s ease-out forwards}
+@keyframes orbIn{to{opacity:.3}}
+.grid-bg{position:absolute;inset:-20%;background-image:linear-gradient(color-mix(in srgb,var(--c) 10%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--c) 10%,transparent) 1px,transparent 1px);
+  background-size:70px 70px;transform:rotateX(68deg) translateY(28%);opacity:0;mask-image:radial-gradient(ellipse at 50% 40%,#000 10%,transparent 72%)}
+.sl.on .grid-bg{animation:gridIn 2s ease-out forwards,gridRun 14s linear infinite}
+@keyframes gridIn{to{opacity:.5}}
+@keyframes gridRun{to{background-position:0 70px,70px 0}}
+.vig{position:absolute;inset:0;background:var(--vig)}
+.flares i{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--c);opacity:0;box-shadow:0 0 22px 6px color-mix(in srgb,var(--c) 60%,transparent)}
+.sl.on .flares i{animation:fl 7s ease-in-out infinite}
+@keyframes fl{0%,100%{opacity:0;transform:translateY(20px)}50%{opacity:.75;transform:translateY(-26px)}}
+canvas.conf{position:absolute;inset:0;width:1920px;height:1080px;z-index:7;pointer-events:none}
+
+/* ----- moldura ----- */
+.top{position:absolute;left:92px;right:92px;top:58px;display:flex;justify-content:space-between;align-items:center;z-index:6}
+.top .k{font-size:21px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--c);display:flex;align-items:center;gap:14px;opacity:0}
+.sl.on .top .k{animation:fadeR .8s .15s ease-out forwards}
+.top .k svg{width:28px;height:28px}
+.top .k::after{content:"";width:0;height:2px;background:var(--c);opacity:.45}
+.sl.on .top .k::after{animation:line .9s .5s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes line{to{width:150px}}
+.top .zm{display:flex;opacity:0}
+.sl.on .top .zm{animation:fadeL .8s .2s ease-out forwards}
+.zm i{display:block;aspect-ratio:600/321;background:var(--logo) center/contain no-repeat}
+@keyframes fadeR{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes fadeL{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+.stripe{position:absolute;left:0;right:0;bottom:0;height:14px;background:repeating-linear-gradient(-45deg,var(--c) 0 20px,transparent 20px 40px);opacity:0;z-index:6}
+.sl.on .stripe{animation:fadeU 1s .6s ease-out forwards}
+@keyframes fadeU{from{opacity:0;transform:translateY(20px)}to{opacity:.8;transform:none}}
+
+/* ----- texto ----- */
+.tx{position:absolute;z-index:5;display:flex;flex-direction:column}
+.tx>*{opacity:0}
+.sl.on .tx>*{animation:up .9s cubic-bezier(.16,.84,.26,1) forwards}
+.sl.on .tx>*:nth-child(1){animation-delay:.35s}.sl.on .tx>*:nth-child(2){animation-delay:.5s}.sl.on .tx>*:nth-child(3){animation-delay:.65s}
+.sl.on .tx>*:nth-child(4){animation-delay:.8s}.sl.on .tx>*:nth-child(5){animation-delay:.95s}.sl.on .tx>*:nth-child(6){animation-delay:1.1s}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+h1,h2,h3{font-family:var(--fd);font-weight:800;text-transform:uppercase;margin:0;line-height:.86}
+h2{font-size:118px;letter-spacing:-.01em}
+h2 .hl{color:var(--c);display:block}
+.eyb{font-size:23px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--c)}
+.lead{font-size:31px;line-height:1.38;color:var(--muted);max-width:26ch;margin:0}
+.ct{display:inline-flex;align-items:center;gap:18px;background:var(--glass);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:18px;padding:18px 26px}
+.ct i{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--on);flex:none}
+.ct i svg{width:28px;height:28px}
+.ct small{display:block;font-size:15px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.ct b{display:block;font-size:26px}
+.tx>.ct,.tx>.pill{align-self:flex-start}
+.pill{display:inline-flex;align-items:center;gap:11px;border-radius:999px;padding:13px 24px;font-size:22px;font-weight:700;white-space:nowrap;
+  background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);border:2px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.pill svg{width:24px;height:24px}
+ul.ck{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:17px}
+ul.ck li{display:grid;grid-template-columns:38px 1fr;gap:16px;align-items:start;font-size:28px;line-height:1.3}
+ul.ck li::before{content:"";width:30px;height:30px;border-radius:50%;margin-top:3px;background:var(--c) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23ffffff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/68% no-repeat}
+
+/* ----- palco 3D ----- */
+.stage3d{position:absolute;z-index:4;transform-style:preserve-3d;perspective:1500px}
+.tilt{transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0)*11deg)) rotateX(calc(var(--my,0)*-9deg));transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.floor{position:absolute;left:50%;bottom:-48px;width:620px;height:90px;transform:translateX(-50%) rotateX(74deg);background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 42%,transparent) 0,transparent 68%);filter:blur(16px);opacity:0}
+.sl.on .floor{animation:fadeIn 1.4s .7s ease-out forwards}
+@keyframes fadeIn{to{opacity:.85}}
+.cnt{font-family:var(--fd);font-weight:800;line-height:.82;color:var(--c);font-variant-numeric:tabular-nums}
+
+/* ===== BOLO 3D (cilindros de verdade, montados painel a painel) ===== */
+.bolo{position:relative;width:520px;height:520px;transform-style:preserve-3d;cursor:pointer}
+.sl.on .bolo{animation:boloIn 2.1s cubic-bezier(.16,.84,.26,1) forwards}
+@keyframes boloIn{
+  0%{opacity:0;transform:translateZ(-1400px) translateY(140px) rotateX(-52deg) rotateY(-90deg)}
+  60%{opacity:1;transform:translateZ(60px) rotateX(-12deg) rotateY(16deg)}
+  100%{opacity:1;transform:translateZ(0) rotateX(-18deg) rotateY(0)}}
+.bolo .gira{position:absolute;inset:0;transform-style:preserve-3d}
+.sl.on .bolo .gira{animation:giraY 30s 2.1s linear infinite}
+@keyframes giraY{to{transform:rotateY(360deg)}}
+.bolo.flip .gira{animation-duration:5s}
+.andar{position:absolute;left:50%;top:50%;transform-style:preserve-3d}
+/* esconder a face de trás fecha o cilindro: nenhum painel do fundo vaza pelas laterais */
+.andar .pn{position:absolute;left:50%;top:50%;transform-origin:50% 50%;backface-visibility:hidden}
+/* camada dos tampos: fica à frente dos painéis (translateZ) e não gira */
+.tops{position:absolute;inset:0;transform:translateZ(190px);pointer-events:none}
+.tops .tampo,.tops .drip{position:absolute;left:50%;border-radius:50%}
+.tops .tampo{background:radial-gradient(ellipse at 38% 24%,#fffefb,#f7eee3 58%,#e6d6c3);
+  box-shadow:inset 0 -5px 10px rgba(120,95,70,.14)}
+.tops .drip{background:var(--c);filter:brightness(1.04)}
+/* nos andares de baixo só a metade da frente aparece — a de trás fica atrás do andar de cima */
+.tops .meia{clip-path:inset(50% 0 0 0)}
+.vela{position:absolute;left:50%;top:69px;width:18px;height:86px;margin-left:-9px;border-radius:5px;transform-style:preserve-3d;
+  background:repeating-linear-gradient(135deg,var(--c) 0 9px,#fff 9px 18px);box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.pavio{position:absolute;left:50%;top:-10px;width:3px;height:12px;margin-left:-1.5px;background:#3b2b20;border-radius:2px}
+.chama{position:absolute;left:50%;top:-54px;width:30px;height:48px;margin-left:-15px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;
+  background:radial-gradient(ellipse at 50% 72%,#fff6c4 0,#ffc93d 42%,#ff7a18 72%,rgba(255,122,24,0) 100%);
+  filter:blur(.4px);transform-origin:50% 100%}
+.sl.on .chama{animation:fogo 1.5s ease-in-out infinite;transition:opacity .4s ease,transform .4s ease}
+@keyframes fogo{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.14,1.22) rotate(3deg)}}
+/* soprou: chama encolhe e some; vira uma fumacinha que sobe */
+.bolo.apagado .chama{animation:none;opacity:0;transform:scale(.2,.1)}
+.bolo.apagado .halo{opacity:0!important;animation:none!important}
+.fumaca{position:absolute;left:50%;top:-50px;width:14px;height:14px;margin-left:-7px;border-radius:50%;
+  background:radial-gradient(circle,rgba(140,140,150,.72),rgba(140,140,150,0) 70%);opacity:0;pointer-events:none}
+.bolo.apagado .fumaca{animation:fuma 2s ease-out}
+@keyframes fuma{0%{opacity:.9;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-180px) scale(2.4)}}
+.halo{position:absolute;left:50%;top:-94px;width:260px;height:260px;margin-left:-130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,190,80,.42) 0,rgba(255,190,80,0) 68%);pointer-events:none;transition:opacity .4s ease}
+.sl.on .halo{animation:pulsa 2.6s ease-in-out infinite}
+@keyframes pulsa{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.1)}}
+.dica{position:absolute;left:50%;bottom:-54px;transform:translateX(-50%);font-size:17px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;opacity:0}
+.sl.on .dica{animation:blink 2.6s 2.6s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.8}}
+
+/* ===== BALÕES 3D ===== */
+.balao{position:absolute;width:var(--bw);height:calc(var(--bw)*1.22);opacity:0;transform-style:preserve-3d}
+.sl.on .balao{animation:balaoIn 1.2s var(--bd) ease-out forwards,flutua 7s var(--bd) ease-in-out infinite 1.2s}
+@keyframes balaoIn{from{opacity:0;transform:translateY(90px) scale(.7)}to{opacity:1;transform:none}}
+@keyframes flutua{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-34px) rotate(3deg)}}
+.balao .bal{position:absolute;inset:0;border-radius:50% 50% 48% 48%/54% 54% 46% 46%;
+  background:radial-gradient(ellipse at 34% 28%,rgba(255,255,255,.85) 0,rgba(255,255,255,0) 38%),
+             radial-gradient(ellipse at 50% 42%,var(--bc) 0,color-mix(in srgb,var(--bc) 62%,#000) 100%);
+  box-shadow:0 26px 46px rgba(20,28,42,.2)}
+.balao .no{position:absolute;left:50%;bottom:-11px;width:16px;height:14px;margin-left:-8px;background:var(--bc);
+  clip-path:polygon(50% 0,100% 100%,0 100%)}
+.balao .fio{position:absolute;left:50%;top:100%;width:2px;height:150px;margin-left:-1px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bc) 70%,#000),transparent)}
+
+/* ===== PRESENTE 3D (cubo de 6 faces) ===== */
+.presente{position:relative;width:260px;height:260px;transform-style:preserve-3d;cursor:pointer}
+.sl.on .presente{animation:pIn 1.8s cubic-bezier(.16,.84,.26,1) forwards}
+/* a inclinação (rotateX NEGATIVO, que deixa o tampo e o laço à vista) fica na MESMA
+   transformação que o giro — assim o navegador não perde a face de cima no caminho */
+@keyframes pIn{from{opacity:0;transform:translateZ(-1200px) scale(.45)}to{opacity:1;transform:none}}
+.presente .cx{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-22deg)}
+.sl.on .presente .cx{animation:giraBox 24s 1.8s linear infinite}
+@keyframes giraBox{from{transform:rotateX(-22deg) rotateY(0deg)}to{transform:rotateX(-22deg) rotateY(360deg)}}
+.presente .f{position:absolute;left:50%;top:50%;width:260px;height:260px;margin:-130px 0 0 -130px;
+  background:linear-gradient(150deg,var(--c),color-mix(in srgb,var(--c) 58%,#000));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.presente .f::before,.presente .f::after{content:"";position:absolute;background:#fffdf8}
+.presente .f::before{left:50%;top:0;bottom:0;width:34px;margin-left:-17px}
+.presente .f::after{top:50%;left:0;right:0;height:34px;margin-top:-17px}
+.laco{position:absolute;left:50%;top:50%;width:230px;height:120px;margin:-60px 0 0 -115px;transform-style:preserve-3d}
+.laco span{position:absolute;top:8px;width:96px;height:104px;border-radius:52% 52% 46% 46%;
+  background:radial-gradient(ellipse at 36% 30%,#ffffff,#f1e7da 76%);box-shadow:0 10px 22px rgba(20,28,42,.22)}
+.laco span:first-child{left:0;transform:rotate(-24deg)}
+.laco span:nth-child(2){right:0;transform:rotate(24deg)}
+.laco i{position:absolute;left:50%;top:40px;width:46px;height:46px;margin-left:-23px;border-radius:50%;
+  background:radial-gradient(circle at 36% 32%,#ffffff,#e6dbcd)}
+
+/* ===== CARTÕES DAS PESSOAS ===== */
+.pgrid{position:absolute;z-index:5;display:grid;gap:34px}
+.pc{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:34px 22px 28px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;opacity:0;
+  box-shadow:0 26px 56px rgba(20,28,42,.16);transform-style:preserve-3d}
+.sl.on .pc{animation:pcIn .95s cubic-bezier(.16,.84,.26,1) forwards}
+@keyframes pcIn{from{opacity:0;transform:translateZ(-760px) translateY(60px) rotateY(-34deg)}to{opacity:1;transform:none}}
+.sl.on .pc:nth-child(1){animation-delay:.42s}.sl.on .pc:nth-child(2){animation-delay:.54s}
+.sl.on .pc:nth-child(3){animation-delay:.66s}.sl.on .pc:nth-child(4){animation-delay:.78s}
+.sl.on .pc:nth-child(5){animation-delay:.9s}.sl.on .pc:nth-child(6){animation-delay:1.02s}
+.pc{width:min(100%,340px);justify-content:center}
+.pc .ph{position:relative;width:var(--av,200px);height:var(--av,200px);flex:none;margin-bottom:26px}
+.pc .av{width:100%;height:100%;border-radius:50%;overflow:hidden;
+  border:5px solid var(--c);background:var(--panel2);display:grid;place-items:center;
+  box-shadow:0 18px 36px rgba(20,28,42,.2)}
+.pc .av img{width:100%;height:100%;object-fit:cover;display:block}
+.pc .av span{font-family:var(--fd);font-weight:800;font-size:calc(var(--av,200px)*.36);color:var(--c);line-height:1}
+.pc .dia{position:absolute;left:50%;bottom:-17px;transform:translateX(-50%);background:var(--c);color:#fff;border-radius:999px;
+  padding:5px 18px 4px;font-family:var(--fd);font-weight:800;font-size:24px;letter-spacing:.04em;white-space:nowrap;
+  box-shadow:0 10px 22px color-mix(in srgb,var(--c) 40%,transparent)}
+.pc b{font-size:29px;line-height:1.1;overflow-wrap:anywhere}
+.pc small{font-size:19px;color:var(--muted);line-height:1.25}
+.pc.hoje{background:var(--c);border-color:var(--c);color:#fff}
+.pc.hoje small{color:rgba(255,255,255,.82)}
+.pc.hoje .av{border-color:#fff;background:rgba(255,255,255,.2)}
+.pc.hoje .av span{color:#fff}
+.pc.hoje .dia{background:#fff;color:var(--c)}
+
+/* ===== RETRATO GRANDE DO DIA ===== */
+.retrato{position:relative;width:540px;height:540px;transform-style:preserve-3d;cursor:pointer}
+.sl.on .retrato{animation:rIn 2s cubic-bezier(.16,.84,.26,1) forwards,rFlut 7s 2s ease-in-out infinite}
+@keyframes rIn{from{opacity:0;transform:translateZ(-1300px) rotateY(-120deg) scale(.5)}to{opacity:1;transform:rotateY(-6deg)}}
+@keyframes rFlut{0%,100%{transform:rotateY(-6deg) translateY(0)}50%{transform:rotateY(6deg) translateY(-22px)}}
+.retrato .aro{position:absolute;inset:0;border-radius:50%;overflow:hidden;border:12px solid var(--c);background:var(--panel2);
+  display:grid;place-items:center;box-shadow:0 48px 90px rgba(20,28,42,.3)}
+.retrato .aro img{width:100%;height:100%;object-fit:cover;display:block}
+.retrato .aro span{font-family:var(--fd);font-weight:800;font-size:200px;color:var(--c);line-height:1}
+.retrato .anel{position:absolute;inset:-34px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--c) 55%,transparent)}
+.sl.on .retrato .anel{animation:giraY 0s,spin 30s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.retrato .selo{position:absolute;right:-12px;bottom:14px;background:var(--c);color:#fff;border-radius:999px;padding:14px 30px 12px;
+  font-family:var(--fd);font-weight:800;font-size:40px;letter-spacing:.04em;box-shadow:0 18px 40px color-mix(in srgb,var(--c) 45%,transparent)}
+
+/* ===== CALENDÁRIO DO MÊS ===== */
+.cal{position:absolute;z-index:5;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  grid-template-rows:30px;grid-auto-rows:minmax(0,1fr);gap:14px}
+.cal .dw{font-size:19px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);text-align:center;align-self:end}
+.cal .d{position:relative;min-height:0;border-radius:18px;background:var(--panel);border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;opacity:0;overflow:hidden;
+  box-shadow:0 10px 22px rgba(20,28,42,.07)}
+.sl.on .cal .d{animation:dIn .5s cubic-bezier(.16,.84,.26,1) forwards}
+@keyframes dIn{from{opacity:0;transform:translateZ(-240px) translateY(18px)}to{opacity:1;transform:none}}
+.cal .d.vazio{background:transparent;border-color:transparent;box-shadow:none}
+.cal .d b{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.cal .d .mini{font-size:14px;font-weight:700;color:var(--muted);line-height:1.1;max-width:94%;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.cal .d.tem{background:var(--c);border-color:var(--c);color:#fff;box-shadow:0 18px 34px color-mix(in srgb,var(--c) 32%,transparent)}
+.cal .d.tem .mini{color:rgba(255,255,255,.88)}
+.cal .d.hj{outline:4px solid var(--fst);outline-offset:3px}
+.cal .d .bolinho{position:absolute;top:8px;right:10px;width:16px;height:16px}
+
+/* ===== FECHO ===== */
+.fim{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;z-index:5;text-align:center}
+.fim h2{font-size:172px}
+.fim .lead{max-width:34ch;text-align:center;font-size:34px}
+
+/* ----- controles ----- */
+#ui{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;z-index:30;
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(0deg,rgba(226,230,238,.95),transparent);transition:opacity .4s}
+#ui.h{opacity:0;pointer-events:none}
+#ui button{font:600 14px "Barlow",Arial,sans-serif;color:#141922;background:rgba(255,255,255,.95);border:1px solid #c6ccd6;border-radius:9px;padding:9px 15px;cursor:pointer;box-shadow:0 2px 6px rgba(20,28,42,.12)}
+#ui button:hover{border-color:#8d97a6}
+#ui button:focus-visible{outline:2px solid #e35300;outline-offset:2px}
+#dots{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+#dots i{width:24px;height:5px;border-radius:3px;background:#b9c0cb;cursor:pointer;transition:background .3s}
+#dots i.on{background:#e35300}
+#pb{position:absolute;left:0;top:0;height:5px;background:linear-gradient(90deg,var(--accent),#ffb27a);width:0;z-index:20;box-shadow:0 0 16px rgba(255,102,0,.7)}
+@keyframes grow{from{width:0}to{width:100%}}
+@media (prefers-reduced-motion:reduce){
+  .sl,.sl *{animation:none!important;transition:none!important}
+  .sl .tx>*,.top .k,.top .zm,.stripe,.orb,.grid-bg,.floor,.pc,.cal .d,.balao{opacity:1!important;transform:none!important}
+  .bolo,.presente,.retrato{opacity:1!important;transform:none!important}}
+</style>
+</head>
+<body>
+<div id="vp"><div id="st"><div id="pb"></div></div></div>
+<div id="ui">
+  <div id="dots"></div>
+  <button id="bP" type="button">Anterior</button>
+  <button id="bN" type="button">Próximo</button>
+  <button id="bPl" type="button">Pausar</button>
+  <button id="bF" type="button">Tela cheia</button>
+</div>
+<script>
+/* ==========================================================================
+   >>>>>>>>>>  A ÚNICA PARTE QUE VOCÊ PRECISA MEXER TODO MÊS  <<<<<<<<<<
+   Cole aqui os aniversariantes. "foto" é opcional — sem foto, aparecem as
+   iniciais num círculo. A foto pode ser um link (https://...) ou uma imagem
+   colada em base64 ("data:image/jpeg;base64,...").
+   O mês e o "hoje" são automáticos: a apresentação sempre mostra o mês atual.
+   ========================================================================== */
+var UNIDADE = "Zamine · Alto Horizonte · GO";
+
+var PESSOAS = [
+  {nome:"Wesley Rocha",   dia:4,  mes:10, setor:"Manutenção mecânica",      foto:""},
+  {nome:"Juliana Reis",   dia:8,  mes:10, setor:"Administrativo",            foto:""},
+  {nome:"Marcos Vieira",  dia:11, mes:10, setor:"Oficina",                   foto:""},
+  {nome:"Carlos Neto",    dia:14, mes:10, setor:"Almoxarifado",              foto:""},
+  {nome:"Paulo Andrade",  dia:19, mes:10, setor:"Transporte",                foto:""},
+  {nome:"Ana Prado",      dia:22, mes:10, setor:"Segurança do trabalho",     foto:""},
+  {nome:"Higor Lima",     dia:27, mes:10, setor:"Operação · Líder de turno", foto:""},
+  {nome:"Marcelo Dias",   dia:30, mes:10, setor:"SESMT",                     foto:""}
+];
+
+/* Para testar outro dia/mês, troque por ex.: var FORCAR = {dia:27, mes:10};  */
+var FORCAR = null;
+
+/* ========================================================================== */
+
+(function(){
+  var MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+  var SEM=["dom","seg","ter","qua","qui","sex","sáb"];
+  var ag=new Date(), HOJE_D=FORCAR?FORCAR.dia:ag.getDate(), HOJE_M=FORCAR?FORCAR.mes:(ag.getMonth()+1), ANO=ag.getFullYear();
+  var MES=HOJE_M, MESNOME=MESES[MES-1];
+  var LISTA=PESSOAS.filter(function(p){return +p.mes===MES;}).sort(function(a,b){return a.dia-b.dia;});
+  var DIA=LISTA.filter(function(p){return +p.dia===HOJE_D;});
+  var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
+  var ini=function(n){var p=String(n).trim().split(/\s+/);return ((p[0]||"")[0]||"")+((p.length>1?p[p.length-1]:"")[0]||"");};
+  var av=function(p,cls){ return p.foto
+      ? '<img src="'+esc(p.foto)+'" alt="'+esc(p.nome)+'">'
+      : '<span>'+esc(ini(p.nome).toUpperCase())+'</span>'; };
+
+  /* ---------- peças reaproveitadas ---------- */
+  function fundo(){ return '<div class="bg">'
+    + '<div class="orb" style="width:900px;height:900px;left:-200px;top:-260px"></div>'
+    + '<div class="orb" style="width:760px;height:760px;right:-180px;bottom:-240px"></div>'
+    + '<div class="grid-bg"></div><div class="vig"></div>'
+    + '<div class="flares"><i style="left:16%;top:30%"></i><i style="left:76%;top:24%;animation-delay:1.4s"></i>'
+    + '<i style="left:62%;top:72%;animation-delay:2.8s"></i><i style="left:30%;top:78%;animation-delay:4.2s"></i></div></div>'; }
+  function moldura(k){ return '<div class="top"><div class="k">'+ico(k.ico)+esc(k.txt)+'</div>'
+    + '<div class="zm" role="img" aria-label="Zamine"><i style="height:54px"></i></div></div><div class="stripe"></div>'; }
+  var ICO={
+    bolo:'<path d="M4 20h16v-6H4v6ZM6 14V9m6 5V9m6 5V9M6 6.5c0-1 1-1.6 1-2.5 0 .9 1 1.5 1 2.5a1 1 0 0 1-2 0Zm5 0c0-1 1-1.6 1-2.5 0 .9 1 1.5 1 2.5a1 1 0 0 1-2 0Zm5 0c0-1 1-1.6 1-2.5 0 .9 1 1.5 1 2.5a1 1 0 0 1-2 0Z"/>',
+    gente:'<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 8a8 8 0 0 1 16 0"/>',
+    cal:'<path d="M4 7h16v13H4V7Zm0 5h16M8 3v4m8-4v4"/>',
+    presente:'<path d="M3 11h18v9H3v-9Zm0-4h18v4H3V7Zm9 0v13M12 7s-1.6-4-4-4a2 2 0 0 0 0 4h4Zm0 0s1.6-4 4-4a2 2 0 0 1 0 4h-4Z"/>',
+    festa:'<path d="M3 21l6-14 8 8-14 6Zm11-14 1-3m3 6 3-1m-6-2 2-2"/>'
+  };
+  function ico(k){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(ICO[k]||"")+'</svg>'; }
+
+  /* ---------- bolo 3D: cilindros montados painel a painel ---------- */
+  /* um andar = um cilindro de verdade: N painéis girados em torno do eixo Y.
+     O tampo NÃO vai aqui: o navegador erra a ordem de pintura de um disco
+     deitado que atravessa os painéis. Como o cilindro é simétrico, o tampo é
+     desenhado como elipse numa camada à frente (função tops) — fica idêntico. */
+  var TILT=20, KT=Math.sin(TILT*Math.PI/180);           // achatamento da elipse
+  var ANDARES=[{R:172,H:112,Y:110,N:26,cor:'#fdf6ec',fx:26},
+               {R:128,H:96, Y:16, N:22,cor:'#fffaf3',fx:24},
+               {R:84, H:78, Y:-66,N:18,cor:'#fffdf8',fx:22}];
+  function andar(a){
+    var W=(2*a.R*Math.tan(Math.PI/a.N))+1.4, h='';
+    for(var i=0;i<a.N;i++){
+      var g=i*360/a.N, br=(0.86+0.14*Math.cos((g-34)*Math.PI/180)).toFixed(3);
+      h+='<div class="pn" style="width:'+W.toFixed(2)+'px;height:'+a.H+'px;margin-left:'+(-W/2).toFixed(2)+'px;margin-top:'+(-a.H/2)+'px;'
+        +'transform:rotateY('+g.toFixed(2)+'deg) translateZ('+a.R+'px);'
+        +'background:linear-gradient(180deg,'+a.cor+' 0 '+(100-a.fx)+'%,var(--c) '+(100-a.fx)+'% 100%);'
+        +'filter:brightness('+br+')"></div>';
+    }
+    return '<div class="andar" style="transform:translate(-50%,-50%) translateY('+a.Y+'px)">'+h+'</div>';
+  }
+  function tops(){
+    var h='';
+    for(var i=0;i<ANDARES.length;i++){ var a=ANDARES[i];
+      var alt=2*a.R*KT, borda=260+a.Y-a.H/2;            // 260 = meio da caixa de 520
+      var topo=ANDARES.length-1===i;                     // só o andar de cima mostra a elipse inteira;
+      var cl=topo?'':' meia';                            // nos de baixo, a metade de trás fica escondida
+      h+='<div class="drip'+cl+'" style="width:'+(2*a.R+14)+'px;height:'+(alt+16).toFixed(1)+'px;'
+        +'margin-left:'+(-a.R-7)+'px;top:'+(borda-alt/2-2).toFixed(1)+'px"></div>'
+        +'<div class="tampo'+cl+'" style="width:'+(2*a.R)+'px;height:'+alt.toFixed(1)+'px;'
+        +'margin-left:'+(-a.R)+'px;top:'+(borda-alt/2).toFixed(1)+'px"></div>';
+    }
+    return '<div class="tops">'+h+'</div>';
+  }
+  function bolo(){
+    return '<div class="bolo" data-flip><div class="gira">'
+      + ANDARES.map(andar).join("")
+      + '</div>'+tops()
+      + '<div class="vela"><span class="pavio"></span><span class="chama"></span><span class="halo"></span><span class="fumaca"></span></div>'
+      + '</div>';
+  }
+  function baloes(){
+    var cs=['var(--fst)','var(--bem)','var(--accent)','var(--idi)','var(--saude)'], h='';
+    var pos=[[86,150,120,0],[1660,96,96,.5],[250,620,78,1.1],[1740,560,110,.8],[1500,210,70,1.6]];
+    for(var i=0;i<pos.length;i++) h+='<div class="balao" style="left:'+pos[i][0]+'px;top:'+pos[i][1]+'px;--bw:'+pos[i][2]+'px;'
+      +'--bc:'+cs[i%cs.length]+';--bd:'+pos[i][3]+'s"><span class="bal"></span><span class="no"></span><span class="fio"></span></div>';
+    return '<div class="bg" style="z-index:3">'+h+'</div>';
+  }
+  function presente(){
+    /* cubo de 6 faces + laço deitado no tampo; cada face com o seu próprio brilho */
+    /* nada de filter:brightness aqui — num contexto preserve-3d o Chromium
+       achata a face que tem filtro. A luz vem de mistura de cor, direto no fundo. */
+    var f=[['rotateX(90deg) translateZ(130px)',100],['rotateX(-90deg) translateZ(130px)',46],
+           ['translateZ(130px)',84],['rotateY(180deg) translateZ(130px)',60],
+           ['rotateY(-90deg) translateZ(130px)',66],['rotateY(90deg) translateZ(130px)',75]], h='';
+    for(var i=0;i<f.length;i++)
+      h+='<div class="f" style="transform:'+f[i][0]+';background:linear-gradient(150deg,'
+        +'color-mix(in srgb,var(--c) '+f[i][1]+'%,#000),color-mix(in srgb,var(--c) '+Math.round(f[i][1]*0.74)+'%,#000))"></div>';
+    h+='<div class="laco" style="transform:translateY(-131px) rotateX(90deg)"><span></span><span></span><i></i></div>';
+    return '<div class="presente" data-flip><div class="cx">'+h+'</div></div>';
+  }
+
+  /* ---------- telas ---------- */
+  var S=[];
+  /* 1 · capa */
+  S.push({t:14,c:'c-acc',html:
+    fundo()+baloes()+moldura({ico:'bolo',txt:'Gente ZAMine'})+'<canvas class="conf"></canvas>'
+    + '<div class="tx" style="left:92px;top:252px;width:880px;gap:28px">'
+    +   '<span class="eyb">'+esc(UNIDADE)+'</span>'
+    +   '<h2>Aniversariantes<span class="hl">de '+esc(MESNOME)+'</span></h2>'
+    +   '<p class="lead">'+(LISTA.length?'Hoje a casa é de quem faz a diferença todo dia. São '+LISTA.length+' motivos para comemorar neste mês.':'Neste mês não temos aniversariantes cadastrados.')+'</p>'
+    +   '<div class="ct"><i>'+ico('gente')+'</i><div><small>No mês</small>'
+    +     '<b><span class="cnt" style="font-size:44px" data-count="'+LISTA.length+'">0</span> '+(LISTA.length===1?'aniversariante':'aniversariantes')+'</b></div></div>'
+    + '</div>'
+    + '<div class="stage3d" style="right:150px;top:50%;transform:translateY(-50%)"><div class="tilt">'+bolo()+'<div class="floor"></div></div></div>'});
+
+  /* 2 · é hoje! (só quando tem alguém) */
+  DIA.forEach(function(p){
+    S.push({t:16,c:'c-fst',html:
+      fundo()+baloes()+moldura({ico:'festa',txt:'Hoje é dia de festa'})+'<canvas class="conf"></canvas>'
+      + '<div class="tx" style="left:92px;top:280px;width:880px;gap:26px">'
+      +   '<span class="eyb">'+esc(HOJE_D)+' de '+esc(MESNOME)+'</span>'
+      +   '<h2 style="font-size:104px">Parabéns,<span class="hl">'+esc(p.nome.split(/\s+/)[0])+'!</span></h2>'
+      +   '<p class="lead">'+esc(p.nome)+(p.setor?' · '+esc(p.setor):'')+'</p>'
+      +   '<div class="pill">'+ico('bolo')+'Que venha mais um ano de saúde e segurança</div>'
+      + '</div>'
+      + '<div class="stage3d" style="right:200px;top:50%;transform:translateY(-50%)"><div class="tilt">'
+      +   '<div class="retrato"><div class="anel"></div><div class="aro">'+av(p)+'</div>'
+      +   '<div class="selo">'+esc(String(p.dia).padStart(2,"0"))+'/'+esc(String(MES).padStart(2,"0"))+'</div></div>'
+      +   '<div class="floor"></div></div></div>'});
+  });
+
+  /* 3 · galeria (6 por tela) */
+  var GRUPO=6;
+  for(var g=0; g<LISTA.length; g+=GRUPO){
+    var bloco=LISTA.slice(g,g+GRUPO), n=bloco.length;
+    var cols=n<=2?n:3, rows=Math.ceil(n/cols);
+    var avs=rows>1?150:250;
+    var cards=bloco.map(function(p){
+      var hj=(+p.dia===HOJE_D);
+      return '<div class="pc'+(hj?' hoje':'')+'" style="--av:'+avs+'px">'
+        + '<div class="ph"><div class="av">'+av(p)+'</div>'
+        + '<span class="dia">'+(hj?'HOJE':esc(String(p.dia).padStart(2,"0"))+' '+MESNOME.slice(0,3).toUpperCase())+'</span></div>'
+        + '<b>'+esc(p.nome)+'</b>'+(p.setor?'<small>'+esc(p.setor)+'</small>':'')+'</div>';
+    }).join("");
+    S.push({t:15,c:'c-acc',html:
+      fundo()+moldura({ico:'gente',txt:'Aniversariantes de '+MESNOME})
+      + '<div class="tx" style="left:92px;top:166px;width:1000px;gap:14px">'
+      +   '<span class="eyb">'+(LISTA.length>GRUPO?('Grupo '+(Math.floor(g/GRUPO)+1)+' de '+Math.ceil(LISTA.length/GRUPO)):'A turma do mês')+'</span>'
+      +   '<h2 style="font-size:74px">Parabéns a <span class="hl" style="display:inline">vocês</span></h2>'
+      + '</div>'
+      + '<div class="pgrid" style="left:92px;right:92px;top:340px;bottom:108px;grid-template-columns:repeat('+cols+',1fr);'
+      +   'grid-template-rows:repeat('+rows+',minmax(0,1fr));justify-items:center;align-items:center">'+cards+'</div>'});
+  }
+
+  /* 4 · fecho */
+  S.push({t:12,c:'c-acc',html:
+    fundo()+baloes()+moldura({ico:'festa',txt:'Zamine'})+'<canvas class="conf"></canvas>'
+    + '<div class="fim">'
+    +   '<div class="tx" style="position:static;align-items:center;gap:26px">'
+    +     '<span class="eyb">'+esc(UNIDADE)+'</span>'
+    +     '<h2>Parabéns!</h2>'
+    +     '<p class="lead">Que o novo ano de cada um venha com saúde, segurança e muitas conquistas. A Zamine comemora com vocês.</p>'
+    +   '</div>'
+    + '</div>'});
+
+  /* ---------- monta no palco ---------- */
+  var st=document.getElementById("st");
+  st.insertAdjacentHTML("beforeend", S.map(function(s){
+    return '<section class="sl '+s.c+'" data-t="'+s.t+'">'+s.html+'</section>';
+  }).join(""));
+
+  /* ---------- motor (o mesmo da apresentação de benefícios) ---------- */
+  var SL=[].slice.call(document.querySelectorAll(".sl")), i=0, tm=null, play=true, cf=null;
+  function fit(){ var w=innerWidth,h=innerHeight,s=Math.min(w/1920,h/1080);
+    st.style.transform="translate("+((w-1920*s)/2)+"px,"+((h-1080*s)/2)+"px) scale("+s+")"; }
+  addEventListener("resize",fit); fit();
+  var vp=document.getElementById("vp");
+  vp.addEventListener("mousemove",function(e){ var x=(e.clientX/innerWidth-.5)*2, y=(e.clientY/innerHeight-.5)*2;
+    st.style.setProperty("--mx",x.toFixed(3)); st.style.setProperty("--my",y.toFixed(3));
+    /* soprou perto da vela: apaga a chama. Volta sozinha depois de um tempinho. */
+    var vela=document.querySelector(".sl.on .vela"); if(!vela) return;
+    var r=vela.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    var d=Math.hypot(e.clientX-cx,e.clientY-cy);
+    if(d<180){ var b=vela.closest(".bolo"); if(b){ b.classList.add("apagado"); clearTimeout(window.__reacende);
+      window.__reacende=setTimeout(function(){ b.classList.remove("apagado"); },2600); } } });
+  vp.addEventListener("mouseleave",function(){ st.style.setProperty("--mx",0); st.style.setProperty("--my",0); });
+  document.addEventListener("click",function(e){ var c=e.target.closest("[data-flip]"); if(c) c.classList.toggle("flip"); });
+  var dots=document.getElementById("dots");
+  dots.innerHTML=SL.map(function(_,k){return '<i data-k="'+k+'" title="Tela '+(k+1)+'"></i>';}).join("");
+  dots.addEventListener("click",function(e){ var k=e.target.dataset.k; if(k!=null) go(+k); });
+  function nums(sl){
+    sl.querySelectorAll("[data-count]").forEach(function(el){
+      var alvo=+el.dataset.count, t0=null, d=1400;
+      function step(t){ if(!t0) t0=t; var p=Math.min(1,(t-t0)/d), e=1-Math.pow(1-p,3);
+        el.textContent=Math.round(alvo*e); if(p<1) requestAnimationFrame(step); }
+      el.textContent="0"; setTimeout(function(){requestAnimationFrame(step);},500); });
+    sl.querySelectorAll("[data-flip]").forEach(function(c){ c.classList.remove("flip"); });
+  }
+  function confete(sl){
+    if(cf){ cancelAnimationFrame(cf); cf=null; }
+    var cv=sl.querySelector("canvas.conf"); if(!cv) return;
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var cx=cv.getContext("2d"); cv.width=1920; cv.height=1080;
+    var cores=["#e35300","#c2255c","#7538d8","#1a6cce","#ffc93d","#ffffff"], P=[];
+    for(var n=0;n<170;n++) P.push({x:Math.random()*1920,y:Math.random()*1200-200,vy:1.5+Math.random()*3.2,vx:-.8+Math.random()*1.6,
+      r:Math.random()*6.28,vr:-.09+Math.random()*.18,w:8+Math.random()*10,h:5+Math.random()*7,c:cores[(Math.random()*cores.length)|0],o:Math.random()*6.28});
+    (function loop(){ cx.clearRect(0,0,1920,1080);
+      for(var k=0;k<P.length;k++){ var p=P[k]; p.y+=p.vy; p.o+=.035; p.x+=p.vx+Math.sin(p.o)*.8; p.r+=p.vr;
+        if(p.y>1100){ p.y=-20; p.x=Math.random()*1920; }
+        cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r); cx.globalAlpha=.9; cx.fillStyle=p.c;
+        cx.scale(1,Math.cos(p.o)); cx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cx.restore(); }
+      cf=requestAnimationFrame(loop); })();
+  }
+  function go(k){
+    SL[i].classList.remove("on"); i=(k+SL.length)%SL.length; var sl=SL[i];
+    sl.classList.remove("on"); void sl.offsetWidth; sl.classList.add("on");
+    nums(sl); confete(sl);
+    [].forEach.call(dots.children,function(d,n){ d.classList.toggle("on",n===i); });
+    clearTimeout(tm); var pb=document.getElementById("pb"); pb.style.animation="none"; void pb.offsetWidth;
+    if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linear forwards"; tm=setTimeout(function(){go(i+1);},t); }
+  }
+  document.getElementById("bN").onclick=function(){go(i+1);};
+  document.getElementById("bP").onclick=function(){go(i-1);};
+  document.getElementById("bPl").onclick=function(){ play=!play; this.textContent=play?"Pausar":"Continuar"; go(i); };
+  document.getElementById("bF").onclick=function(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }catch(e){} };
+  addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="PageDown"){e.preventDefault();go(i+1);}
+    else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();go(i-1);}
+    else if(e.key===" "){e.preventDefault();document.getElementById("bPl").click();}
+    else if(e.key==="f"||e.key==="F") document.getElementById("bF").click(); });
+  var ui=document.getElementById("ui"), it;
+  function showUi(){ ui.classList.remove("h"); clearTimeout(it); it=setTimeout(function(){ui.classList.add("h");},3200); }
+  ["mousemove","touchstart","keydown"].forEach(function(ev){ addEventListener(ev,showUi,{passive:true}); }); showUi();
+  try{ navigator.wakeLock && navigator.wakeLock.request("screen").catch(function(){}); }catch(e){}
+  go(0);
+})();
+</script>
+</body>
+</html>
