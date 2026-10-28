@@ -229,8 +229,89 @@ ul.ck li::before{content:"";width:30px;height:30px;border-radius:50%;margin-top:
 .fc .quando span{display:block;font-size:14px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;opacity:.9;margin-top:4px}
 .fc .quando em{display:block;font-style:normal;font-size:15px;margin-top:7px;opacity:.9}
 .fc .parti{position:absolute;left:56px;right:56px;bottom:48px;padding-top:22px;border-top:1.5px solid var(--line);
-  display:flex;align-items:baseline;gap:14px;font-size:20px;color:var(--muted)}
-.fc .parti b{color:var(--fg);font-weight:700}
+  display:flex;align-items:center;gap:14px;font-size:20px;color:var(--muted);cursor:pointer}
+.fc .parti b{color:var(--fg);font-weight:700;flex:none}
+.fc .parti span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:color .25s}
+.fc .parti:hover span{color:var(--fg)}
+.fc .parti em{flex:none;font-style:normal;font-weight:800;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--c);
+  background:color-mix(in srgb,var(--c) 12%,transparent);border:1.5px solid color-mix(in srgb,var(--c) 42%,transparent);
+  border-radius:999px;padding:9px 18px;transition:background .25s,color .25s}
+.fc .parti:hover em,.fc .parti:focus-visible em{background:var(--c);color:#fff}
+.fc .parti:focus-visible{outline:3px solid color-mix(in srgb,var(--c) 55%,transparent);outline-offset:4px;border-radius:14px}
+
+/* ===== CONTAGEM POR PESSOA (ranking da semana) =====
+   A mesma pessoa em vários treinamentos entra UMA vez só, com o total no selo. */
+.pzk-wrap{position:absolute;left:92px;right:92px;top:368px;bottom:96px;z-index:5;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;align-content:start}
+.pzk{display:flex;align-items:center;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:18px;
+  padding:16px 20px;min-width:0;opacity:0;box-shadow:0 16px 34px rgba(20,28,42,.10)}
+.sl.on .pzk{animation:diaIn .8s cubic-bezier(.16,.84,.26,1) forwards}
+.sl.on .pzk:nth-child(1){animation-delay:.4s}.sl.on .pzk:nth-child(2){animation-delay:.48s}
+.sl.on .pzk:nth-child(3){animation-delay:.56s}.sl.on .pzk:nth-child(4){animation-delay:.64s}
+.sl.on .pzk:nth-child(5){animation-delay:.72s}.sl.on .pzk:nth-child(6){animation-delay:.8s}
+.sl.on .pzk:nth-child(7){animation-delay:.88s}.sl.on .pzk:nth-child(8){animation-delay:.96s}
+.sl.on .pzk:nth-child(9){animation-delay:1.04s}.sl.on .pzk:nth-child(10){animation-delay:1.12s}
+.sl.on .pzk:nth-child(11){animation-delay:1.2s}.sl.on .pzk:nth-child(12){animation-delay:1.28s}
+.pzk .av{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--fd);font-weight:800;font-size:21px;letter-spacing:.04em;
+  background:color-mix(in srgb,var(--c) 13%,#fff);color:var(--c);border:2px solid color-mix(in srgb,var(--c) 36%,#fff)}
+.pzk .nm{flex:1;min-width:0}
+.pzk .nm b{display:block;font-size:22px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pzk .nm small{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-top:4px}
+.pzk .qtd{flex:none;min-width:64px;text-align:center;font-family:var(--fd);font-weight:800;font-size:29px;line-height:1;
+  padding:11px 10px 9px;border-radius:14px;background:var(--panel2);color:var(--muted)}
+.pzk.destaque .qtd{background:var(--c);color:#fff;box-shadow:0 12px 24px color-mix(in srgb,var(--c) 42%,transparent)}
+.pzk.destaque .av{background:var(--c);color:#fff;border-color:var(--c)}
+.pz-nota{grid-column:1/-1;background:var(--glass);border:1.5px dashed var(--line);border-radius:14px;padding:13px 20px;
+  font-size:16.5px;font-weight:600;color:var(--muted);opacity:0}
+.sl.on .pz-nota{animation:diaIn .8s 1.5s cubic-bezier(.16,.84,.26,1) forwards}
+
+/* ===== LISTA DE PARTICIPANTES QUE ABRE POR CIMA (com pesquisa) =====
+   Enquanto a lista está aberta, a apresentação espera (o avanço pausa). */
+#pov{position:absolute;inset:0;z-index:40;display:grid;place-items:center;opacity:0;visibility:hidden;
+  transition:opacity .3s ease,visibility .3s}
+#pov.on{opacity:1;visibility:visible}
+#pov .pback{position:absolute;inset:0;background:rgba(17,22,33,.58);backdrop-filter:blur(9px);cursor:pointer}
+#pov .pbox{position:relative;width:1060px;max-height:900px;display:flex;flex-direction:column;background:var(--panel);
+  border-radius:26px;overflow:hidden;box-shadow:0 60px 140px rgba(17,22,33,.5);
+  transform:translateY(34px) scale(.965);transition:transform .35s cubic-bezier(.2,.9,.3,1.15)}
+#pov.on .pbox{transform:none}
+.phead{display:flex;align-items:flex-start;gap:20px;padding:34px 40px 30px;color:#fff;
+  background:linear-gradient(135deg,var(--accent),#ff8f4d)}
+.phead .ptit{display:block;font-family:var(--fd);font-weight:800;font-size:46px;line-height:.95;text-transform:uppercase}
+.phead .psub{display:block;margin-top:12px;font-size:19px;font-weight:600;opacity:.94}
+.px{margin-left:auto;flex:none;width:54px;height:54px;border:none;border-radius:50%;background:rgba(255,255,255,.22);
+  color:#fff;font-size:27px;line-height:1;cursor:pointer;transition:background .2s,transform .2s}
+.px:hover{background:rgba(255,255,255,.4);transform:rotate(90deg)}
+.pbusca{display:flex;align-items:center;gap:14px;margin:-24px 40px 0;position:relative;z-index:2;background:#fff;
+  border:2px solid var(--line);border-radius:16px;padding:13px 20px;box-shadow:0 18px 40px rgba(17,22,33,.14)}
+.pbusca svg{width:26px;height:26px;color:var(--muted);flex:none}
+.pbusca input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--fg);
+  font:600 24px "Barlow","Segoe UI",Arial,sans-serif}
+.pbusca input::placeholder{color:var(--muted);font-weight:500}
+.plist{flex:1;min-height:0;overflow-y:auto;padding:22px 40px 16px;display:flex;flex-direction:column;gap:16px}
+.plist::-webkit-scrollbar{width:10px}
+.plist::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pgrupos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pessoa{display:flex;align-items:center;gap:14px;background:var(--panel2);border:1px solid var(--line);
+  border-radius:14px;padding:12px 16px;min-width:0}
+.pessoa[hidden]{display:none}
+.pessoa .av{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--fd);font-weight:800;font-size:17px;letter-spacing:.03em;
+  background:color-mix(in srgb,var(--accent) 13%,#fff);color:var(--accent);border:2px solid color-mix(in srgb,var(--accent) 34%,#fff)}
+.pessoa .av svg{width:22px;height:22px}
+.pessoa .pq{flex:1;min-width:0}
+.pessoa .pq b{display:block;font-size:20.5px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pessoa .pq small{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-top:3px}
+.pessoa .mq{flex:none;font-style:normal;font-family:var(--fd);font-weight:800;font-size:21px;color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 12%,#fff);border-radius:11px;padding:7px 10px 5px}
+.pnada{padding:34px 10px;text-align:center;font-size:22px;font-weight:600;color:var(--muted)}
+.pnada[hidden]{display:none}
+.pfoot{display:flex;align-items:center;gap:14px;padding:15px 40px 22px;border-top:1.5px solid var(--line);
+  color:var(--muted);font-size:17px;font-weight:600}
+.pfoot b{font-family:var(--fd);font-size:26px;color:var(--fg)}
+.pfoot span{margin-left:auto;font-size:15px;opacity:.85}
 
 /* ===== CRONOGRAMA DA SEMANA (7 dias) ===== */
 .sem{position:absolute;z-index:5;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:20px}
@@ -288,11 +369,17 @@ ul.ck li::before{content:"";width:30px;height:30px;border-radius:50%;margin-top:
 @media (prefers-reduced-motion:reduce){
   .sl,.sl *{animation:none!important;transition:none!important}
   .sl .tx>*,.top .k,.top .zm,.stripe,.orb,.grid-bg,.floor,.sem .dia{opacity:1!important;transform:none!important}
-  .capacete,.card3d{opacity:1!important;transform:none!important}}
+  .capacete,.card3d{opacity:1!important;transform:none!important}
+  #pov,#pov .pbox{transition:none!important}}
 </style>
 </head>
 <body>
-<div id="vp"><div id="st"><div id="pb"></div></div></div>
+<div id="vp"><div id="st"><div id="pb"></div>
+  <div id="pov" role="dialog" aria-modal="true" aria-label="Participantes do treinamento">
+    <div class="pback" aria-hidden="true"></div>
+    <div class="pbox"></div>
+  </div>
+</div></div>
 <div id="ui">
   <div id="dots"></div>
   <button id="bP" type="button">Anterior</button>
@@ -314,6 +401,12 @@ ul.ck li::before{content:"";width:30px;height:30px;border-radius:50%;margin-top:
    rotação da TV esperar a apresentação inteira acabar antes de trocar de
    tela, e pede os dados com {ztvTrePede} assim que carrega.
 
+   PARTICIPANTES: cada cartão abre a LISTA por cima do palco, com pesquisa
+   pelo nome — e enquanto a lista está aberta a apresentação espera. A
+   contagem é POR PESSOA: a mesma pessoa em 3 treinamentos aparece uma vez
+   só, com "3×" no ranking da semana (equipes tipo "Equipe X · 12 pessoas"
+   contam à parte, somando suas pessoas).
+
    ABRINDO O ARQUIVO DIRETO (sem ?tv=1): os dados de demonstração abaixo
    entram em cena sozinhos, só para visualizar o layout.
    ========================================================================== */
@@ -328,8 +421,8 @@ function dDemo(n){ var d=new Date(hjDemo.getTime()+n*86400000);
 var DEMO_TREINAMENTOS = [
   {treinamento:"NR-35 Trabalho em altura",          tipo:"Reciclagem", data:dDemo(0), hora:"07:30 às 11:30", local:"Sala de treinamento 1", instrutor:"Marcelo Dias",     participantes:"Higor Lima, Wesley Rocha, Marcos Vieira, Paulo Andrade"},
   {treinamento:"NR-12 Segurança em máquinas",       tipo:"Formação",   data:dDemo(1), hora:"13:00 às 17:00", local:"Oficina central",       instrutor:"Ana Prado",        participantes:"Equipe de manutenção · 12 pessoas"},
-  {treinamento:"Integração de novos colaboradores", tipo:"Integração", data:dDemo(3), hora:"08:00 às 10:00", local:"Auditório",             instrutor:"RH Zamine",        participantes:"3 novos colaboradores"},
-  {treinamento:"Direção defensiva",                 tipo:"Reciclagem", data:dDemo(6), hora:"08:00 às 12:00", local:"Pátio de treinamento",  instrutor:"Marcelo Dias",     participantes:"Operadores de caminhão · 8 pessoas"}
+  {treinamento:"Integração de novos colaboradores", tipo:"Integração", data:dDemo(3), hora:"08:00 às 10:00", local:"Auditório",             instrutor:"RH Zamine",        participantes:"Higor Lima, Bianca Nunes, Rafael Torres"},
+  {treinamento:"Direção defensiva",                 tipo:"Reciclagem", data:dDemo(6), hora:"08:00 às 12:00", local:"Pátio de treinamento",  instrutor:"Marcelo Dias",     participantes:"Higor Lima, Wesley Rocha, Caio Souza, Renata Alves, Bruno Carvalho, Tânia Moreira, Diego Fontes, Léo Ramos"}
 ];
 
 /* Para testar outro dia na demonstração, troque por ex.: var FORCAR = new Date(2026,9,28); */
@@ -339,10 +432,11 @@ var FORCAR = null;
   var SEM=["dom","seg","ter","qua","qui","sex","sáb"];
   var MESES=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
   var MESES_LONGOS=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-  var st=document.getElementById("st"), dots=document.getElementById("dots");
+  var st=document.getElementById("st"), dots=document.getElementById("dots"), pov=document.getElementById("pov");
   var SL=[], i=0, tm=null, play=true, montado=false, assin="";
   /* dados correntes em cena — o montar preenche a cada carga do painel */
   var UNIDADE=DEMO_UNIDADE, HJ=new Date(), LISTA=[], TOTAL_P=0;
+  var RK={pessoas:[],grupos:[],totalP:0,totalPart:0,porNorm:{}};
 
   function pDate(s){ if(!s) return null; var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
   function diasAte(d){ return Math.round((d-HJ)/86400000); }
@@ -360,9 +454,45 @@ var FORCAR = null;
   }
   var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
 
-  /* conta participantes aproximado (só pelo texto, pra mostrar na capa) */
-  function nPessoas(t){ var m=/(\d+)\s*pessoa/i.exec(t.participantes||""); if(m) return +m[1];
-    return (t.participantes||"").split(/[,·]/).map(function(s){return s.trim();}).filter(Boolean).length; }
+  /* ---------- participantes: pessoas e grupos ----------
+     A string do editor vem com nomes separados por vírgula. Frases de grupo
+     tipo "Equipe de manutenção · 12 pessoas" ou "3 novos colaboradores" viram
+     GRUPO (com a quantidade); todo o resto é uma PESSOA de verdade. */
+  function parteDe(str){
+    return String(str||"").split(/\r?\n|,/)
+      .map(function(s){return s.trim();}).filter(Boolean)
+      .map(function(p){
+        var m=/^(.*?)[\s·]+(\d+)\s*pessoas?\s*$/i.exec(p);
+        if(m) return {grupo:(m[1]||"Equipe").trim(), qtd:+m[2]};
+        var m2=/^(\d+)\s+pessoas?$/i.exec(p);
+        if(m2) return {grupo:"Equipe", qtd:+m2[1]};
+        if(/colaborador/i.test(p)){ var m3=/(\d+)/.exec(p);
+          return {grupo:p.replace(/[\s·]*\d+\s*(novos?\s*)?colaboradores?\s*/i,"").trim()||"Novos colaboradores", qtd:m3?+m3[1]:1}; }
+        return {nome:p};
+      });
+  }
+  /* normaliza nome para comparar/pesquisar: sem acento, minúsculas, 1 espaço */
+  function normNome(s){ return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim(); }
+  function iniciais(nome){
+    var p=String(nome||"").split(/\s+/).filter(Boolean);
+    return (String(p[0]||"?").charAt(0)+String(p[1]||p[0]||"").charAt(0)).toUpperCase()||"?";
+  }
+  /* CONTAGEM POR PESSOA: a mesma pessoa em 3 treinamentos = 1 entrada com "3".
+     Grupos não disputam por pessoa — ficam à parte somando suas pessoas. */
+  function rankingPessoas(){
+    var mapa={}, grupos=[], totalP=0, totalPart=0;
+    LISTA.forEach(function(t){
+      parteDe(t.participantes).forEach(function(p){
+        if(p.grupo!==undefined){ grupos.push({nome:p.grupo,qtd:p.qtd}); totalP+=p.qtd; totalPart+=p.qtd; return; }
+        var k=normNome(p.nome); if(!k) return;
+        if(!mapa[k]){ mapa[k]={nome:p.nome,n:0}; totalP++; }
+        mapa[k].n++; totalPart++;
+      });
+    });
+    var pessoas=Object.keys(mapa).map(function(k){return mapa[k];});
+    pessoas.sort(function(a,b){ return b.n-a.n || a.nome.localeCompare(b.nome,"pt-BR"); });
+    return {pessoas:pessoas,grupos:grupos,totalP:totalP,totalPart:totalPart,porNorm:mapa};
+  }
 
   /* cor por tipo de treinamento */
   var COR = {"Formação":"c-form","Reciclagem":"c-rec","Integração":"c-int","Interno":"c-int2"};
@@ -381,6 +511,7 @@ var FORCAR = null;
     cap:'<path d="M12 3a9 9 0 0 0-9 9v4h18v-4a9 9 0 0 0-9-9Zm0 0v6M9 8l1 4m5-4-1 4"/>',
     cal:'<path d="M4 7h16v13H4V7Zm0 5h16M8 3v4m8-4v4"/>',
     pessoas:'<path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20a6 6 0 0 1 12 0M14 20a5 5 0 0 1 7-5"/>',
+    lupa:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
     livro:'<path d="M4 5h7v15H4V5Zm9 0h7v15h-7V5Zm-9 0a2 2 0 0 1 2-2h5v2m2 0V3h5a2 2 0 0 1 2 2"/>',
     relogio:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     local:'<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>',
@@ -493,9 +624,21 @@ var FORCAR = null;
       + '</div>';
   }
 
-  /* ---------- um cartão por treinamento ---------- */
-  function cartao(t){
+  /* ---------- um cartão por treinamento ----------
+     A faixa de participantes abre a LISTA (data-abre): mostra os 3 primeiros
+     nomes + o resto resumido; o selo à direita convida a abrir. */
+  function cartao(t,k){
     var tit=esc(t.treinamento), classe=tit.length>26?'long':'';
+    var partes=parteDe(t.participantes||"");
+    var pn=partes.filter(function(p){return p.nome!==undefined;});
+    var pg=partes.filter(function(p){return p.grupo!==undefined;});
+    var resumo=pn.slice(0,3).map(function(p){return p.nome;}).join(", ");
+    var resto=pn.length-3, gq=pg.reduce(function(a,g){return a+g.qtd;},0);
+    var txt = pn.length ? resumo+(resto>0?" e mais "+resto:"") : "";
+    if(pg.length) txt += (txt?"; +":"")+gq+" em "+(pg.length===1?pg[0].grupo:pg.length+" equipes");
+    var faixa = t.participantes ? '<div class="parti" data-abre="'+k+'" role="button" tabindex="0"'
+      +' title="Abrir a lista de participantes" aria-label="Abrir a lista de participantes">'
+      + '<b>Participantes</b><span>'+esc(txt||t.participantes)+'</span><em>abrir lista</em></div>' : '';
     return '<div class="card3d" data-flip>'
       + '<div class="fc">'
       +   '<div class="faixa"></div><div class="listra"></div>'
@@ -510,7 +653,7 @@ var FORCAR = null;
       +       (t.instrutor?'<b>Com</b><span>'+esc(t.instrutor)+'</span>':'')
       +     '</div>'
       +   '</div>'
-      +   (t.participantes?'<div class="parti"><b>Participantes</b><span>'+esc(t.participantes)+'</span></div>':'')
+      +   faixa
       + '</div></div>';
   }
   /* variante do cartão para a tela com mascote — mais estreito e sem o selo da data */
@@ -530,6 +673,77 @@ var FORCAR = null;
       +   (t.participantes?'<div class="parti" style="left:44px;right:44px;bottom:34px;font-size:17px;padding-top:16px"><b>Participantes</b><span>'+esc(t.participantes)+'</span></div>':'')
       + '</div></div>';
   }
+
+  /* ---------- contagem por pessoa: ranking da semana ---------- */
+  function pzGrid(){
+    var MAX=12, ps=RK.pessoas.slice(0,MAX), fora=RK.pessoas.length-ps.length;
+    var h='<div class="pzk-wrap">';
+    ps.forEach(function(p){
+      h+='<div class="pzk'+(p.n>1?' destaque':'')+'">'
+        + '<i class="av" aria-hidden="true">'+esc(iniciais(p.nome))+'</i>'
+        + '<div class="nm"><b>'+esc(p.nome)+'</b><small>'+p.n+(p.n===1?' treinamento na semana':' treinamentos na semana')+'</small></div>'
+        + '<em class="qtd">'+p.n+'×</em>'
+        + '</div>';
+    });
+    if(fora>0) h+='<div class="pz-nota">+ '+fora+' pessoas na lista completa — abra os participantes de cada treinamento</div>';
+    if(RK.grupos.length){ var gq=RK.grupos.reduce(function(a,g){return a+g.qtd;},0);
+      h+='<div class="pz-nota">Equipes contam à parte: '+RK.grupos.map(function(g){return esc(g.nome)+' ('+g.qtd+' pessoas)';}).join(' · ')+' — somam +'+gq+' pessoas</div>'; }
+    h+='</div>';
+    return h;
+  }
+
+  /* ---------- lista de participantes que ABRE por cima do palco ----------
+     Tem pesquisa pelo nome (ignora acento/maiúscula) e mostra, em cada pessoa,
+     quantos treinamentos ela faz na semana. Enquanto aberta, o avanço pausa. */
+  function fechaPov(retoma){
+    if(!pov || !pov.classList.contains("on")) return;
+    pov.classList.remove("on");
+    var pb=document.getElementById("pb"); if(pb) pb.style.animationPlayState="running";
+    if(retoma && play) go(i);
+  }
+  function abrePov(k){
+    var t=LISTA[k]; if(!t || !pov) return;
+    var itens=parteDe(t.participantes||"");
+    var ps=itens.filter(function(p){return p.nome!==undefined;});
+    var gs=itens.filter(function(p){return p.grupo!==undefined;});
+    var semanaDe=function(nome){ var r=RK.porNorm[normNome(nome)]; return r?r.n:0; };
+    var h='<div class="phead"><div><span class="ptit">'+esc(t.treinamento)+'</span>'
+      + '<span class="psub">'+rotuloDia(t._d)+(t.hora?' · '+esc(t.hora):'')+(t.local?' · '+esc(t.local):'')+'</span></div>'
+      + '<button type="button" class="px" aria-label="Fechar a lista de participantes">×</button></div>'
+      + '<div class="pbusca">'+ico('lupa')+'<input type="search" placeholder="Pesquisar o nome da pessoa…" aria-label="Pesquisar participante pelo nome"></div>'
+      + '<div class="plist">';
+    if(ps.length) h+='<div class="pgrid">'+ps.map(function(p){
+        var n=semanaDe(p.nome);
+        return '<div class="pessoa" data-q="'+esc(normNome(p.nome))+'"><i class="av" aria-hidden="true">'+esc(iniciais(p.nome))+'</i>'
+          + '<div class="pq"><b>'+esc(p.nome)+'</b><small>'+n+(n===1?' treinamento nesta semana':' treinamentos nesta semana')+'</small></div>'
+          + (n>1?'<em class="mq">'+n+'×</em>':'')+'</div>';
+      }).join('')+'</div>';
+    if(gs.length) h+='<div class="pgrupos">'+gs.map(function(g){
+        return '<div class="pessoa grupo" data-q="'+esc(normNome(g.grupo))+'"><i class="av g" aria-hidden="true">'+ico('pessoas')+'</i>'
+          + '<div class="pq"><b>'+esc(g.grupo)+'</b><small>equipe · '+g.qtd+' pessoas</small></div></div>';
+      }).join('')+'</div>';
+    var tot=ps.length+gs.length;
+    h+='<div class="pnada" hidden>Ninguém com esse nome nesta lista.</div></div>'
+      + '<div class="pfoot"><b>'+tot+'</b>'+(tot===1?' nome na lista':' nomes na lista')
+      + '<span>A apresentação espera enquanto a lista está aberta · Esc fecha</span></div>';
+    pov.querySelector(".pbox").innerHTML=h;
+    pov.classList.add("on");
+    clearTimeout(tm);
+    var pb=document.getElementById("pb"); if(pb) pb.style.animationPlayState="paused";
+    var q=pov.querySelector("input");
+    if(q){
+      setTimeout(function(){ q.focus(); },180);
+      q.addEventListener("input",function(){
+        var s=normNome(q.value), c=0;
+        [].forEach.call(pov.querySelectorAll(".pessoa"),function(el){
+          var ok=!s||String(el.dataset.q).indexOf(s)>=0; el.hidden=!ok; if(ok) c++; });
+        var nd=pov.querySelector(".pnada"); if(nd) nd.hidden=c>0;
+        var fb=pov.querySelector(".pfoot b"); if(fb) fb.textContent=c;
+      });
+    }
+    var x=pov.querySelector(".px"); if(x) x.onclick=function(){ fechaPov(true); };
+  }
+  if(pov) pov.querySelector(".pback").onclick=function(){ fechaPov(true); };
 
   /* ==========================================================================
      MONTAR — constrói todas as telas e recomeça a apresentação.
@@ -553,7 +767,8 @@ var FORCAR = null;
     LISTA = FONTE.map(function(t){var d=pDate(t.data);return d?Object.assign({},t,{_d:d}):null;})
       .filter(function(t){return t && t._d>=HJ && t._d<LIMITE;})
       .sort(function(a,b){return a._d-b._d;});
-    TOTAL_P = LISTA.reduce(function(a,t){return a+nPessoas(t);},0);
+    RK = rankingPessoas();
+    TOTAL_P = RK.totalP;   /* cada pessoa conta UMA vez; equipes somam suas pessoas */
 
     /* telas */
     var S=[];
@@ -593,8 +808,22 @@ var FORCAR = null;
         + semana()});
     }
 
+    /* 2.5 · participantes da semana — contagem POR PESSOA
+       (a mesma pessoa em vários treinamentos entra uma vez só, com o total) */
+    if(RK.pessoas.length || RK.grupos.length){ S.push({t:14,c:'c-acc',html:
+      fundo()+moldura({ico:'pessoas',txt:'Participantes da semana'})
+      + '<div class="tx" style="left:92px;top:170px;width:1250px;gap:10px">'
+      +   '<span class="eyb">Contagem por pessoa</span>'
+      +   '<h2 style="font-size:72px">'+(RK.pessoas.length?'Quem vai <span class="hl" style="display:inline">treinar</span>':'Equipes <span class="hl" style="display:inline">escaladas</span>')+'</h2>'
+      +   '<p class="lead" style="font-size:25px;max-width:1300px;white-space:nowrap">Quem repete em vários treinamentos aparece uma vez só — o número mostra quantas vezes ela treina.</p>'
+      + '</div>'
+      + '<div class="ct" style="position:absolute;left:1490px;top:196px;align-self:auto"><i>'+ico('pessoas')+'</i><div><small>Nesta semana</small>'
+      +   '<b>'+(RK.pessoas.length?'<span class="cnt" data-count="'+RK.pessoas.length+'">0</span> '+(RK.pessoas.length===1?'pessoa':'pessoas'):'')
+      +   (RK.totalPart>RK.pessoas.length?(RK.pessoas.length?' · ':'')+'<span class="cnt" data-count="'+RK.totalPart+'">0</span> participações':'')+'</b></div></div>'
+      + pzGrid()}); }
+
     /* 3 · uma tela por treinamento — card 3D + cena animada de fundo (sem mascote/imagem NR) */
-    LISTA.forEach(function(t){
+    LISTA.forEach(function(t,k){
       var cn = cenaDe(t.treinamento);
       S.push({t:15,c:corDe(t.tipo),html:
         fundo()+moldura({ico:'livro',txt:rotuloDia(t._d)+' · '+esc(t.tipo||"Treinamento")})
@@ -605,7 +834,7 @@ var FORCAR = null;
         + '</div>'
         + '<div class="stage3d" style="left:92px;top:340px">'
         +   '<div class="tilt">'
-        +     cartao(t)
+        +     cartao(t,k)
         +     '<div class="floor"></div>'
         +   '</div>'
         + '</div>'});
@@ -644,7 +873,10 @@ var FORCAR = null;
   vp.addEventListener("mousemove",function(e){ var x=(e.clientX/innerWidth-.5)*2, y=(e.clientY/innerHeight-.5)*2;
     st.style.setProperty("--mx",x.toFixed(3)); st.style.setProperty("--my",y.toFixed(3)); });
   vp.addEventListener("mouseleave",function(){ st.style.setProperty("--mx",0); st.style.setProperty("--my",0); });
-  document.addEventListener("click",function(e){ var c=e.target.closest("[data-flip]"); if(c) c.classList.toggle("flip"); });
+  document.addEventListener("click",function(e){
+    var pa=e.target.closest("[data-abre]");
+    if(pa){ abrePov(+pa.dataset.abre); return; }   /* faixa de participantes abre a lista */
+    var c=e.target.closest("[data-flip]"); if(c) c.classList.toggle("flip"); });
   dots.addEventListener("click",function(e){ var k=e.target.dataset.k; if(k!=null) go(+k); });
   function nums(sl){
     sl.querySelectorAll("[data-count]").forEach(function(el){
@@ -655,6 +887,7 @@ var FORCAR = null;
     sl.querySelectorAll("[data-flip]").forEach(function(c){ c.classList.remove("flip"); });
   }
   function go(k){
+    if(pov) pov.classList.remove("on");   /* navegar fecha a lista de participantes */
     SL[i].classList.remove("on"); i=(k+SL.length)%SL.length; var sl=SL[i];
     sl.classList.remove("on"); void sl.offsetWidth; sl.classList.add("on");
     nums(sl);
@@ -667,7 +900,7 @@ var FORCAR = null;
      e o painel troca de tela. Ir/voltar pausa o avanço automático — quem
      está apresentando controla o ritmo; passou da última, muda a tela. */
   var TVM=/(?:\?|&)tv=1/.test(location.search);
-  function ztvFim(){ var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvTreFim:1},"*"); }catch(e){} }
+  function ztvFim(){ if(pov) pov.classList.remove("on"); var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvTreFim:1},"*"); }catch(e){} }
   function znav(k){
     if(!TVM){ go(k); return; }
     if(k===i) return;                       /* mesma posição: nada muda (o painel reenvia o índice) */
@@ -681,6 +914,12 @@ var FORCAR = null;
   document.getElementById("bPl").onclick=function(){ play=!play; this.textContent=play?"Pausar":"Continuar"; go(i); };
   document.getElementById("bF").onclick=function(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }catch(e){} };
   addEventListener("keydown",function(e){
+    if(pov && pov.classList.contains("on")){   /* lista aberta: só o Esc age */
+      if(e.key==="Escape"){ e.preventDefault(); fechaPov(true); }
+      return; }
+    var alvo=e.target, tag=alvo&&alvo.tagName;
+    if(tag==="INPUT"||tag==="TEXTAREA") return;   /* digitando: não dispara atalho */
+    if(e.key==="Enter"||e.key===" "){ var pa=alvo.closest&&alvo.closest("[data-abre]"); if(pa){ e.preventDefault(); abrePov(+pa.dataset.abre); return; } }
     if(e.key==="ArrowRight"||e.key==="PageDown"){e.preventDefault();go(i+1);}
     else if(e.key==="ArrowLeft"||e.key==="PageUp"){e.preventDefault();go(i-1);}
     else if(e.key===" "){e.preventDefault();document.getElementById("bPl").click();}
