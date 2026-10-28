@@ -69,8 +69,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);overflow:hid
 /* benefícios: apresentação pronta (deck) — ocupa a TELA INTEIRA da TV (por cima do
    cabeçalho e do rodapé; fica abaixo dos botões flutuantes, toasts, editor, seletor
    de canal e barra de controle). Na prévia do editor segue dentro da caixa. */
-.bn-fr,.ani-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#e9ecf1}
-main .bn-fr,main .ani-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}
+.bn-fr,.ani-fr,.tre-fr{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#e9ecf1}
+main .bn-fr,main .ani-fr,main .tre-fr{position:fixed;inset:0;width:100%;height:100%;z-index:10}
 @keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.slide{animation:none}.bar i{animation:none!important}}
 
@@ -420,27 +420,8 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .memo-o .lbl{color:var(--accent)}
 .memo-o.imp .lbl{color:var(--bad)}
 
-/* Treinamentos */
-.s-tr{display:flex;flex-direction:column;gap:24px;height:100%}
-.tr-h{display:flex;align-items:baseline;gap:18px}
-.tr-h b{font-family:var(--f-display);font-size:72px;font-weight:800;line-height:1;color:var(--accent)}
-.tr-h span{font-size:28px;color:var(--muted)}
-.tr-g{display:grid;gap:22px;flex:1;min-height:0;grid-auto-rows:1fr}
-.tr{display:grid;grid-template-columns:150px 1fr;gap:0;overflow:hidden;min-height:0}
-.tr-d{background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px}
-.tr-d b{font-family:var(--f-display);font-size:48px;font-weight:800;line-height:1}
-.tr-d span{font-size:20px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-.tr.today .tr-d{background:var(--accent);color:var(--on-accent)}
-.tr.today .tr-d span{color:var(--on-accent)}
-.tr-b{padding:24px 30px;display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0;overflow:hidden}
-.tr-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.chip{font-size:17px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
-.tr-f{font-family:var(--f-display);font-size:28px;font-weight:700;color:var(--accent)}
-.tr-b h3{margin:0;font-family:var(--f-display);font-size:50px;line-height:1;text-transform:uppercase;font-weight:800;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.tr-m{font-size:22px;color:var(--muted)}
-.tr-p{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.tr-p span{font-size:21px;padding:6px 14px;border-radius:6px;background:var(--panel2);border:1px solid var(--line);white-space:nowrap}
-.tr-p .more2{color:var(--accent);font-weight:700}
+/* Treinamentos: a tela virou apresentação pronta (arquivo /html/treinamentos-zamine.html
+   via postMessage) — o CSS antigo dos cards saiu junto com o layout antigo. */
 
 /* DDS */
 .s-dds{display:grid;grid-template-columns:1fr;gap:48px;height:100%}
@@ -1724,23 +1705,14 @@ const R = {
     </div>`;
   },
   treinamentos(o){
-    const t = today0(), lim = new Date(+t + 7*864e5);
-    const it = list(o,"treinamentos").filter(x=>{const d=pDate(x.data); return x.treinamento && d && d>=t && d<lim;})
-      .sort((a,b)=>a.data.localeCompare(b.data)||(a.hora||"").localeCompare(b.hora||""));
-    if(!it.length) return emptyBox("Sem treinamentos nos próximos 7 dias","Cadastre os treinamentos e os participantes no editor.");
-    const names = x => String(x.participantes||"").split(/[\n,;]+/).map(n=>n.trim()).filter(Boolean);
-    const show = it.slice(0,4), cols = show.length<=2?show.length:2;
-    const tot = it.reduce((s,x)=>s+names(x).length,0);
-    return `<div class="s-tr">
-      <div class="tr-h"><b class="num">${it.length}</b><span>${it.length===1?"treinamento":"treinamentos"} nos próximos 7 dias · ${tot} ${tot===1?"participante":"participantes"}</span></div>
-      <div class="tr-g" style="grid-template-columns:repeat(${cols},1fr)">${show.map(x=>{const d=pDate(x.data), isT=+d===+t, ns=names(x), mx=show.length>2?8:14;
-        return `<div class="card tr ${isT?"today":""}">
-          <div class="tr-d"><b class="num">${fmtDM(d)}</b><span>${isT?"hoje":wk(d)}</span></div>
-          <div class="tr-b"><div class="tr-top">${x.tipo?`<span class="chip">${esc(x.tipo)}</span>`:""}<span class="tr-f">${esc(faltaTxt(d))}</span></div>
-            <h3>${esc(x.treinamento)}</h3>
-            <div class="tr-m">${[x.hora, x.local, x.instrutor?"Instrutor: "+x.instrutor:""].filter(Boolean).map(esc).join("  ·  ")}</div>
-            ${ns.length?`<div class="tr-p">${ns.slice(0,mx).map(n=>`<span>${esc(n)}</span>`).join("")}${ns.length>mx?`<span class="more2">+${ns.length-mx}</span>`:""}</div>`:""}</div></div>`;}).join("")}</div>
-      ${it.length>4?`<div class="more">+ ${it.length-4} treinamentos depois destes</div>`:""}</div>`;
+    /* Tela virou APRESENTAÇÃO PRONTA (arquivo /html/treinamentos-zamine.html):
+       capa, cronograma da semana, um cartão 3D por treinamento e fecho — mesmo
+       motor das apresentações de benefícios/aniversariantes. Os dados são os
+       MESMOS desta aba (janela de hoje até 7 dias): o painel manda via
+       postMessage (na prévia, o rascunho). */
+    const pac = trePacote(o);
+    if(!pac.itens.length) return emptyBox("Sem treinamentos nos próximos 7 dias","Cadastre os treinamentos e os participantes no editor.");
+    return `<iframe class="tre-fr" src="/html/treinamentos-zamine.html?tv=1" title="Treinamentos da semana"></iframe>`;
   },
   dds(o){
     const t = +today0();
@@ -2484,6 +2456,25 @@ function aniPost(root, src){
   const envia = ()=>{ try{ f.contentWindow.postMessage({ztvAni:aniPacote(src)},"*"); }catch(e){} };
   envia(); setTimeout(envia,500); setTimeout(envia,1600);
 }
+/* apresentação de treinamentos: dados vão do painel pro deck (mesmo banco do
+   editor; na prévia, o rascunho) e a duração real volta via postMessage.
+   A janela é a mesma de antes: hoje até os próximos 7 dias, em ordem de data. */
+let treDur = 120000;
+function trePacote(o){
+  const t = today0(), lim = new Date(+t + 7*864e5);
+  const g = get(o,"config","geral")||{};
+  return { unidade:"Zamine · "+(String(g.unidade||"").trim()||UNIDADE_TXT)+" · "+UF_TXT,
+    hoje: iso(t),
+    itens:list(o,"treinamentos").filter(x=>{const d=pDate(x.data); return x.treinamento && d && d>=t && d<lim;})
+      .sort((a,b)=>a.data.localeCompare(b.data)||(a.hora||"").localeCompare(b.hora||""))
+      .map(x=>({treinamento:String(x.treinamento||""),tipo:String(x.tipo||""),data:String(x.data||""),
+        hora:String(x.hora||""),local:String(x.local||""),instrutor:String(x.instrutor||""),participantes:String(x.participantes||"")})) };
+}
+function trePost(root, src){
+  const f = (root||document).querySelector("iframe.tre-fr"); if(!f) return;
+  const envia = ()=>{ try{ f.contentWindow.postMessage({ztvTre:trePacote(src)},"*"); }catch(e){} };
+  envia(); setTimeout(envia,500); setTimeout(envia,1600);
+}
 addEventListener("message", e=>{
   const d = e && e.data; if(!d) return;
   if(d.ztvAniDur>=30){ anDur = (d.ztvAniDur+3)*1000;
@@ -2494,6 +2485,14 @@ addEventListener("message", e=>{
       if(kk==="aniversarios") restartTimer(); } }
   if(d.ztvAniPede){ const f=[...document.querySelectorAll("iframe.ani-fr")].find(x=>x.contentWindow===e.source);
     if(f){ const src=f.closest("#pvMain")?draft:data; try{ e.source.postMessage({ztvAni:aniPacote(src)},"*"); }catch(err){} } }
+  if(d.ztvTreDur>=30){ treDur = (d.ztvTreDur+3)*1000;
+    /* a apresentação avisou a duração real: reagenda a troca de tela — só se
+       ela estiver no ar agora (mesma regra dos aniversariantes) */
+    if(state==="ready"){ const sl3 = activeSlides();
+      const kk3 = sl3.length ? sl3[((idx%sl3.length)+sl3.length)%sl3.length].key : null;
+      if(kk3==="treinamentos") restartTimer(); } }
+  if(d.ztvTrePede){ const f3=[...document.querySelectorAll("iframe.tre-fr")].find(x=>x.contentWindow===e.source);
+    if(f3){ const src3=f3.closest("#pvMain")?draft:data; try{ e.source.postMessage({ztvTre:trePacote(src3)},"*"); }catch(err){} } }
 });
 
 function duration(){
@@ -2502,6 +2501,7 @@ function duration(){
   const def = num(get(data,"config","geral")?.duracao);
   if(key==="beneficios" && !(own>=5)) return bnDur;
   if(key==="aniversarios" && !(own>=5)) return anDur;
+  if(key==="treinamentos" && !(own>=5)) return treDur;
   const d = own>=5 ? own : def>=5 ? def : 15;
   return d*1000;
 }
@@ -2533,7 +2533,7 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
-  } else if(key!=="beneficios" && key!=="aniversarios" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
+  } else if(key!=="beneficios" && key!=="aniversarios" && key!=="treinamentos" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
     /* tela interativa pausada (calendário/escala no ano ou mês escolhido, plano de ação filtrado):
        o poll de 30s não pode desmontar o que a pessoa está vendo. Na tela de
        benefícios o mesmo: recriar o slide recarregaria a apresentação do zero. */
@@ -2543,6 +2543,7 @@ function renderFrame(animate){
   if(key==="beneficios"){ main.firstElementChild.style.animation="none"; const bf=main.querySelector(".bn-fr"); if(bf && !bf.dataset.med){ bf.dataset.med="1"; bf.addEventListener("load",bnMede,{once:true}); setTimeout(bnMede,1500); } }
   if(key==="aniversarios"){ main.firstElementChild.style.animation="none"; aniPost(main, data); }
   else if(aniRaf){ cancelAnimationFrame(aniRaf); aniRaf = 0; }
+  if(key==="treinamentos"){ main.firstElementChild.style.animation="none"; trePost(main, data); }
   /* telas interativas: ligam os botões ao montar; ao sair da tela, solta a pausa */
   if(key==="calendario") calInit(main.querySelector(".s-cal"), false);
   else if(key==="planoAcao") paInit(main.querySelector(".s-pa"), false);
@@ -3398,6 +3399,7 @@ function renderPreview(){
   if(curSec==="calendario") calInit(pm.querySelector(".s-cal"), true, draft);
   if(curSec==="planoAcao") paInit(pm.querySelector(".s-pa"), true, draft);
   if(curSec==="aniversarios") aniPost(pm, draft);
+  if(curSec==="treinamentos") trePost(pm, draft);
   if(curSec==="escala") escInit(pm.querySelector(".s-escx"), true, draft);
 }
 addEventListener("resize", ()=>{ if(pvOn) renderPreview(); });

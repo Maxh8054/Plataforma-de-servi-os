@@ -394,7 +394,7 @@ var FORCAR = null;
     if(montado && novaAssin===assin) return;   /* mesma carga: não recomeça a apresentação */
     assin = novaAssin;
     var UNIDADE = (pac && pac.unidade) || DEMO_UNIDADE;
-    var PESSOAS = (pac && pac.pessoas && pac.pessoas.length) ? pac.pessoas : DEMO_PESSOAS;
+    var PESSOAS = (pac && pac.pessoas) ? pac.pessoas : DEMO_PESSOAS;   /* pessoas veio (mesmo vazio) = dados reais do painel */
     var HOJE_D, HOJE_M, ANO;
     if(pac && pac.hoje && pac.hoje.d && pac.hoje.m){ HOJE_D = +pac.hoje.d; HOJE_M = +pac.hoje.m; }
     else if(FORCAR){ HOJE_D = FORCAR.dia; HOJE_M = FORCAR.mes; }

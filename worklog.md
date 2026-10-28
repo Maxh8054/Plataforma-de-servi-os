@@ -1181,3 +1181,25 @@ Stage Summary:
 - A rotação espera a apresentação acabar (duração medida dinamicamente — varia com o número de gente do mês); o poll de 30s não interrompe; em dia de festa o slide sobe para o começo da rotação
 - Mês sem aniversariantes continua mostrando o aviso de cadastro; a prévia do editor reflete o rascunho em tempo real
 - Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+---
+Task ID: 54
+Agent: Z.ai Code (principal)
+Task: "treinamentos modifique pra esse html encaixe esse layout no sistema que ja existe e apague o antigo layout" — tela Treinamentos vira a apresentação cinematográfica anexada (upload/Pasted Content_1793210405357.txt) com o MESMO banco de dados da aba
+
+Work Log:
+- Novo deck public/html/treinamentos-zamine.html (692 linhas): capa com poses do Zézim ciclando, cronograma visual dos 7 dias (dia de hoje destacado), um cartão 3D por treinamento com cena de fundo pela NR (nuvens NR-35, engrenagens NR-12, raios NR-10, estrada direção defensiva) e fecho — mesma paleta/motor dos decks de benefícios/aniversariantes; montado por recorte exato das peças do anexo (helpers + telas + motor verificados idênticos ao original por diff automatizado, função por função e push por push)
+- Dados NÃO ficam no deck: o painel manda via postMessage ({ztvTre:{unidade, hoje:"AAAA-MM-DD", itens:[...]}}) — mesmo banco do editor (aba Treinamentos, janela hoje→7 dias, ordem por data/hora, igual à tela antiga); o deck responde {ztvTreDur} (duração total em s) e pede dados ao montar ({ztvTrePede}); demo hardcoded com datas RELATIVAS a hoje, só para abertura direta sem ?tv=1; mesma carga não recomeça a apresentação (checagem por assinatura); itens vindo do painel (mesmo vazio) nunca caem no demo — mostra o slide "Nenhum treinamento"
+- Modo TV ?tv=1: esconde #ui e iguala o fundo (#e9ecf1) — igual aos decks irmãos
+- Painéis goias+minas (8 edições idênticas em cada): CSS .tre-fr herdando as regras de tela inteira do .bn-fr/.ani-fr; R.treinamentos → iframe do deck (emptyBox se a janela de 7 dias está vazia); treDur+trePacote+trePost ao lado do bloco dos aniversariantes (duração real REAGENDA a troca de tela; pede responde com data ou draft conforme o contexto); duration() usa treDur; poll de 30s pula treinamentos (não recarrega o deck); hook no renderFrame (animation none + trePost); prévia do editor manda o rascunho
+- Layout antigo APAGADO como pedido: renderer antigo (cards em grade) substituído pelo iframe e os 21 estilos mortos (.s-tr, .tr-*, .chip) removidos dos 2 painéis
+- tv-sw.js: deck de treinamentos entrou na lista network-first das páginas (fallback offline)
+- Bug de montagem apanhado no caminho: <script> do anexo está na linha 303 (a análise tinha cortado na 302) → deck montado sem a tag, JS não rodava; re-montado com head -303 e revalidado (node --check)
+- Verificação browser (goias+minas): demo standalone 7 slides (capa, semana, 4 cartões, fecho) com poses/cenas animadas; painel goias com os 3 treinamentos NR-12 REAIS do banco → 6 slides, capa "3 treinamentos · 3 pessoas", semana marcando TER 03/NOV, duration()=87000 (84s do deck +3s postados), #ui removido dentro do iframe, poll não desmonta; painel minas sem treinamentos na janela → emptyBox correto; transição no meio da rotação (itens expiram via poll) mostra "Nenhum treinamento" em vez do demo; screenshots ponta a ponta em tela cheia
+- Lint no baseline 31 (24 erros/7 avisos pré-existentes em src/, nada dos painéis); JS dos 2 painéis validado com node --check
+
+Stage Summary:
+- A tela Treinamentos da TV agora roda a apresentação cinematográfica anexada com o MESMO banco da aba (via postMessage — nada é digitado no deck); o layout antigo saiu de cena por completo (renderer + CSS)
+- A rotação espera a apresentação acabar (duração medida dinamicamente — varia com o número de treinamentos da semana); o poll de 30s não interrompe; treinamento que expira sai sozinho
+- Janela vazia continua mostrando o aviso de cadastro; a prévia do editor reflete o rascunho em tempo real
+- Zero mudança de schema/rotas; TVs atualizam recarregando a página

@@ -32,11 +32,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // conteúdo do painel, a própria página, os scripts compartilhados da TV e a
-  // apresentação de benefícios: rede primeiro, cache como reserva (slug aceita
-  // painel por local: minas-araxa etc.)
+  // conteúdo do painel, a própria página, os scripts compartilhados da TV e as
+  // apresentações prontas (benefícios, aniversariantes, treinamentos): rede
+  // primeiro, cache como reserva (slug aceita painel por local: minas-araxa etc.)
   const conteudo = /^\/api\/tv\/[a-z0-9-]+\/content$/.test(url.pathname);
-  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname) || url.pathname === "/html/beneficios-zamine.html" || url.pathname === "/html/aniversarios-zamine.html";
+  const pagina = /painel-tv-[a-z0-9]+\.html$/.test(url.pathname) || url.pathname === "/html/beneficios-zamine.html" || url.pathname === "/html/aniversarios-zamine.html" || url.pathname === "/html/treinamentos-zamine.html";
   const script = /^\/tv-(extras|qrcode)\.js$/.test(url.pathname);
   if (conteudo || pagina || script) {
     const chave = url.pathname + (url.search || "");
