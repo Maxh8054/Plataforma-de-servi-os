@@ -562,3 +562,25 @@ model OrganogramaData {
 
   @@map("organograma_data")
 }
+
+// ==========================================
+// Programação Semanal (Manutenção) — semanas criadas pela gestão
+// (ex.: "semana 1") com as paradas das máquinas EH-01/02/03, duração,
+// motivo e os backlogs programados com as aplicações realizadas
+// (feito + hora). Tudo vai para o banco; nada fica no navegador.
+// ==========================================
+
+model ProgramacaoSemanal {
+  id                 String   @id @default(cuid())
+  panelSlug          String   @map("panelSlug") // painel dono (goias, minas…)
+  ano                Int      // ano da semana ISO
+  semana             Int      // nº da semana ISO (1–53), escolhido pelo usuário
+  dados              String // JSON: { machines: { EH-01: { dia, horas, motivo, backlogs, done[], feitoEm{} } } }
+  atualizadoPorNome  String?  @map("atualizadoPorNome")
+  atualizadoPorEmail String?  @map("atualizadoPorEmail")
+  createdAt          DateTime @default(now()) @map("createdAt")
+  updatedAt          DateTime @updatedAt @map("updatedAt")
+
+  @@unique([panelSlug, ano, semana])
+  @@map("programacao_semanal")
+}
