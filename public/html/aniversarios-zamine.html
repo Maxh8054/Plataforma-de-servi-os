@@ -475,7 +475,7 @@ var FORCAR = null;
     }).join(""));
     SL = [].slice.call(st.querySelectorAll(".sl")); i = 0;
     dots.innerHTML = SL.map(function(_,k){return '<i data-k="'+k+'" title="Tela '+(k+1)+'"></i>';}).join("");
-    go(0); montado = true;
+    go(0); montado = true; play = true;   /* carga nova: volta a rodar sozinha (nav tinha pausado) */
     /* duração total → o painel usa para esperar a apresentação acabar */
     var total=0; S.forEach(function(s){ total += (+s.t||0); });
     try{ if(parent!==window) parent.postMessage({ztvAniDur:total},"*"); }catch(e){}
@@ -526,7 +526,20 @@ var FORCAR = null;
     nums(sl); confete(sl);
     [].forEach.call(dots.children,function(d,n){ d.classList.toggle("on",n===i); });
     clearTimeout(tm); var pb=document.getElementById("pb"); pb.style.animation="none"; void pb.offsetWidth;
-    if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linear forwards"; tm=setTimeout(function(){go(i+1);},t); }
+    if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linear forwards"; tm=setTimeout(function(){ if(TVM && i>=SL.length-1){ clearTimeout(tm); ztvFim(); } else go(i+1); },t); }
+  }
+  /* modo TV: comando do painel (ir/voltar nos slides) + aviso de fim.
+     Na TV a apresentação NÃO repete: quando acaba, avisa o painel (ztvAniFim)
+     e o painel troca de tela. Ir/voltar pausa o avanço automático. */
+  var TVM=/(?:\?|&)tv=1/.test(location.search);
+  function ztvFim(){ var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvAniFim:1},"*"); }catch(e){} }
+  function znav(k){
+    if(!TVM){ go(k); return; }
+    if(k===i) return;                       /* mesma posição: nada muda (o painel reenvia o índice) */
+    clearTimeout(tm); play=false; var pb=document.getElementById("pb"); if(pb) pb.style.animation="none";
+    if(k>=SL.length){ ztvFim(); return; }   /* passou da última = avança a tela no painel */
+    if(k<0) k=SL.length-1;                  /* voltar do primeiro = vai para a última */
+    go(k);
   }
   document.getElementById("bN").onclick=function(){go(i+1);};
   document.getElementById("bP").onclick=function(){go(i-1);};
@@ -542,8 +555,14 @@ var FORCAR = null;
   ["mousemove","touchstart","keydown"].forEach(function(ev){ addEventListener(ev,showUi,{passive:true}); }); showUi();
   try{ navigator.wakeLock && navigator.wakeLock.request("screen").catch(function(){}); }catch(e){}
 
-  /* ---- dados: o painel manda (mesmo banco do editor); o deck devolve a duração ---- */
-  addEventListener("message", function(e){ var d=e&&e.data; if(d&&d.ztvAni) montar(d.ztvAni); });
+  /* ---- dados: o painel manda (mesmo banco do editor); o deck devolve a duração.
+          Também obedece ztvNav (ir/voltar nos slides, do controle da TV). ---- */
+  addEventListener("message", function(e){ var d=e&&e.data; if(!d) return;
+    if(d.ztvAni) montar(d.ztvAni);
+    else if(d.ztvNav==="next") znav(i+1);
+    else if(d.ztvNav==="prev") znav(i-1);
+    else if(typeof d.ztvNav==="number") znav(d.ztvNav);
+    else if(d.ztvNav==="auto"){ play=true; go(i); } });
   try{ if(parent!==window) parent.postMessage({ztvAniPede:1},"*"); }catch(e){}
 
   /* modo TV (?tv=1): esconde os controles e iguala o fundo — o painel manda os dados */

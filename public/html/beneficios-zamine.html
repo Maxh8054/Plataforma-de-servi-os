@@ -45,8 +45,27 @@ sl.classList.remove("on"); void sl.offsetWidth; sl.classList.add("on");
 nums(sl); confete(sl);
 [].forEach.call(dots.children,function(d,n){ d.classList.toggle("on",n===i); });
 clearTimeout(tm); var pb=document.getElementById("pb"); pb.style.animation="none"; void pb.offsetWidth;
-if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linear forwards"; tm=setTimeout(function(){go(i+1);},t); }
+if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linear forwards"; tm=setTimeout(function(){ if(TVM && i>=S.length-1){ clearTimeout(tm); ztvFim(); } else go(i+1); },t); }
 }
+/* modo TV: comando do painel (ir/voltar nos slides) + aviso de fim.
+   Na TV a apresentação NÃO repete: quando acaba, avisa o painel (ztvBnFim)
+   e o painel troca de tela — antes ela voltava sozinha ao 1º slide e ficava
+   repetindo enquanto a rotação não chegava. */
+var TVM=/(?:\?|&)tv=1/.test(location.search);
+function ztvFim(){ var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvBnFim:1},"*"); }catch(e){} }
+function znav(k){
+  if(!TVM){ go(k); return; }
+  if(k===i) return;                      /* mesma posição: nada muda (o painel reenvia o índice) */
+  clearTimeout(tm); play=false; var pb=document.getElementById("pb"); if(pb) pb.style.animation="none";
+  if(k>=S.length){ ztvFim(); return; }   /* passou da última = avança a tela no painel */
+  if(k<0) k=S.length-1;                  /* voltar do primeiro = vai para a última */
+  go(k);
+}
+addEventListener("message",function(e){ var d=e&&e.data; if(!d) return;
+  if(d.ztvNav==="next") znav(i+1);
+  else if(d.ztvNav==="prev") znav(i-1);
+  else if(typeof d.ztvNav==="number") znav(d.ztvNav);
+  else if(d.ztvNav==="auto"){ play=true; go(i); } });
 document.getElementById("bN").onclick=function(){go(i+1);};
 document.getElementById("bP").onclick=function(){go(i-1);};
 document.getElementById("bPl").onclick=function(){ play=!play; this.textContent=play?"Pausar":"Continuar"; go(i); };

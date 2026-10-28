@@ -571,6 +571,19 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .gal-capa{position:absolute;left:0;top:0;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;padding:1px 6px;border-radius:0 0 6px 0;z-index:2}
 .gal-x{position:absolute;right:2px;top:2px;width:18px;height:18px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer;z-index:2;padding:0}
 .gal-vazio{color:var(--muted);font-size:13px;align-self:center}
+/* escolha de pessoas (Participantes/Instrutor): fichas com nomes da plataforma */
+.eqpick{display:flex;flex-direction:column;gap:8px;min-width:0}
+.eq-chips{display:flex;flex-wrap:wrap;gap:6px}
+.eq-chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:14px;font-weight:600}
+.eq-x{width:18px;height:18px;border:none;border-radius:50%;background:var(--line);color:var(--fg);font-size:12px;line-height:1;cursor:pointer;padding:0}
+.eq-x:hover{background:var(--bad);color:#fff}
+.eq-vazio{color:var(--muted);font-size:13px}
+.eq-add{display:flex;gap:6px}
+.eq-add input{flex:1;min-width:120px}
+.eq-sug{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.eq-sugb{border:1px dashed var(--line);background:transparent;color:var(--fg);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer}
+.eq-sugb:hover{border-color:var(--accent);background:var(--panel2)}
+.eq-mais{color:var(--muted);font-size:12px}
 .s-ani.festa{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .s-ani.festa .ani-dots{position:absolute;inset:0;width:100%;height:100%}
 .s-ani.festa .parab{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:36px;text-align:center;max-width:1560px}
@@ -1050,12 +1063,12 @@ const SECTIONS = [
   {key:"planoAcao", label:"Plano de Ação", hint:"Plano de ação da operação, igual ao quadro da gestão: cada linha tem a AÇÃO (o que será feito), o RESPONSÁVEL e o PRAZO — o mês que a TV mostra é o do prazo. O STATUS sai sozinho: Concluída (preencheu “Concluída em”), Atrasada (prazo já passou), Em andamento (progresso maior que 0) ou Não iniciada. Na TV a tela abre no mês atual com botões na própria tela: ◀ ▶ passam o mês, “Mês atual” volta, o seletor escolhe qualquer mês, os CARDS grandes filtram por status (toque de novo para limpar) e o filtro por RESPONSÁVEL isola as ações de uma pessoa. Enquanto estiver num mês diferente ou com filtro ligado, a rotação pausa (chip avisa) e volta sozinha depois de 2 minutos sem toque. A tela é 100% DINÂMICA: começa vazia — use o botão + Adicionar para montar o seu plano; salve e a ação entra no ar na hora. Sem nenhuma ação salva, a tela fica fora da rotação (e salvando vazio, sai).",
     parts:[{kind:"list",key:"itens",label:"Ações",newRow:()=>({acao:"",quem:"",prazo:nextDate(),progresso:0}),cols:[
       {k:"acao",l:"Ação (o que será feito)",w:4},{k:"quem",l:"Responsável",w:2},{k:"prazo",l:"Prazo (define o mês)",t:"date",w:2},{k:"progresso",l:"Progresso %",t:"number",w:1},{k:"concluida",l:"Concluída em (opcional)",t:"date",def:"",w:2}]}]},
-  {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar (um nome por linha ou separados por vírgula). A TV mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
+  {key:"treinamentos", label:"Treinamentos da semana", hint:"Cadastre cada treinamento com data e quem vai participar. No Instrutor e nos Participantes você ESCOLHE pelo nome: ao tocar no campo aparece a lista de todo mundo cadastrado na plataforma (equipes A/B/C/D incluídas) — nada de digitar errado ou repetir pessoa com nome diferente. Na TV, os participantes aparecem nos cartões e a capa conta as pessoas; a rotação mostra os treinamentos de hoje até os próximos 7 dias; os que já passaram somem sozinhos.",
     parts:[{kind:"list",key:"itens",label:"Treinamentos",cols:[
       {k:"treinamento",l:"Treinamento",ph:"Ex.: NR-35 Trabalho em altura",w:3},{k:"tipo",l:"Tipo",t:"select",opts:["Formação","Reciclagem","Integração","Interno"],w:2},
       {k:"data",l:"Data",t:"date",w:2},{k:"hora",l:"Horário",ph:"Ex.: 07:30 às 11:30",w:2},
-      {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",w:2},
-      {k:"participantes",l:"Participantes",t:"textarea",w:5}]}]},
+      {k:"local",l:"Local",w:2},{k:"instrutor",l:"Instrutor",t:"pessoa",w:2},
+      {k:"participantes",l:"Participantes",t:"equipe",w:5}]}]},
   {key:"escala", label:"Escala de turno", hint:"Modo automático (recomendado): ligue 'Puxar automaticamente' e a TV mostra sozinha as equipes A/B/C/D da plataforma — com ATESTADO, HORAS SPOT, ADM, eventos (folga, férias, viagem, treinamento, cobertura) e o status do RELATÓRIO DE ENTREGA DE TURNO (entregue/pendente) de cada técnico, tudo lançável aqui mesmo na parte Lançamentos da plataforma. A tela da TV usa a GRADE POR TURMA: as 4 equipes nas linhas e os dias do mês nas colunas, com os cards 'No turno agora', 'Próximo turno' e 'Fora hoje' no topo — igual ao HTML da gestão. Os botões ◀ ▶ mudam o mês, “Mês atual” volta, o seletor escolhe qualquer mês e “Ver o ano inteiro” mostra os 12 meses de uma vez (clique num mini para abrir o mês). A CONTAGEM DE HORAS do mês vem no rodapé da tela: os eventos (Atestado, Férias, Folga agendada) DESCONTEM das horas previstas do técnico, e as horas de Spot e ADM SOMAM nas trabalhadas. Navegou para outro mês ou abriu o ano? A rotação pausa (chip avisa) e volta sozinha depois de 2 minutos. Modo manual: preencha a letra do turno diurno e noturno de cada dia — a TV monta a mesma grade com as mesmas opções.",
     parts:[
       {kind:"obj",key:"horarios",label:"Horários",fields:[{k:"auto",l:"Puxar automaticamente da escala da plataforma (equipes A/B/C/D)",t:"check",def:false},{k:"diurno",l:"Horário diurno"},{k:"noturno",l:"Horário noturno"}]},
@@ -2480,6 +2493,12 @@ function bnMede(){
     const d = f.contentDocument; if(!d) return;
     let t = 0; d.querySelectorAll(".sl").forEach(s=>t += (+s.getAttribute("data-t")||10));
     if(t>=60) bnDur = (t+3)*1000;
+    /* mediu a duração real com a tela já no ar: reagenda a troca (o timer tinha
+       partido com a estimativa padrão — sem isso a apresentação acabava e o
+       1º slide voltava a aparecer até o tempo estourar) */
+    if(state==="ready"){ const sl = activeSlides();
+      const kk = sl.length ? sl[((idx%sl.length)+sl.length)%sl.length].key : null;
+      if(kk==="beneficios") restartTimer(); }
   }catch(e){}
 }
 /* apresentação de aniversariantes: dados vão do painel pro deck (mesmo banco do
@@ -2538,6 +2557,19 @@ addEventListener("message", e=>{
       if(kk3==="treinamentos") restartTimer(); } }
   if(d.ztvTrePede){ const f3=[...document.querySelectorAll("iframe.tre-fr")].find(x=>x.contentWindow===e.source);
     if(f3){ const src3=f3.closest("#pvMain")?draft:data; try{ e.source.postMessage({ztvTre:trePacote(src3)},"*"); }catch(err){} } }
+  /* a apresentação ACABOU (último slide fechou): troca de tela na hora — antes
+     ela voltava sozinha ao 1º slide e repetia enquanto o tempo restante corria.
+     Com o controle manual pausado, quem controla decide a hora de trocar. */
+  if(d.ztvBnFim || d.ztvTreFim || d.ztvAniFim){
+    const cls = d.ztvBnFim ? "bn-fr" : d.ztvTreFim ? "tre-fr" : "ani-fr";
+    const alvoK = d.ztvBnFim ? "beneficios" : d.ztvTreFim ? "treinamentos" : "aniversarios";
+    const fr = [...document.querySelectorAll("iframe."+cls)].find(x=>x.contentWindow===e.source && !x.closest("#pvMain"));
+    if(fr && state==="ready" && !(ctl && ctl.ativo && ctl.pausado)){
+      const sl4 = activeSlides();
+      const kk4 = sl4.length ? sl4[((idx%sl4.length)+sl4.length)%sl4.length].key : null;
+      if(kk4===alvoK){ idx += 1; renderFrame(true); restartTimer(); }
+    }
+  }
 });
 
 function duration(){
@@ -2880,6 +2912,13 @@ function aplicarLayoutCtl(){
     if(ctl.slide){
       const alvo = activeSlides().findIndex(s=>s.key+(s.sub!=null?"#"+s.sub:"")===ctl.slide);
       if(alvo>=0 && alvo!==idx){ idx=alvo; renderFrame(true); }
+      /* "beneficios#s3" = slide 3 DENTRO da apresentação (ir/voltar do controle remoto):
+         manda a posição pro deck da TV — o deck ignora se já estiver nela */
+      const mS = String(ctl.slide).match(/^(.+)#s(-?\d+)$/);
+      if(mS){
+        const f = deckAtual();
+        if(f && curViewKey()===mS[1]){ try{ f.contentWindow.postMessage({ztvNav:+mS[2]},"*"); }catch(e){} }
+      }
     }
     restartTimer();
   } else if(ctlAtivoAntes){
@@ -2894,8 +2933,32 @@ function aplicarLayoutCtl(){
   atualizaExpira();
   atualizarPainelControle();
 }
+/* apresentações (benefícios/treinamentos/aniversariantes): o ‹ › do controle da
+   TV (e as setas do teclado) navegam DENTRO da apresentação — ir/voltar slide a
+   slide — em vez de pular a tela inteira. Fora delas, continua passando tela. */
+function deckAtual(){
+  const m = $("main"); if(!m) return null;
+  const f = m.querySelector(".bn-fr,.tre-fr,.ani-fr");
+  return (f && !f.closest("#pvMain")) ? f : null;
+}
+function deckIdx(f){
+  try{
+    const d = f.contentDocument; if(!d) return 0;
+    const sl = [].slice.call(d.querySelectorAll(".sl"));
+    const a = sl.findIndex(s=>s.classList.contains("on"));
+    return a<0 ? 0 : a;
+  }catch(e){ return 0; }
+}
 function passo(n){
   if(ctl && ctl.ativo && !euControlo()){ toast("A TV está sob controle de "+(ctl.donoNome||"outro usuário")+"."); return; }
+  const f = deckAtual();
+  if(f){
+    const k = deckIdx(f) + n;   /* -1 = voltar do primeiro → o deck vai para a última */
+    try{ f.contentWindow.postMessage({ztvNav:k},"*"); }catch(e){}
+    restartTimer();                    /* apresentando: a rotação espera de novo o tempo cheio */
+    if(euControlo()) postControl({acao:"goto", slide:curViewKey()+"#s"+k, pausado: !!(ctl && ctl.pausado)});
+    return;
+  }
   go(n);
   if(euControlo()) postControl({acao:"goto", slide:curViewKey(), pausado: !!(ctl && ctl.pausado)});
 }
@@ -3009,6 +3072,7 @@ function openEditor(sec, only){
   $("editor").hidden = false;
   $("edSave").hidden = false; $("edPrev").hidden = false;
   renderNav(); renderSec();
+  carregarNomes();
   refreshPend().then(()=>renderNav());
   if(canEdit){
     Promise.all([api(`/api/tv/${PANEL_SLUG}/permissoes`,{headers:authHeaders()}), api("/api/users",{headers:authHeaders()})])
@@ -3041,11 +3105,41 @@ function renderNav(){
   $("edNav").innerHTML = editable().map(s=>`<button type="button" data-k="${s.key}" class="${s.key===curSec?"on":""}">${esc(s.label)}${pendKeySet.has(s.key)?`<span class="pbadge">● pendente</span>`:""}</button>`).join("");
   $("edNav").querySelectorAll("button").forEach(b=>b.onclick=()=>{curSec=b.dataset.k; renderNav(); renderSec();});
 }
+/* nomes de pessoas da plataforma (equipes A/B/C/D + usuários ativos) para os
+   seletores do editor — carrega 1x quando o editor abre; falhou? digita na mão */
+let nomesPedidos = false;
+function carregarNomes(){
+  if(nomesPedidos) return; nomesPedidos = true;
+  fetch(`/api/tv/nomes`,{headers:tokenHeaders()})
+    .then(r=>r.json()).then(j=>{
+      if(j && j.ok && Array.isArray(j.nomes)){
+        window.ztvNomes = j.nomes;
+        if(!$("editor").hidden && curSec==="treinamentos") renderSec();
+      }
+    }).catch(()=>{});
+}
 function input(f, val, id){
   const t=f.t||"text";
   if(t==="ref"){ const own = f._self; const opts = ["", ...(f._names||[]).filter(n=>n!==own)]; if(val && !opts.includes(val)) opts.push(val); f = {...f,opts}; return `<select id="${id}">${opts.map(o=>`<option value="${esc(o)}" ${o===val?"selected":""}>${o===""?"Ninguém (topo)":esc(o)}</option>`).join("")}</select>`; }
   if(t==="select") return `<select id="${id}">${f.opts.map(o=>`<option value="${esc(o)}" ${o===val?"selected":""}>${o===""?"—":esc(o)}</option>`).join("")}</select>`;
   if(t==="textarea") return `<textarea id="${id}" rows="2">${esc(val)}</textarea>`;
+  /* pessoa = 1 nome escolhido da lista da plataforma (instrutor, responsável…) */
+  if(t==="pessoa"){
+    const nomes = window.ztvNomes || [];
+    return `<input id="${id}" list="${id}-dl" value="${esc(val||"")}" placeholder="Toque e escolha o nome — ou digite" autocomplete="off"><datalist id="${id}-dl">${nomes.map(n=>`<option value="${esc(n)}">`).join("")}</datalist>`;
+  }
+  /* equipe = vários nomes em fichas, escolhidos da lista da plataforma (participantes…) */
+  if(t==="equipe"){
+    const nomes = window.ztvNomes || [];
+    const atual = String(val||"").split(/\r?\n|,/).map(s=>s.trim()).filter(Boolean);
+    const sug = nomes.filter(n=>!atual.includes(n));
+    return `<div class="eqpick" data-eqbox="${id}">
+      <input type="hidden" id="${id}" value="${esc(val||"")}">
+      <div class="eq-chips">${atual.length ? atual.map(n=>`<span class="eq-chip">${esc(n)}<button type="button" class="eq-x" data-eqx="${esc(n)}" data-eqfor="${id}" aria-label="Tirar ${esc(n)}">×</button></span>`).join("") : `<span class="eq-vazio">Ninguém ainda — toque num nome abaixo ou digite</span>`}</div>
+      <div class="eq-add"><input type="text" list="${id}-dl" data-eqin="${id}" placeholder="Nome — toque para ver todo mundo da plataforma" autocomplete="off"><datalist id="${id}-dl">${nomes.map(n=>`<option value="${esc(n)}">`).join("")}</datalist><button type="button" class="btn" data-eqadd="${id}">+ Incluir</button></div>
+      ${sug.length ? `<div class="eq-sug">${sug.slice(0,14).map(n=>`<button type="button" class="eq-sugb" data-eqsug="${esc(n)}" data-eqfor="${id}">${esc(n)}</button>`).join("")}${sug.length>14?`<span class="eq-mais">+${sug.length-14} na lista — use o campo acima</span>`:""}</div>` : ""}
+    </div>`;
+  }
   if(t==="image"){
     return `<div class="imgf"><div class="thumb">${val?img(val):"sem imagem"}</div><div class="imgb">
       <label class="btn" for="${id}">${val?"Trocar":"Enviar"}</label><input type="file" accept="image/*" id="${id}" class="fileIn">
@@ -3396,6 +3490,36 @@ function renderSec(){
     const row = p.newRow ? p.newRow() : Object.fromEntries(p.cols.map(c=>[c.k, c.def!==undefined?c.def:c.t==="date"?nextDate():c.t==="select"?c.opts[0]:""]));
     draft[s.key][p.key].push(row); setDirty(true); renderSec();
     const rows=$("edMain").querySelectorAll(".row"); rows[rows.length-1]?.querySelector("input,select,textarea")?.focus();
+  });
+  /* fichas de nomes (Participantes): tirar (×), incluir (+) e sugestões —
+     o valor fica no input hidden com o id do campo, virando a mesma string
+     de nomes separados por vírgula de sempre (o banco não muda) */
+  const eqAdd = (id, nome) => {
+    const el = document.getElementById(id); if(!el || !nome) return;
+    const atual = String(el.value||"").split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean);
+    if(atual.some(x=>x.toLowerCase()===nome.toLowerCase())) { toast(nome+" já está na lista."); return; }
+    atual.push(nome);
+    setById(id, atual.join(", ")); setDirty(true); renderSec();
+  };
+  m.querySelectorAll("[data-eqx]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.eqfor, el=document.getElementById(id); if(!el) return;
+    const atual = String(el.value||"").split(/\r?\n|,/).map(x=>x.trim()).filter(Boolean).filter(n=>n!==b.dataset.eqx);
+    setById(id, atual.join(", ")); setDirty(true); renderSec();
+  });
+  m.querySelectorAll("[data-eqsug]").forEach(b=>b.onclick=()=>eqAdd(b.dataset.eqfor, b.dataset.eqsug));
+  m.querySelectorAll("[data-eqadd]").forEach(b=>b.onclick=()=>{
+    const box=b.closest(".eqpick"), inp=box && box.querySelector("[data-eqin]");
+    const nome=String((inp&&inp.value)||"").trim();
+    if(!nome){ toast("Digite ou escolha um nome primeiro."); return; }
+    eqAdd(b.dataset.eqadd, nome);
+  });
+  m.querySelectorAll("[data-eqin]").forEach(inp=>{
+    inp.addEventListener("keydown", e=>{
+      if(e.key!=="Enter") return;
+      e.preventDefault();
+      const b = inp.closest(".eqpick")?.querySelector("[data-eqadd]");
+      if(b) b.click();
+    });
   });
 }
 async function showWho(key){

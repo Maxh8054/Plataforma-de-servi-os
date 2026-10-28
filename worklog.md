@@ -1203,3 +1203,25 @@ Stage Summary:
 - A rotação espera a apresentação acabar (duração medida dinamicamente — varia com o número de treinamentos da semana); o poll de 30s não interrompe; treinamento que expira sai sozinho
 - Janela vazia continua mostrando o aviso de cadastro; a prévia do editor reflete o rascunho em tempo real
 - Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+---
+Task ID: 55
+Agent: Z.ai Code (principal)
+Task: "a apresentação eu não consigo ir e voltar… a capa nos primeiros 1 segundo aparece a foto de todos os personagens… quando a pessoa escolher o nome de alguém já fica predefinido o nome de todo mundo da plataforma… crie o usuário do jean pierre… quando termina os benefícios a apresentação aparece de novo por alguns segundos" — 5 consertos nos decks + editor de pessoas + usuário novo
+
+Work Log:
+- IR E VOLTAR nas apresentações (benefícios, treinamentos e aniversariantes): os 3 decks ganharam o protocolo {ztvNav} — número = índice absoluto do slide, "prev"/"next" relativos, "auto" retoma o giro. O ‹ › do controle da TV e as setas do teclado AGORA navegam DENTRO da apresentação (passo() detecta deck no ar via deckAtual()/deckIdx() lendo o iframe same-origin); fora delas continuam passando tela. Ir/voltar PAUSA o avanço automático (quem apresenta comanda o ritmo) e a rotação espera de novo o tempo cheio (restartTimer)
+- Controle remoto em sincronia: navegar no PC manda {acao:"goto", slide:"beneficios#s3"} — o painel da TV entende o sufixo #sN (regex #-?\d+) e repassa {ztvNav:N} ao deck da TV; o deck ignora índice igual (não reinicia a animação)
+- FIM DE APRESENTAÇÃO SEM REPETIÇÃO (bug dos benefícios "aparece o 1º slide de novo e às vezes repete tudo"): nos 3 decks o modo TV NÃO volta mais ao 1º slide no fim — seguram a última tela e avisam o painel ({ztvBnFim}/{ztvTreFim}/{ztvAniFim}); o painel troca de tela NA HORA (exceto com controle manual pausado, quem controla decide); bnMede() também reagenda a troca quando mede a duração real com a tela no ar (antes o timer corria com a estimativa padrão de 135s e sobrava tempo de sobra para a apresentação recomeçar sozinha)
+- CAPA DO DECK DE TREINAMENTOS (fotos empilhadas no 1º segundo): as 3 poses do Zézim tinham poseIn (forwards → opacity:1 nas TRÊS) e os ciclos cycle2/cycle3 só começavam a valer depois do delay de 1,5s — nesse intervalo as três ficavam sobrepostas; corrigido com fill-mode `both` nos ciclos (fichas 2 e 3 nascem ocultas e entram na vez delas); verificado por screenshot no intervalo crítico 1,2–1,5s
+- ESCOLHA DE PESSOAS DO BANCO ("3 treinamentos para a mesma pessoa com nomes diferentes"): nova rota GET /api/tv/nomes (login obrigatório; só NOMES — usuários ativos + equipes A/B/C/D de PESSOAS, sem repetição, ordem alfabética); editor ganhou 2 tipos de campo: t:"pessoa" (1 nome com datalist — Instrutor) e t:"equipe" (fichas/chips com sugestões clicáveis + campo com datalist + Enter para incluir — Participantes); o valor continua a MESMA string separada por vírgula (banco e deck não mudam); dedupe por nome (case-insensitive) impede a mesma pessoa 2×; aplicado nos 2 painéis + hint da aba reescrito; nomes carregados 1× ao abrir o editor (carregarNomes, token do próprio login)
+- USUÁRIO NOVO: Jean Pierre Araujo Silva <jean-p@zaminebrasil.com> criado no banco (role user, ativo, senha inicial definida via bcrypt) — permissão de teste concedida e REMOVIDA após a verificação
+- Verificação browser ponta a ponta (como Jean Pierre, token real): editor → aba Treinamentos mostra 42 sugestões (30 nomes), ficha incluída/tirada por sugestão, botão +Incluir e valor do campo conferido; TV: assumir controle → ir a Treinamentos → deck com 6 slides dos 3 NR-12 REAIS do banco → ▶ next passou slide a slide (0→5), passou da última → TROCOU para Escala sozinha (ztvTreFim) → ◀ voltou de tela → ◀ no 1º slide foi para o ÚLTIMO; benefícios: 13 slides, next navegou (slide 2 no ar); minas carrega com as mesmas funções; dev.log sem erros novos; bug apanhado no caminho: a rota foi criada em /api/tv/nomes mas os painéis puxavam /api/tv/<painel>/nomes (404 silencioso) — corrigido para /api/tv/nomes
+- Lint no baseline 31; deck de treinamentos normalizado para LF (tinha CRLF — impedia edição verbatim)
+
+Stage Summary:
+- ‹ › e setas agora comandam a apresentação em si (ir/voltar slide, pausa o giro; na última, passa a tela) — na TV e pelo controle remoto do PC, em sincronia
+- Apresentação que acaba NÃO volta mais ao 1º slide: a TV troca de tela na hora (benefícios, treinamentos e aniversariantes)
+- Capa de Treinamentos sem o flash de fotos empilhadas
+- Instrutor e Participantes escolhem nomes da lista da própria plataforma (equipes A/B/C/D incluídas) — sem nome repetido escrito diferente; o banco continua igual
+- Usuário jean-p@zaminebrasil.com criado (senha inicial Zamine@2025 — trocar no primeiro login)
