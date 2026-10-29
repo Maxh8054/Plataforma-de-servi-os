@@ -242,6 +242,11 @@ input[readonly]{background:var(--panel2);color:var(--fg2)}
 .btn:hover{background:var(--line)}
 .btn.accent{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 .btn.accent:hover{background:#e65c00}
+.btn.danger{color:#ff7a6b;border-color:#5a3128}
+.btn.danger:hover{background:#3a1f19}
+.danger-zone{margin-top:30px;padding-top:18px;border-top:1px dashed var(--line2);max-width:1040px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.danger-zone .hint{margin:0}
 .cnt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(10px);background:var(--panel2);
@@ -642,7 +647,12 @@ function edPanel(tab){
      +'<input type="number" id="f-sem" min="1" max="53" value="'+ST.w+'"></div>'
      +'<div class="fld wide"><label>Período</label><input type="text" id="f-per" readonly value="'
      + fmtDM(mon)+" a "+fmtDM(sun)+" de "+ST.y+'"></div>'
-     +'</div></div>';
+     +'</div></div>'
+     +'<div class="danger-zone">'
+     +'<button type="button" class="btn danger" id="f-del">Excluir esta semana do banco</button>'
+     +'<p class="hint">Apaga a programação da semana '+pad(ST.w)+' / '+ST.y+' — use se a semana foi criada por engano. '
+     +'Ela sai da rotação da TV na hora.</p>'
+     +'</div>';
   }else{
     var m=d.machines[tab],l=bkList(m);
     h='<h3>'+tab+' · Hitachi EX2600</h3>'
@@ -668,6 +678,8 @@ function edPanel(tab){
   }
   document.getElementById("ed-main").innerHTML=h;
   if(tab==="geral"){
+    var del=document.getElementById("f-del");
+    if(del)del.onclick=excluirSemana;
     ["f-ano","f-sem"].forEach(function(id){
       document.getElementById(id).addEventListener("input",function(){
         var y=parseInt(document.getElementById("f-ano").value,10);
@@ -704,6 +716,25 @@ function collect(){
   }
 }
 var pendY=null,pendW=null;
+/* semana criada por engano: sai do banco (e da TV) na hora */
+function excluirSemana(){
+  var y=ST.y,w=ST.w;
+  if(!CRIADAS[kw(y,w)]){toast("A semana "+pad(w)+" / "+y+" ainda não existe no banco");return;}
+  if(!confirm("Excluir do banco a programação da semana "+pad(w)+" / "+y+"?\nAs paradas, os backlogs e as aplicações realizadas dessa semana serão apagados."))return;
+  var hs={};try{var tk=localStorage.getItem("zamine_token");if(tk)hs["x-zamine-token"]=tk;}catch(e){}
+  fetch(API+"?ano="+y+"&semana="+w,{method:"DELETE",headers:hs})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j&&j.ok){
+        delete CRIADAS[kw(y,w)];MEM[kw(y,w)]=null;
+        closeEditor();render();
+        toast("Semana "+pad(w)+" / "+y+" excluída do banco de dados");
+        avisaPainel();
+      }
+      else toast((j&&j.error)||"Não foi possível excluir");
+    })
+    .catch(function(){toast("Sem conexão com o banco — não excluiu");});
+}
 function openEditor(tab){
   pendY=null;pendW=null;edTab=tab||"geral";
   document.querySelectorAll("#ed-nav button").forEach(function(b){b.classList.toggle("on",b.dataset.t===edTab);});

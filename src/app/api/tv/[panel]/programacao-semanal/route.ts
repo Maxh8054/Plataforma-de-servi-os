@@ -10,9 +10,10 @@ import { panelValido, respostaPanelInvalido, tvUser } from '@/lib/tv';
  * (paradas das máquinas, backlogs) e tudo o que é realizado (backlogs marcados
  * como concluídos) vai para o banco: uma linha por painel + ano + semana ISO.
  *
- * GET  ?ano=2026&semana=1   → a programação dessa semana ({ criada:false } se nunca criada)
- * GET  ?listar=1            → lista das semanas JÁ criadas (a TV usa para saber se o slide entra na rotação)
- * POST { ano, semana, data }→ cria/atualiza EXATAMENTE a semana informada (upsert)
+ * GET    ?ano=2026&semana=1   → a programação dessa semana ({ criada:false } se nunca criada)
+ * GET    ?listar=1            → lista das semanas JÁ criadas (a TV usa para saber se o slide entra na rotação)
+ * POST   { ano, semana, data }→ cria/atualiza EXATAMENTE a semana informada (upsert)
+ * DELETE ?ano=2026&semana=1   → apaga a semana informada (semana criada sem querer)
  */
 
 const ANO_MIN = 2020;
@@ -127,5 +128,30 @@ export async function POST(
   } catch (error) {
     console.error('[tv/programacao-semanal POST] erro:', error);
     return NextResponse.json({ error: 'Erro ao salvar a programação.' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ panel: string }> }
+) {
+  const { panel } = await params;
+  if (!panelValido(panel)) return respostaPanelInvalido();
+
+  const ano = Number(request.nextUrl.searchParams.get('ano'));
+  const semana = Number(request.nextUrl.searchParams.get('semana'));
+  if (!Number.isInteger(ano) || !Number.isInteger(semana)) {
+    return NextResponse.json({ error: 'Ano e semana são obrigatórios.' }, { status: 400 });
+  }
+
+  try {
+    await db.tvProgramacaoSemanal.delete({
+      where: { panelSlug_ano_semana: { panelSlug: panel, ano, semana } },
+    });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('[tv/programacao-semanal DELETE] erro:', error);
+    // registro inexistente já é o resultado desejado — responde ok
+    return NextResponse.json({ ok: true });
   }
 }
