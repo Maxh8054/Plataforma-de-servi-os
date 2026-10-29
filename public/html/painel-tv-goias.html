@@ -2418,6 +2418,10 @@ async function api(path, opts){
 }
 const stripMeta = o => { const c = clone(o); delete c.atualizadoEm; delete c.atualizadoPor; return c; };
 let idx = 0, timer = null;
+/* sequência dos passos ‹ › dentro de apresentações (controle remoto): cada clique
+   incrementa navSeq e a TV aplica os passos que ainda não aplicou (navApl) —
+   cliques rápidos nunca se perdem no poll de 2,5s e nada "recomeça" */
+let navSeq = 0, navApl = 0, navDono = "";
 
 /* telas da rotação: cada aba vira uma tela; comunicados, campanhas de segurança e eventos viram UM slide por item */
 function activeSlides(){
@@ -2544,13 +2548,20 @@ addEventListener("message", e=>{
      ela voltava sozinha ao 1º slide e repetia enquanto o tempo restante corria.
      Com o controle manual pausado, quem controla decide a hora de trocar. */
   if(d.ztvBnFim || d.ztvTreFim || d.ztvAniFim){
+    const fimV = d.ztvBnFim || d.ztvTreFim || d.ztvAniFim;
+    const manual = fimV === 2;   /* 2 = passou da última no ‹ › (quem apresentou mandou) */
     const cls = d.ztvBnFim ? "bn-fr" : d.ztvTreFim ? "tre-fr" : "ani-fr";
     const alvoK = d.ztvBnFim ? "beneficios" : d.ztvTreFim ? "treinamentos" : "aniversarios";
     const fr = [...document.querySelectorAll("iframe."+cls)].find(x=>x.contentWindow===e.source && !x.closest("#pvMain"));
-    if(fr && state==="ready" && !(ctl && ctl.ativo && ctl.pausado)){
+    if(fr && state==="ready" && (manual || !(ctl && ctl.ativo && ctl.pausado))){
       const sl4 = activeSlides();
       const kk4 = sl4.length ? sl4[((idx%sl4.length)+sl4.length)%sl4.length].key : null;
-      if(kk4===alvoK){ idx += 1; renderFrame(true); restartTimer(); }
+      if(kk4===alvoK){
+        idx += 1; renderFrame(true); restartTimer();
+        /* controle na mão: leva o remoto junto para a tela nova (senão ele ficava
+           preso na apresentação que acabou de sair do ar) */
+        if(manual && euControlo()){ navSeq = 0; navApl = 0; postControl({acao:"goto", slide:curViewKey(), pausado: !!(ctl && ctl.pausado)}); }
+      }
     }
   }
 });
@@ -2593,6 +2604,9 @@ function renderFrame(animate){
     main.dataset.key = viewKey;
     applyTheme(pickTheme(key));
     main.innerHTML = `<div class="slide">${html}</div>`;
+    /* tela recriada = apresentação recomeça do slide 0: zera a sequência de
+       passos ‹ › (senão um "#sp1" novo era ignorado por um navApl velho) */
+    navSeq = 0; navApl = 0;
   } else if(key!=="beneficios" && key!=="aniversarios" && key!=="treinamentos" && !((key==="calendario"||key==="planoAcao"||key==="escala") && window.__calPausa)) {
     /* tela interativa pausada (calendário/escala no ano ou mês escolhido, plano de ação filtrado):
        o poll de 30s não pode desmontar o que a pessoa está vendo. Na tela de
@@ -2898,10 +2912,29 @@ function aplicarLayoutCtl(){
       if(alvo>=0 && alvo!==idx){ idx=alvo; renderFrame(true); }
       /* "beneficios#s3" = slide 3 DENTRO da apresentação (ir/voltar do controle remoto):
          manda a posição pro deck da TV — o deck ignora se já estiver nela */
-      const mS = String(ctl.slide).match(/^(.+)#s(-?\d+)$/);
-      if(mS){
-        const f = deckAtual();
-        if(f && curViewKey()===mS[1]){ try{ f.contentWindow.postMessage({ztvNav:+mS[2]},"*"); }catch(e){} }
+      const mR = String(ctl.slide).match(/^(.+)#s([np])(\d+)$/);
+      if(mR){
+        /* passo RELATIVO com sequência (#sn3 = 3º ›): quem NÃO é o dono do clique
+           aplica os passos que faltam (o PC de quem controla já aplicou direto no
+           passo()); cliques agrupados no poll viram vários passos de uma vez.
+           Trocou o dono do controle = contagem recomeça do zero. */
+        const seq = +mR[3];
+        if(!euControlo()){
+          if(String(ctl.donoEmail||"") !== navDono){ navDono = String(ctl.donoEmail||""); navApl = 0; }
+          const f = deckAtual();
+          if(f && curViewKey()===mR[1]){
+            let falta = seq - navApl;
+            if(falta < 0) falta = 0;
+            for(let s=0; s<falta; s++){ try{ f.contentWindow.postMessage({ztvNav: mR[2]==="n"?"next":"prev"},"*"); }catch(e){} }
+            navApl = seq;
+          } else { navApl = seq; }
+        }
+      } else {
+        const mS = String(ctl.slide).match(/^(.+)#s(-?\d+)$/);
+        if(mS){
+          const f = deckAtual();
+          if(f && curViewKey()===mS[1]){ try{ f.contentWindow.postMessage({ztvNav:+mS[2]},"*"); }catch(e){} }
+        }
       }
     }
     restartTimer();
@@ -2937,12 +2970,17 @@ function passo(n){
   if(ctl && ctl.ativo && !euControlo()){ toast("A TV está sob controle de "+(ctl.donoNome||"outro usuário")+"."); return; }
   const f = deckAtual();
   if(f){
-    const k = deckIdx(f) + n;   /* -1 = voltar do primeiro → o deck vai para a última */
-    try{ f.contentWindow.postMessage({ztvNav:k},"*"); }catch(e){}
+    /* PASSO RELATIVO (next/prev): o deck anda da posição DELE — nunca
+       dessincroniza entre o PC e a TV. Antes era absoluto (deckIdx do PC + n):
+       com o deck do PC em outra posição (página aberta depois, prévia
+       recarregada), um clique › mandava a TV DE VOLTA a outro slide — era o
+       "recomeçar do zero" ao passar manualmente. */
+    try{ f.contentWindow.postMessage({ztvNav: n>0?"next":"prev"},"*"); }catch(e){}
     restartTimer();                    /* apresentando: a rotação espera de novo o tempo cheio */
-    if(euControlo()) postControl({acao:"goto", slide:curViewKey()+"#s"+k, pausado: !!(ctl && ctl.pausado)});
+    if(euControlo()){ navSeq++; postControl({acao:"goto", slide:curViewKey()+"#s"+(n>0?"n":"p")+navSeq, pausado: !!(ctl && ctl.pausado)}); }
     return;
   }
+  navSeq = 0; navApl = 0;
   go(n);
   if(euControlo()) postControl({acao:"goto", slide:curViewKey(), pausado: !!(ctl && ctl.pausado)});
 }
@@ -2967,11 +3005,11 @@ $("bCtl").onclick = async ()=>{
     return;
   }
   const j = await postControl({acao:"acquire", slide:curViewKey(), pausado:true});
-  if(!j.error){ ctl=j; aplicarLayoutCtl(); toast("Você assumiu a TV — rotação pausada. Use a barra de controle. O controle expira sozinho depois de 8 minutos sem usar (navegar renova o tempo)."); }
+  if(!j.error){ navSeq = 0; navApl = 0; ctl=j; aplicarLayoutCtl(); toast("Você assumiu a TV — rotação pausada. Use a barra de controle. O controle expira sozinho depois de 8 minutos sem usar (navegar renova o tempo)."); }
   else if(j.error==="em-uso"){
     if(canEdit && confirm(`O controle está com ${j.donoNome}. Assumir por cima (admin)?`)){
       const k = await postControl({acao:"acquire", slide:curViewKey(), pausado:true});
-      if(!k.error){ ctl=k; aplicarLayoutCtl(); toast("Você assumiu a TV (admin)."); } else toast(k.error);
+      if(!k.error){ navSeq = 0; navApl = 0; ctl=k; aplicarLayoutCtl(); toast("Você assumiu a TV (admin)."); } else toast(k.error);
     } else toast(`Controle em uso por ${j.donoNome}. Só um admin pode assumir por cima.`);
   }
   else toast(j.error);

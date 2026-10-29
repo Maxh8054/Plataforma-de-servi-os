@@ -52,12 +52,14 @@ if(play){ var t=(+sl.dataset.t||12)*1000; pb.style.animation="grow "+t+"ms linea
    e o painel troca de tela — antes ela voltava sozinha ao 1º slide e ficava
    repetindo enquanto a rotação não chegava. */
 var TVM=/(?:\?|&)tv=1/.test(location.search);
-function ztvFim(){ var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvBnFim:1},"*"); }catch(e){} }
+/* manual=2 quando o FIM veio de um ‹ › (quem apresenta mandou passar) — o painel
+   troca a tela MESMO com o controle manual ativo; 1 = fim pelo automático */
+function ztvFim(manual){ var pb=document.getElementById("pb"); if(pb) pb.style.animation="none"; try{ if(parent!==window) parent.postMessage({ztvBnFim:manual?2:1},"*"); }catch(e){} }
 function znav(k){
   if(!TVM){ go(k); return; }
   if(k===i) return;                      /* mesma posição: nada muda (o painel reenvia o índice) */
   clearTimeout(tm); play=false; var pb=document.getElementById("pb"); if(pb) pb.style.animation="none";
-  if(k>=S.length){ ztvFim(); return; }   /* passou da última = avança a tela no painel */
+  if(k>=S.length){ ztvFim(true); return; }   /* passou da última = avança a tela no painel */
   if(k<0) k=S.length-1;                  /* voltar do primeiro = vai para a última */
   go(k);
 }
