@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -409,6 +409,26 @@ model TvPermissao {
 
   @@unique([panelSlug, userEmail, sectionKey])
   @@map("tv_permissoes")
+}
+
+// Programação Semanal de manutenção (tela "Programação Semanal" do painel TV):
+// UMA linha por semana pedida — o sistema só cria a semana que o usuário informar
+// (ex.: semana 1), nunca semanas automáticas. Guarda as paradas das máquinas
+// (dia, duração, motivo), os backlogs e as APLICAÇÕES REALIZADAS (backlogs
+// concluídos) — tudo em JSON, direto do editor da própria tela, sem aprovação.
+model TvProgramacaoSemanal {
+  id                String    @id @default(cuid())
+  panelSlug         String    @map("panelSlug") // "goias", "minas", "minas-araxa"...
+  ano               Int // ano ISO da semana (ex.: 2025)
+  semana            Int // número da semana ISO (1–53)
+  data              String    @default("{}") // JSON: {machines:{EH-01:{dia,horas,motivo,backlogs,done},...}}
+  atualizadoEm      DateTime? @map("atualizadoEm")
+  atualizadoPorNome String?   @map("atualizadoPorNome") // quem salvou (se logado); TV fica null
+  createdAt         DateTime  @default(now()) @map("createdAt")
+  updatedAt         DateTime  @updatedAt @map("updatedAt")
+
+  @@unique([panelSlug, ano, semana])
+  @@map("tv_programacao_semanal")
 }
 
 // Controle em tempo real do painel TV: uma pessoa por vez assume o comando do que a TV
