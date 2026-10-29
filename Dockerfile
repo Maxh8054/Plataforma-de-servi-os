@@ -13,6 +13,11 @@ RUN apk add --no-cache openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# O repo mantém o schema em SQLite (usado no ambiente local/sandbox). O Render
+# roda PostgreSQL: trocamos o provider AQUI, na build, para que o prisma
+# generate (cliente) e o db push do entrypoint usem o Postgres de produção.
+# O schema.prisma no repositório não é alterado.
+RUN sed -i 's/provider = "sqlite"/provider = "postgresql"/' prisma/schema.prisma
 RUN npx prisma generate
 RUN npm run build
 
