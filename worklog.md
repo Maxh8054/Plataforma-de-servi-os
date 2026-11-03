@@ -1241,3 +1241,11 @@ Stage Summary:
 - Reproduzido com agent-browser: deck no slide 0 + ◀ → wrap `k<0 → última` jogava pro último slide; o ▶ seguinte disparava ztvFim(true) → painel trocava de tela → na volta da rotação o tema recomeçava do zero.
 - FIX nos 3 decks (treinamentos/beneficios/aniversarios): `if(k<0) return;` — voltar do primeiro FICA no primeiro (no-op, nem pausa o automático). Passar da última segue avançando de tema (ztvFim manual=2, comportamento desejado mantido).
 - Verificado: prev@0 → fica; next → avança; next no último → próxima tela (escala).
+
+## 2026-11-03 — Restauração full-stack do sandbox a partir do GitHub (clone 100%)
+- Sandbox reiniciado do zero: repositório re-clonado 100% de origin/main (537c58c, 116 commits) para /home/z/my-project com histórico git intacto; arquivos rastreados conferidos idênticos (diff vazio)
+- Reinstalação limpa das dependências (rm node_modules/.next + bun install — 889 pacotes direto do bun.lock); corrigia mismatch react 19.2.3 vs react-dom 19.2.8 herdado do scaffold + cache .next corrompido (Turbopack "VAR_MODULE_GLOBAL_ERROR")
+- .env reconfigurado: DATABASE_URL=file:/home/z/my-project/db/custom.db (padrão do sandbox) + APP_PASSWORD, BREVO_API_KEY, EMAIL_FROM, IA_API_KEY e REGISTRATION_INVITE_CODE (valores de produção do usuário); URL do Render Postgres mantida como comentário para o deploy
+- Banco local recriado: prisma db push + seed.js (23 usuários). O Postgres de produção (dpg-…-a) ficou inacessível do sandbox (hostname interno do Render; conexão encerrada nas 5 regiões públicas testadas) — produção permaneceu intacta, nada foi alterado nela
+- Verificação browser ponta a ponta: login em duas etapas OK (max-r, senha local de sandbox definida via script — NÃO é a senha de produção), dashboard v17 carregando, APIs 200 (login, check-email, contador-seguranca, requests, password-requests, presence, tv/panels, notificacoes), painel Usuários listando os 23 registros do banco; zero erros de página/console
+- Pendências: produção Render "Service Suspended" precisa de resume manual no painel; segredo do ghp token e chaves expostos no chat — recomendar rotação
