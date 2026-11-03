@@ -1225,3 +1225,14 @@ Stage Summary:
 - Capa de Treinamentos sem o flash de fotos empilhadas
 - Instrutor e Participantes escolhem nomes da lista da própria plataforma (equipes A/B/C/D incluídas) — sem nome repetido escrito diferente; o banco continua igual
 - Usuário jean-p@zaminebrasil.com criado (senha inicial Zamine@2025 — trocar no primeiro login)
+
+## 2026-11-03 — Fix: upload de fotos do painel TV + re-recuperação do banco local
+- Usuário reportou "Não foi possível enviar a imagem. Tente de novo." ao anexar foto no painel TV.
+- CAUSA: commit 9eab2a2 (27/10, mudança de permissões) apagou por acidente src/app/api/tv/upload/route.ts → 404 no POST /api/tv/upload → erro genérico no editor.
+- FIX: rota restaurada do commit original 982a8b1 (git checkout) e commitada (4a7b2a2) + push.
+- Teste local E2E: POST imagem 218KB PNG → 200 {id,url}; GET /api/tv/assets/<id> → 200 image/png 218163 bytes; asset de teste e sessão de teste removidos depois.
+- Deploy Render anterior falhava (P1012 provider sqlite vs DATABASE_URL postgres) — fix no Dockerfile: sed troca provider para postgresql na build (491738f/dc1ada7). Repo mantém sqlite para o sandbox.
+- Sandbox resetado hoje: db/custom.db recriado vazio, db-backup/ e /tmp/prod-dump/ perdidos, .env sobrescrito com URL de produção (corrigido de volta para file:/home/z/my-project/db/custom.db).
+- Produção verificada INTACTA via pg: User 26, tv_sections 12, tv_assets 86, tv_backups 30, audit_logs 786.
+- Banco local RE-RECUPERADO da produção com bun:sqlite+pg (32 tabelas, 1017 linhas; script /tmp/recover.mjs — recriável): bytea→Buffer BLOB, Date→ISO, bool→1/0, jsonb→JSON.stringify.
+- PRODUÇÃO "Service Suspended" no Render — precisa de resume manual para o novo deploy subir.
