@@ -538,9 +538,10 @@ var FORCAR = null;
   function znav(k){
     if(!TVM){ go(k); return; }
     if(k===i) return;                       /* mesma posição: nada muda (o painel reenvia o índice) */
+    if(k<0) return;                         /* voltar do primeiro = FICA no primeiro (antes pulava
+                                               para a última e o › seguinte encerrava o tema) */
     clearTimeout(tm); play=false; var pb=document.getElementById("pb"); if(pb) pb.style.animation="none";
     if(k>=SL.length){ ztvFim(true); return; }   /* passou da última = avança a tela no painel */
-    if(k<0) k=SL.length-1;                  /* voltar do primeiro = vai para a última */
     go(k);
   }
   document.getElementById("bN").onclick=function(){go(i+1);};
