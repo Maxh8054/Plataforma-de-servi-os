@@ -1236,3 +1236,8 @@ Stage Summary:
 - Produção verificada INTACTA via pg: User 26, tv_sections 12, tv_assets 86, tv_backups 30, audit_logs 786.
 - Banco local RE-RECUPERADO da produção com bun:sqlite+pg (32 tabelas, 1017 linhas; script /tmp/recover.mjs — recriável): bytea→Buffer BLOB, Date→ISO, bool→1/0, jsonb→JSON.stringify.
 - PRODUÇÃO "Service Suspended" no Render — precisa de resume manual para o novo deploy subir.
+
+## 2026-11-03 (2) — Fix: navegação manual da TV recriava "recomeço do tema"
+- Reproduzido com agent-browser: deck no slide 0 + ◀ → wrap `k<0 → última` jogava pro último slide; o ▶ seguinte disparava ztvFim(true) → painel trocava de tela → na volta da rotação o tema recomeçava do zero.
+- FIX nos 3 decks (treinamentos/beneficios/aniversarios): `if(k<0) return;` — voltar do primeiro FICA no primeiro (no-op, nem pausa o automático). Passar da última segue avançando de tema (ztvFim manual=2, comportamento desejado mantido).
+- Verificado: prev@0 → fica; next → avança; next no último → próxima tela (escala).
