@@ -58,8 +58,7 @@ function ztvFim(manual){ var pb=document.getElementById("pb"); if(pb) pb.style.a
 function znav(k){
   if(!TVM){ go(k); return; }
   if(k===i) return;                      /* mesma posição: nada muda (o painel reenvia o índice) */
-  if(k<0) return;                        /* voltar do primeiro = FICA no primeiro (antes pulava
-                                            para a última e o › seguinte encerrava o tema) */
+  if(k<0){ try{ if(parent!==window) parent.postMessage({ztvBnInicio:2},"*"); }catch(e){} return; }   /* voltar do primeiro = o painel VOLTA a TELA anterior (ztvBnInicio=2, espelho do Fim manual) */
   clearTimeout(tm); play=false; var pb=document.getElementById("pb"); if(pb) pb.style.animation="none";
   if(k>=S.length){ ztvFim(true); return; }   /* passou da última = avança a tela no painel */
   go(k);

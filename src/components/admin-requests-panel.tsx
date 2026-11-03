@@ -28,6 +28,10 @@ export default function AdminRequestsPanel({ onClose }: AdminRequestsPanelProps)
   const [adminPassword, setAdminPassword] = useState('');
   const [confirmError, setConfirmError] = useState('');
 
+  // Prévia do cadastro: modal com todos os dados da solicitação para o admin
+  // decidir (aprovar/negar) com segurança
+  const [previewReq, setPreviewReq] = useState<RequestItem | null>(null);
+
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     try {
@@ -164,6 +168,14 @@ export default function AdminRequestsPanel({ onClose }: AdminRequestsPanelProps)
                       {activeTab === 'pending' && !isConfirming && (
                         <div className="flex gap-2">
                           <button
+                            onClick={() => setPreviewReq(req)}
+                            disabled={processingId === req.id}
+                            className="bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-gray-200 px-3 py-1 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
+                          >
+                            <span className="material-icons text-sm">visibility</span>
+                            Prévia
+                          </button>
+                          <button
                             onClick={() => {
                               setConfirmingId(req.id);
                               setConfirmError('');
@@ -255,6 +267,115 @@ export default function AdminRequestsPanel({ onClose }: AdminRequestsPanelProps)
           </button>
         </div>
       </div>
+
+      {/* ===== Prévia do cadastro (modal acima do painel) ===== */}
+      {previewReq && (() => {
+        const p = parseData(previewReq.data);
+        const iniciais = String(p.name || previewReq.email).trim().split(/\s+/).slice(0, 2).map((x: string) => (x[0] || '').toUpperCase()).join('') || '?';
+        const dominio = previewReq.email.split('@')[1] || '';
+        const statusTexto: Record<string, string> = {
+          pending: 'Aguardando aprovação do administrador',
+          unverified: 'Aguardando confirmação do e-mail (código enviado)',
+          approved: 'Aprovada',
+          rejected: 'Rejeitada',
+        };
+        return (
+          <div className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-4" onClick={() => setPreviewReq(null)}>
+            <div
+              className="bg-gray-900 rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto border border-orange-500/40 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Cabeçalho */}
+              <div className="flex items-start justify-between p-4 sm:p-5 border-b border-gray-800">
+                <div className="flex items-center gap-2">
+                  <span className="material-icons text-orange-500 text-xl">visibility</span>
+                  <h3 className="text-white font-bold">Prévia do cadastro</h3>
+                </div>
+                <button
+                  onClick={() => setPreviewReq(null)}
+                  className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  <span className="material-icons">close</span>
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 space-y-4">
+                {/* Identidade: avatar + nome + e-mail */}
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+                    {iniciais}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-base truncate">{p.name || '(sem nome informado)'}</p>
+                    <p className="text-gray-400 text-sm truncate">{previewReq.email}</p>
+                    {dominio && (
+                      <span className="inline-block mt-1 px-2 py-0.5 rounded text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        @{dominio}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Dados da solicitação */}
+                <div className="bg-gray-800 rounded-xl p-3 border border-gray-700 space-y-2 text-sm">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Departamento</span>
+                    <span className="text-gray-200 text-right">{p.department || '—'}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Situação</span>
+                    <span className="text-amber-400 text-right">{statusTexto[previewReq.status] || previewReq.status}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Solicitado em</span>
+                    <span className="text-gray-300 text-right">{formatDate(previewReq.createdAt)}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span className="text-gray-500">Última atualização</span>
+                    <span className="text-gray-300 text-right">{formatDate(previewReq.updatedAt)}</span>
+                  </div>
+                  {p.raw && (
+                    <div className="flex justify-between gap-3">
+                      <span className="text-gray-500">Dados extras</span>
+                      <span className="text-gray-300 text-right break-all">{p.raw}</span>
+                    </div>
+                  )}
+                </div>
+
+                {activeTab === 'pending' && (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        setConfirmingId(previewReq.id);
+                        setConfirmError('');
+                        setAdminPassword('');
+                        setPreviewReq(null);
+                      }}
+                      disabled={processingId === previewReq.id}
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="material-icons text-sm">check</span>
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleAction(previewReq.id, 'reject');
+                        setPreviewReq(null);
+                      }}
+                      disabled={processingId === previewReq.id}
+                      className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="material-icons text-sm">close</span>
+                      Rejeitar
+                    </button>
+                  </div>
+                )}
+                <p className="text-gray-600 text-xs text-center">A aprovação pede sua senha de administrador (confirmação na solicitação).</p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

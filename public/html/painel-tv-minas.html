@@ -2609,6 +2609,25 @@ addEventListener("message", e=>{
       }
     }
   }
+  /* ◀ no PRIMEIRO slide da apresentação: o deck avisa (ztv*Inicio — só dispara em
+     ‹ › manual, nunca no automático) e o painel VOLTA para a TELA anterior da
+     rotação: cada tela é uma unidade independente, com limite dos dois lados
+     (espelho exato do ztv*Fim). Só age se a mensagem vier do deck AO VIVO (não
+     da prévia do editor) e se essa apresentação está no ar agora. */
+  if(d.ztvBnInicio || d.ztvTreInicio || d.ztvAniInicio){
+    const clsI = d.ztvBnInicio ? "bn-fr" : d.ztvTreInicio ? "tre-fr" : "ani-fr";
+    const alvoKI = d.ztvBnInicio ? "beneficios" : d.ztvTreInicio ? "treinamentos" : "aniversarios";
+    const frI = [...document.querySelectorAll("iframe."+clsI)].find(x=>x.contentWindow===e.source && !x.closest("#pvMain"));
+    if(frI && state==="ready"){
+      const slI = activeSlides();
+      const kkI = slI.length ? slI[((idx%slI.length)+slI.length)%slI.length].key : null;
+      if(kkI===alvoKI){
+        idx -= 1; renderFrame(true); restartTimer();
+        /* controle na mão: leva o remoto junto para a tela anterior */
+        if(euControlo()){ navSeq = 0; navApl = 0; postControl({acao:"goto", slide:curViewKey(), pausado: !!(ctl && ctl.pausado)}); }
+      }
+    }
+  }
 });
 
 function duration(){
