@@ -769,7 +769,7 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-cal .c-nx b{font-size:44px}
 .s-cal .c-nx p{font-size:20px}
 .s-cal .c-hjx p{font-size:17px;margin:3px 0}
-.s-cal .c-flx .c-fl{max-height:190px}
+.s-cal .c-flx .c-fl{flex:1;min-height:0}
 /* botões na própria tela (igual ao HTML da gestão): ◀ ▶ mês, Hoje, seletor e "Ver o ano inteiro" */
 .s-cal .c-view{flex:1;min-height:0;display:flex;flex-direction:column}
 .s-cal .c-bar{display:flex;align-items:center;gap:12px;flex:none;margin:-4px 0 2px}
@@ -2017,6 +2017,35 @@ function calPausar(v){
   if(v){ clearTimeout(timer); const p = $("prog"); if(p) p.style.animation = "none"; }
   else restartTimer();
 }
+/* ---------- Rolagem automática (kiosk) — lista que não cabe na tela rola sozinha ----------
+   Na TV não existe mouse: se os feriados/pontes/eventos/DDS do mês ou os
+   aniversariantes não couberem no cartão, a lista desce DEVAGAR, pausa um pouco
+   no fim, volta ao topo e recomeça — em loop, enquanto a tela estiver no ar.
+   Lista que cabe fica parada. Um toque/roda do mouse pausa a rolagem por 30s. */
+const KSK = [];
+function kskLiga(el){
+  if(!el || el._ks) return;
+  el._ks = { dir:1, hold:0 };
+  KSK.push(el);
+  if(!KSK._raf){ KSK._last = 0; KSK._raf = requestAnimationFrame(kskLoop); }
+}
+function kskLigaEm(raiz){ (raiz || document).querySelectorAll(".c-fl").forEach(kskLiga); }
+function kskLoop(ts){
+  const dt = Math.min(.1, (ts - (KSK._last || ts)) / 1000); KSK._last = ts;
+  for(let i = KSK.length - 1; i >= 0; i--){
+    const el = KSK[i], k = el._ks;
+    if(!el.isConnected){ KSK.splice(i, 1); el._ks = null; continue; }   /* tela saiu do ar */
+    const max = el.scrollHeight - el.clientHeight;
+    if(max <= 4){ if(el.scrollTop) el.scrollTop = 0; continue; }         /* cabe inteira: não rola */
+    if(k.hold > 0){ k.hold -= dt; continue; }
+    el.scrollTop += (k.dir > 0 ? 24 : 84) * dt;      /* desce devagar · volta mais rápido */
+    if(el.scrollTop >= max - .5){ el.scrollTop = max; k.dir = -1; k.hold = 2.6; }
+    else if(el.scrollTop <= .5 && k.dir < 0){ el.scrollTop = 0; k.dir = 1; k.hold = 1.2; }
+  }
+  KSK._raf = KSK.length ? requestAnimationFrame(kskLoop) : 0;
+}
+addEventListener("pointerdown", e => { const el = e.target && e.target.closest ? e.target.closest(".c-fl") : null; if(el && el._ks) el._ks.hold = 30; }, true);
+addEventListener("wheel", e => { const el = e.target && e.target.closest ? e.target.closest(".c-fl") : null; if(el && el._ks) el._ks.hold = 30; }, {passive:true, capture:true});
 /* --- HTML do MÊS (o mesmo desenho de sempre, agora para qualquer mês/ano escolhido) --- */
 function calHtmlMes(st){
   const it = calItens(st.o), hj = st.hj, ano = st.ano, mes = st.mes;
@@ -2153,6 +2182,7 @@ function calInit(root, preview, o){
   };
   const desenha = () => {
     view.innerHTML = st.modo==="mes" ? calHtmlMes(st) : calHtmlAno(st);
+    kskLigaEm(view);   /* listas redesenhadas: religa a rolagem automática nelas */
     tit.innerHTML = st.modo==="mes" ? `${esc(MESES[st.mes+1])} <em>${st.ano}</em>` : `Ano <em>${st.ano}</em>`;
     if(st.modo==="ano"){ calFitAno(view); setTimeout(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); }, 350); document.fonts && document.fonts.ready && document.fonts.ready.then(()=>{ if(root.isConnected && st.modo==="ano") calFitAno(view); }); } else view.querySelector(".c-ano")?.style.removeProperty("transform");
     if(bAno){ bAno.textContent = st.modo==="ano" ? "Voltar ao mês" : "Ver o ano inteiro"; bAno.classList.toggle("on", st.modo==="ano"); }
@@ -2170,6 +2200,7 @@ function calInit(root, preview, o){
   });
   sel.onchange = () => { const v = sel.value.split("-"); st.ano = +v[0]; st.mes = +v[1]; st.modo = "mes"; desenha(); };
   selOpts(); pausa();
+  kskLigaEm(root);   /* primeiro desenho da tela: liga a rolagem nas listas que já vieram do HTML */
 }
 R.calendario = function(o){
   const it = calItens(o);
