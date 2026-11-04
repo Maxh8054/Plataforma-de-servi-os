@@ -1259,3 +1259,17 @@ Stage Summary:
 - ◀ no 1º slide das apresentações sai da tela (volta a anterior) — a TV não prende mais o operador no começo do deck; ▶ depois do último continua passando de tema
 - Admin vê a PRÉVIA completa do cadastro (avatar, nome, e-mail+domínio, departamento, situação, datas) e aprova/nega de lá mesmo, com a confirmação de senha de sempre
 - Zero mudança de schema/rotas; TVs atualizam recarregando a página
+
+## 2026-11-04 — Engage: requisição com criador, data, prazo com contagem e responsável opcional (painéis minas+goias)
+Work Log:
+- Editor (SECOES engage, 2 painéis): 5 campos novos por campanha — Requisição criada por (t:"pessoa", datalist da plataforma), Criado em (date, preenche hoje em linha nova), Prazo até (date), Atribuída a (t:"pessoa", opcional) e Situação do prazo (t:"status", selo VIRTUAL calculado — sem input, nunca é salvo); hint da aba atualizado explicando o fluxo de requisição
+- Contagem de dias (stPrazo, junto de noAr): dias cheios contra today0() — Faltam N dias (verde), Faltam 2/1 dias e Vence hoje (âmbar ≤3), Atrasada há N dias (vermelho), Sem prazo (cinza); selo atualiza AO VIVO quando o campo prazo muda (listener de input repinta o chip da linha)
+- input(): novo tipo "status" recebe a linha inteira via _row (mesmo padrão do t:"ref" com _names); renderSec injeta {..c,_row:row} e passa val="" para não tocar no draft
+- Slide Engage da TV (R.engage, 2 painéis + a prévia do editor): nova linha eg-meta no rodapé do cartão, sob o progresso — "Criada por X · Responsável: Y" + "Prazo DD/MM/AAAA · Faltam N dias / Atrasada há N dias" com bolinha colorida (eg-prz ok/atencao/atrasada, pega --ok/--warn/--bad dos temas claro/escuro); linha some sozinha se o item não tem nenhum dos dados (compatível com cadastros antigos)
+- CSS: .stprz (editor) e .eg-meta/.eg-cri/.eg-sep/.eg-prz (slide) nos 2 arquivos
+- Recuperação do ambiente (sandbox reiniciou): .env reescrito com os segredos (só DATABASE_URL tinha sobrado), banco vazio re-semeado (seed.js 23 usuários) + senha local do admin redefinida; commit acidental 854e0ff (mensagem-UUID, apagava src/app/api/tv/upload/route.ts — quebra o envio de imagens do editor) DESCARTADO do histórico local (não estava no GitHub) e a rota voltou ao worktree
+- Validação: node --check nos blocos <script> dos 2 HTMLs OK; browser E2E nos dois painéis — 3 campanhas de teste (prazo 01/11 atrasada, +5d verde, +2d âmbar): selos corretos no editor e atualizando ao vivo, prévia do editor e a TELA REAL da TV mostrando "Criada por… Responsável… Prazo… Atrasada há 3 dias" em vermelho; salvo como admin ("Salvo. A TV já mostra as novas informações."); dados de teste REMOVIDOS depois (Engage de Araxá salvo vazio como estava)
+Stage Summary:
+- Engage virou gestão de requisições: cada campanha carrega quem criou, quando, prazo com contagem automática de dias e status atrasada/no prazo — no editor (com selo) e na TV (linha de gestão no cartão)
+- Atribuir a um colaborador é opcional e usa a lista de nomes da plataforma
+- Painéis Minas e Goiás idênticos; zero mudança de schema/rotas (campos vivem no JSON da seção)

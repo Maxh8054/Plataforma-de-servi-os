@@ -216,6 +216,12 @@ table.t{width:100%;border-collapse:collapse;font-size:28px}
 .eg p{margin:0;font-size:28px;line-height:1.4;flex:1}
 .eg .pr{display:flex;justify-content:space-between;align-items:baseline}
 .eg .pr b{font-family:var(--f-display);font-size:56px;color:var(--accent)}
+.eg-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;font-size:20px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:2px}
+.eg-cri b{color:var(--fg);font-weight:600}
+.eg-sep{opacity:.5;margin:0 4px}
+.eg-prz{display:inline-flex;align-items:center;gap:9px;font-weight:700}
+.eg-prz i{width:10px;height:10px;border-radius:50%;background:currentColor;flex:none}
+.eg-prz.ok{color:var(--ok)}.eg-prz.atencao{color:var(--warn)}.eg-prz.atrasada{color:var(--bad)}
 
 /* Aniversários */
 /* Aniversariantes — layout zm-ani (portado do arquivo de referência): header com mês,
@@ -506,6 +512,11 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .list{display:flex;flex-direction:column;gap:10px}
 .row{display:grid;gap:10px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
 .row .fld label{font-size:12px}
+.stprz{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:700;line-height:1.1;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.stprz i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.stprz.ok{color:var(--ok);border-color:var(--ok)}
+.stprz.atencao{color:var(--warn);border-color:var(--warn)}
+.stprz.atrasada{color:var(--bad);border-color:var(--bad)}
 .add{margin-top:10px}
 .lsr{display:flex;align-items:center;gap:12px;margin-bottom:12px;max-width:520px}
 .lsr input{flex:1}
@@ -1105,9 +1116,10 @@ const SECTIONS = [
       {k:"foto",l:"Imagem",t:"image",w:2},{k:"tema",l:"Tema",w:2},{k:"mensagem",l:"Mensagem",t:"textarea",w:4},{k:"periodo",l:"Período (texto na tela)",w:2},
       {k:"inicio",l:"Entra no ar em",t:"date",def:"",w:2},{k:"fim",l:"Sai do ar depois de",t:"date",def:"",w:2},
       {k:"horaInicio",l:"Exibir a partir das",t:"time",def:"",w:2},{k:"horaFim",l:"Exibir até",t:"time",def:"",w:2}]}]},
-  {key:"engage", label:"Campanhas de campo Engage", hint:"Até 3 campanhas no ar aparecem lado a lado. O progresso é de 0 a 100. Use as datas para agendar a entrada e a saída automática — e, se quiser, limite o horário de exibição.",
+  {key:"engage", label:"Campanhas de campo Engage", hint:"Até 3 campanhas no ar aparecem lado a lado. O progresso é de 0 a 100. Use as datas para agendar a entrada e a saída automática — e, se quiser, limite o horário de exibição. Cada campanha é uma requisição: registre QUEM criou, a data de criação e o PRAZO — o painel conta os dias sozinho e marca atrasada. Atribuir a um colaborador é opcional.",
     parts:[{kind:"list",key:"itens",label:"Campanhas",cols:[
       {k:"foto",l:"Imagem",t:"image",w:2},{k:"titulo",l:"Título",w:2},{k:"descricao",l:"Descrição",t:"textarea",w:4},{k:"periodo",l:"Período (texto na tela)",w:2},{k:"progresso",l:"Progresso %",t:"number",w:1},
+      {k:"criadoPor",l:"Requisição criada por",t:"pessoa",w:2},{k:"criadoEm",l:"Criado em",t:"date",w:2},{k:"prazo",l:"Prazo até",t:"date",def:"",w:2},{k:"responsavel",l:"Atribuída a (opcional)",t:"pessoa",w:2},{k:"situacao",l:"Situação do prazo",t:"status",w:2},
       {k:"inicio",l:"Entra no ar em",t:"date",def:"",w:2},{k:"fim",l:"Sai do ar depois de",t:"date",def:"",w:2},
       {k:"horaInicio",l:"Exibir a partir das",t:"time",def:"",w:2},{k:"horaFim",l:"Exibir até",t:"time",def:"",w:2}]}]},
   {key:"eventos", label:"Eventos realizados", hint:"Cada evento ganha um slide próprio na rotação da TV, do mais recente para o mais antigo. Jogue quantas fotos quiser de uma vez (Enviar fotos) e arraste as miniaturas para escolher a capa — a capa fica maior no slide. Use as datas para agendar entrada/saída e o horário se o evento deve aparecer só em um período do dia.",
@@ -1285,6 +1297,31 @@ function janelaHora(c){
   return a<=b ? (now>=a && now<b) : (now>=a || now<b);
 }
 function noAr(c){ const t=+today0(), i=pDate(c.inicio), f=pDate(c.fim); return (!i || +i<=t) && (!f || +f>=t) && janelaHora(c); }
+/* situação do prazo de uma requisição Engage — contagem em dias cheios:
+   faltam N dias (verde; âmbar a 3 dias ou menos), vence hoje (âmbar), atrasada há N dias (vermelho) */
+const DIA_MS = 864e5;
+function stPrazo(r){
+  const d = pDate(r && r.prazo);
+  if(!d) return {cls:"vazio", txt:"Sem prazo"};
+  const n = Math.round((+d - +today0())/DIA_MS);
+  if(n > 0) return {cls: n<=3 ? "atencao" : "ok", txt: n===1 ? "Falta 1 dia" : `Faltam ${n} dias`};
+  if(n === 0) return {cls:"atencao", txt:"Vence hoje"};
+  const a = -n;
+  return {cls:"atrasada", txt: a===1 ? "Atrasada há 1 dia" : `Atrasada há ${a} dias`};
+}
+/* linha de gestão no slide Engage: prazo com contagem + quem criou + responsável (opcional) */
+function egMeta(c){
+  if(!c) return "";
+  const st = stPrazo(c);
+  const dd = pDate(c.prazo);
+  const bits = [];
+  if(c.criadoPor) bits.push(`Criada por <b>${esc(c.criadoPor)}</b>`);
+  if(c.responsavel) bits.push(`Responsável: <b>${esc(c.responsavel)}</b>`);
+  const linha = bits.length ? `<span class="eg-cri">${bits.join('<span class="eg-sep">·</span>')}</span>` : "";
+  const prazo = dd ? `<span class="eg-prz ${st.cls}"><i></i>Prazo ${fmtDMY(dd)} · ${st.txt}</span>` : "";
+  if(!linha && !prazo) return "";
+  return `<div class="eg-meta">${linha}${prazo}</div>`;
+}
 function faltaTxt(d){ const n=Math.round((d-today0())/864e5); return n<=0?"Hoje":n===1?"Amanhã":`Faltam ${n} dias`; }
 const emptyBox = (t,m) => `<div class="empty"><div><b>${esc(t)}</b>${esc(m)}</div></div>`;
 
@@ -1800,7 +1837,8 @@ const R = {
     return `<div class="s-eng" style="grid-template-columns:repeat(${it.length},1fr)">${it.map(c=>{const p=Math.max(0,Math.min(100,num(c.progresso)));
       return `<div class="card eg">${c.foto?`<div class="eg-img" style="${it.length===1?"aspect-ratio:21/9":""}">${img(c.foto)}</div>`:""}
       ${c.periodo?`<div class="per">${esc(c.periodo)}</div>`:""}<h3>${esc(c.titulo)}</h3><p class="clamp3" style="-webkit-line-clamp:${c.foto?3:6}">${esc(c.descricao)}</p>
-      <div><div class="pr"><span class="lbl">Progresso</span><b class="num">${p}%</b></div><div class="meter"><i style="width:${p}%"></i></div></div></div>`;}).join("")}</div>`;
+      <div><div class="pr"><span class="lbl">Progresso</span><b class="num">${p}%</b></div><div class="meter"><i style="width:${p}%"></i></div></div>
+      ${egMeta(c)}</div>`;}).join("")}</div>`;
   },
   eventos(o){
     const it = list(o,"eventos").filter(e=>e.titulo && noAr(e)).slice().sort((a,b)=>(b.data||"").localeCompare(a.data||""));
@@ -3169,6 +3207,11 @@ function input(f, val, id){
     const nomes = window.ztvNomes || [];
     return `<input id="${id}" list="${id}-dl" value="${esc(val||"")}" placeholder="Toque e escolha o nome — ou digite" autocomplete="off"><datalist id="${id}-dl">${nomes.map(n=>`<option value="${esc(n)}">`).join("")}</datalist>`;
   }
+  /* situação do prazo (Engage) = selo calculado do item — SEM input, nunca é salvo */
+  if(t==="status"){
+    const st = stPrazo(f._row);
+    return `<div class="stprz ${st.cls}"><i></i>${st.txt}</div>`;
+  }
   /* equipe = vários nomes em fichas, escolhidos da lista da plataforma (participantes…) */
   if(t==="equipe"){
     const nomes = window.ztvNomes || [];
@@ -3429,7 +3472,7 @@ function renderSec(){
       const hasImg = p.cols.some(c=>c.t==="image"||c.t==="galeria");
       const tmpl = hasImg ? "" : `grid-template-columns:${p.cols.map(c=>`${c.w||1}fr`).join(" ")} auto`;
       h += (arr.length>8 ? `<div class="lsr"><input type="search" id="q-${s.key}-${p.key}" class="lsearch" placeholder="Buscar pelo nome ou texto (${arr.length} itens)" aria-label="Buscar na lista"><span class="lsr-n"></span></div>` : "") + `<div class="list">` + arr.map((row,ri)=>`<div class="row ${hasImg?"wrap":""}" style="${tmpl}" data-q="${esc(Object.values(row).filter(v=>typeof v==="string"&&!/^[0-9a-f]{32}$/.test(v)).join(" ").toLowerCase())}">` +
-        p.cols.map(c=>{const id=`l-${s.key}-${p.key}-${ri}-${c.k}`; if(c.t==="ref") c = {...c,_names:arr.map(r=>r.nome).filter(Boolean),_self:row.nome}; const val = c.t==="galeria" ? (Array.isArray(row.fotos)&&row.fotos.length?row.fotos:[row.foto1,row.foto2,row.foto3].filter(Boolean)) : row[c.k]; return `<div class="fld ${c.t==="textarea"?"ta":""} ${c.t==="image"||c.t==="galeria"?"im":""}"><label for="${id}">${esc(c.l)}</label>${input(c,val,id)}</div>`;}).join("") +
+        p.cols.map(c=>{const id=`l-${s.key}-${p.key}-${ri}-${c.k}`; if(c.t==="ref") c = {...c,_names:arr.map(r=>r.nome).filter(Boolean),_self:row.nome}; if(c.t==="status") c = {...c,_row:row}; const val = c.t==="status" ? "" : c.t==="galeria" ? (Array.isArray(row.fotos)&&row.fotos.length?row.fotos:[row.foto1,row.foto2,row.foto3].filter(Boolean)) : row[c.k]; return `<div class="fld ${c.t==="textarea"?"ta":""} ${c.t==="image"||c.t==="galeria"?"im":""}"><label for="${id}">${esc(c.l)}</label>${input(c,val,id)}</div>`;}).join("") +
         `<button type="button" class="btn del" data-del="${p.key}:${ri}" aria-label="Remover linha">Remover</button></div>`).join("") +
         (arr.length?"":`<div class="hint" style="margin:0">Nenhum item ainda.</div>`) + `</div>
         <button type="button" class="btn add" data-add="${pi}">+ Adicionar</button>`;
@@ -3466,7 +3509,9 @@ function renderSec(){
     el.addEventListener(ev, ()=>{
       const parts = el.id.split("-");
       if(parts[0]==="f"){ const [,sk,pk,fk]=parts; draft[sk][pk][fk] = el.type==="checkbox"?el.checked:el.type==="number"?(el.value===""?"":Number(el.value)):el.value; setDirty(true); }
-      else if(parts.length===5){ const [,sk,pk,ri,ck]=parts; draft[sk][pk][+ri][ck] = el.type==="number"?(el.value===""?"":Number(el.value)):el.value; setDirty(true); }
+      else if(parts.length===5){ const [,sk,pk,ri,ck]=parts; draft[sk][pk][+ri][ck] = el.type==="number"?(el.value===""?"":Number(el.value)):el.value; setDirty(true);
+        /* Engage: mudou o prazo → o selo de situação da linha atualiza na hora */
+        if(ck==="prazo"){ const chip=el.closest(".row")?.querySelector(".stprz"); if(chip){ const st=stPrazo(draft[sk][pk][+ri]); chip.className="stprz "+st.cls; chip.innerHTML='<i></i>'+st.txt; } } }
     });
   });
   /* ZTV: botão ✨ IA junto aos campos de texto do editor */
