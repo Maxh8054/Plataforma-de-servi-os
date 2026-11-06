@@ -277,6 +277,10 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const [shiftFilter, setShiftFilter] = useState<string>('');
   const [personFilter, setPersonFilter] = useState<string>('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  // Diálogo do Exportar Excel — período "data até data"
+  const [exportOpen, setExportOpen] = useState(false);
+  const [expDe, setExpDe] = useState('');
+  const [expAte, setExpAte] = useState('');
 
   // Relatório técnico — entrega marcada individualmente por técnico (ontem/hoje)
   const [relatorios, setRelatorios] = useState<Record<string, Record<string, EntregaRel>>>({});
@@ -1356,17 +1360,27 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setPersonFilter('');
   };
 
-  // Exporta a escala (aba inteira, o que está na tela) para Excel
-  const exportarExcel = async () => {
-    if (!data) return;
+  // Abre o diálogo do Exportar Excel — período "data até data" (padrão: mês exibido)
+  const abrirExportExcel = () => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const dias = getDaysInMonth(selectedMonth, selectedYear);
+    setExpDe(`${selectedYear}-${pad(selectedMonth + 1)}-01`);
+    setExpAte(`${selectedYear}-${pad(selectedMonth + 1)}-${pad(dias)}`);
+    setExportOpen(true);
+  };
+
+  // Gera o Excel do período escolhido; sem marcações nas datas, a planilha puxa da mais próxima que tem
+  const expInvalido = !expDe || !expAte || expDe > expAte;
+  const confirmarExportExcel = async () => {
+    if (!data || expInvalido) return;
     try {
       const x = await import('@/lib/escala-excel');
       x.baixarExcelEscala({
-        ano: selectedYear,
-        mes: selectedMonth,
+        periodo: { deISO: expDe, ateISO: expAte },
         dados: data,
         pessoas: PEOPLE.map((p) => ({ letra: p.key, nome: p.name })),
       });
+      setExportOpen(false);
     } catch (err) {
       console.error('Error generating Excel:', err);
       alert('Erro ao gerar o Excel da escala.');
@@ -1542,7 +1556,7 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
           <button
-            onClick={exportarExcel}
+            onClick={abrirExportExcel}
             style={{ padding: '7px 14px', background: '#10b981', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
             onMouseOver={(e) => { e.currentTarget.style.background = '#059669'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseOut={(e) => { e.currentTarget.style.background = '#10b981'; e.currentTarget.style.transform = 'translateY(0)'; }}
@@ -2323,6 +2337,53 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <button onClick={handleAddEvento} style={{ padding: '5px 10px', background: '#FF9800', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Salvar</button>
               <button onClick={() => { setEventoModal({ open: false, person: null }); resetEventoForm(); }} style={{ padding: '5px 10px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exportar Excel — diálogo "data até data" */}
+      {exportOpen && (
+        <div
+          style={{ display: 'flex', position: 'fixed' as const, top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', zIndex: 1000, justifyContent: 'center', alignItems: 'center' }}
+          onClick={() => setExportOpen(false)}
+        >
+          <div
+            style={{ background: 'white', padding: 20, borderRadius: 8, width: 400, maxWidth: '92vw', color: '#2c3e50' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginBottom: 8, color: '#2c3e50' }}>Exportar Excel da Escala</h3>
+            <p style={{ marginBottom: 12, fontSize: '0.85rem', color: '#2c3e50', lineHeight: 1.45 }}>
+              Escolha o período (data até data). Se não tiver marcações nas datas escolhidas,
+              a planilha puxa automaticamente da data mais próxima que tem registro.
+            </p>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Data inicial:</label>
+                <input type="date" value={expDe} onChange={(e) => setExpDe(e.target.value)} style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: 5, color: '#2c3e50' }}>Data final:</label>
+                <input type="date" value={expAte} onChange={(e) => setExpAte(e.target.value)} style={{ width: '100%', padding: 5, border: '1px solid #ddd', borderRadius: 4, color: '#2c3e50' }} />
+              </div>
+            </div>
+            {expDe && expAte && expDe > expAte && (
+              <p style={{ margin: '0 0 4px', fontSize: '0.8rem', color: '#e74c3c' }}>
+                A data inicial é depois da final. Corrija para exportar.
+              </p>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+              <button
+                onClick={confirmarExportExcel}
+                disabled={expInvalido}
+                style={{
+                  padding: '6px 16px', background: expInvalido ? '#a5d6a7' : '#10b981', color: 'white',
+                  border: 'none', borderRadius: 4, cursor: expInvalido ? 'not-allowed' : 'pointer', fontWeight: 600,
+                }}
+              >
+                Exportar
+              </button>
+              <button onClick={() => setExportOpen(false)} style={{ padding: '6px 12px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Cancelar</button>
             </div>
           </div>
         </div>
