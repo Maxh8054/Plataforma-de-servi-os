@@ -2,23 +2,27 @@
  * Exportação da Escala de Turno para Excel (.xlsx) — botão "Exportar Excel"
  * na própria aba Escala de Turno (EscalaModal).
  *
- * O usuário escolhe o período "data até data" (qualquer intervalo, mesmo
- * atravessando meses). Gera um arquivo com 3 abas:
- *   Escala    — grade do período: uma linha por dia, uma coluna por técnico,
- *               com o turno EFETIVO (atestado/férias/folga agendada/cobrindo X).
- *   Marcações — atestados, spots, ADMs e eventos que caem dentro do período.
- *               Se NÃO houver marcações nas datas escolhidas, puxa automaticamente
- *               das datas mais próximas que têm registro (com aviso na planilha).
- *   Resumo    — dias por turno e horas previstas (11h/turno) por técnico.
+ * LAYOUT: igual ao do "Gerador Escala 4x4" (Escala de Revezamento):
+ *   - Cabeçalho com a logo Zamine + título grande mesclados (A1:AG1);
+ *   - Um bloco por mês (dentro do período "data até data" escolhido):
+ *       NOVEMBRO/2026 | Horário / Dia | 07:00 às 19:00 | 19:00 às 07:00 | Folga | Folga
+ *     com uma coluna por dia (número, dia da semana e as LETRAS em cada turno);
+ *   - Cores por letra (A verde, B amarelo, C ciano, D laranja), formatação
+ *     condicional igual à do gerador;
+ *   - Atestados, férias, folgas agendadas e "cobrindo X" viram ANOTAÇÃO na
+ *     célula (canto vermelho no Excel), com o nome do colaborador;
+ *   - Legenda no rodapé (letra colorida + nome);
+ *   - Página paisagem ajustada à largura, grade oculta, área de impressão.
  *
- * Usa a MESMA regra de turno base do resto da plataforma (turnoBase de
+ * Fonte dos dados: a MESMA regra do resto da plataforma (turnoBase de
  * escala-auto.ts — tabela Lundin + fallback do ciclo de 8 dias) e as MESMAS
- * observações do EscalaModal, então o Excel sai igualzinho ao que a aba mostra.
+ * observações do EscalaModal — não precisa carregar arquivo nenhum.
  */
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { turnoBase } from '@/lib/escala-auto';
+import { ESCALA_LOGO_BASE64 } from '@/lib/escala-logo';
 
-export type ChavePessoa = 'A' | 'B' | 'C' | 'D' | 'E';
+export type ChavePessoa = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
 interface PeriodoX { startDate: string; endDate: string; }
 export interface AtestadoX extends PeriodoX { porHora: boolean; horas: number; }
@@ -43,40 +47,26 @@ export interface PessoaX { letra: ChavePessoa; nome: string; }
 /** Período "data até data" escolhido no diálogo do Exportar Excel (ISO aaaa-mm-dd). */
 export interface PeriodoExport { deISO: string; ateISO: string; }
 
-const MES_NOMES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-const DIA_NOMES = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
-
-const ROTULO_TURNO: Record<string, string> = {
-  'Manhã': 'Manhã 07:00–19:00',
-  'Noite': 'Noite 19:00–07:00',
-  'Folga': 'Folga',
-};
+/* ---- constantes do layout (idênticas ao Gerador Escala 4x4) ---- */
+const MESES = ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO'];
+const WD = ['dom','seg','ter','qua','qui','sex','sáb'];
+const COLORS: Record<string, string> = { A: '90CF50', B: 'FFFF00', C: '00AFEF', D: 'F4AF83', E: 'D9A7E0', F: 'C9C9C9' };
+const ROWS = ['07:00 às 19:00', '19:00 às 07:00', 'Folga', 'Folga'];
 
 const fmt2 = (n: number) => String(n).padStart(2, '0');
 const dataISO = (ano: number, mes0: number, dia: number) => `${ano}-${fmt2(mes0 + 1)}-${fmt2(dia)}`;
-const fmtBR = (iso: string) => { const p = iso.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
-
-const MAIUSCULA = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
 const parseISO = (iso: string) => {
   const p = iso.split('-').map(Number);
   return new Date(p[0], (p[1] || 1) - 1, p[2] || 1);
 };
-const addDias = (iso: string, n: number) => {
-  const d = parseISO(iso);
-  d.setDate(d.getDate() + n);
-  return dataISO(d.getFullYear(), d.getMonth(), d.getDate());
-};
-const diffDias = (a: string, b: string) =>
-  Math.round((parseISO(a).getTime() - parseISO(b).getTime()) / 86400000);
 const isoValido = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 
-/** Distância em dias entre o período [de..ate] e um lançamento [s..e] — 0 = cai dentro (ou atravessa). */
-const distDoLanc = (s: string, e: string, de: string, ate: string) =>
-  e < de ? diffDias(de, e) : s > ate ? diffDias(s, ate) : 0;
+const capitalizar = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
+/** nome curto da legenda — mesma regra do gerador (2 primeiras palavras quando há 3+) */
+const nomeCurto = (nome: string) => {
+  const p = (nome || '').trim().split(/\s+/);
+  return p.length > 2 ? `${p[0]} ${p[1]}` : nome;
+};
 
 /** primeiro marcador que vale para a pessoa no dia — MESMA prioridade do efetivoNoDia do EscalaModal */
 function efetivoNoDia(dados: DadosEscalaX | null, letra: ChavePessoa, iso: string): { turno: string; obs: string } {
@@ -91,19 +81,83 @@ function efetivoNoDia(dados: DadosEscalaX | null, letra: ChavePessoa, iso: strin
   return { turno: turnoBase(iso, letra), obs: '' };
 }
 
-interface LinhaMar {
-  tipo: string; letra: string; nome: string; ini: string; fim: string; det: string; dist: number;
+/** Monta as 4 linhas do dia (manhã / noite / folga / folga) com as LETRAS, igual ao gerador. */
+function linhasDoDia(
+  dados: DadosEscalaX | null,
+  pessoas: PessoaX[],
+  iso: string,
+  nomes: Record<string, string>,
+): { vals: string[]; notas: string[] } {
+  const mm: string[] = [];
+  const nn: string[] = [];
+  const ff: string[] = [];
+  const obsPorLetra: Record<string, string> = {};
+  for (const p of pessoas) {
+    const { turno, obs } = efetivoNoDia(dados, p.letra, iso);
+    if (obs) obsPorLetra[p.letra] = obs;
+    if (turno === 'Manhã') mm.push(p.letra);
+    else if (turno === 'Noite') nn.push(p.letra);
+    else ff.push(p.letra);
+  }
+  const vals = [mm.join('/'), nn.join('/'), ff[0] || '', ff.slice(1).join('/')];
+  const notas = vals.map((v) => {
+    if (!v) return '';
+    return v
+      .split('/')
+      .map((l) => (obsPorLetra[l] ? `${nomes[l] || l}: ${obsPorLetra[l]}` : ''))
+      .filter(Boolean)
+      .join(' | ');
+  });
+  return { vals, notas };
 }
 
-export function montarPlanilhaEscala(opts: {
-  /** modo antigo (mês inteiro) — usado quando não vem `periodo` */
+function mesesDoPeriodo(deISO: string, ateISO: string): { y: number; m: number; diaDe: number; diaAte: number }[] {
+  const out: { y: number; m: number; diaDe: number; diaAte: number }[] = [];
+  let cur = parseISO(deISO);
+  const fim = parseISO(ateISO);
+  while (cur <= fim) {
+    const y = cur.getFullYear();
+    const m = cur.getMonth();
+    const ultimoDia = new Date(y, m + 1, 0).getDate();
+    const diaDe = out.length === 0 ? cur.getDate() : 1;
+    const ehMesFinal = y === fim.getFullYear() && m === fim.getMonth();
+    out.push({ y, m, diaDe, diaAte: ehMesFinal ? fim.getDate() : ultimoDia });
+    cur = new Date(y, m + 1, 1);
+  }
+  return out;
+}
+
+function tituloDoPeriodo(deISO: string, ateISO: string): string {
+  const meses = mesesDoPeriodo(deISO, ateISO);
+  const a = meses[0];
+  const b = meses[meses.length - 1];
+  const lab = (x: { m: number; y: number }) => `${capitalizar(MESES[x.m])} ${x.y}`;
+  const periodo = meses.length === 1 ? lab({ m: a.m, y: a.y }) : `${lab({ m: a.m, y: a.y })} a ${lab({ m: b.m, y: b.y })}`;
+  return `Escala de Revezamento (4x4) - ${periodo}`;
+}
+
+function colL(n: number): string {
+  let s = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+/* ---- estilo compartilhado (idêntico ao gerador) ---- */
+const thin = { style: 'thin' as const, color: { argb: 'FF000000' } };
+const B = { top: thin, left: thin, bottom: thin, right: thin };
+const grey = { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFD8D8D8' } };
+
+export async function montarWorkbookEscala(opts: {
   ano?: number;
-  mes?: number; // 0–11
-  /** modo novo: "data até data" escolhido pelo usuário */
+  mes?: number; // 0–11 (modo antigo: mês inteiro)
   periodo?: PeriodoExport | null;
   dados: DadosEscalaX | null;
   pessoas: PessoaX[];
-}): XLSX.WorkBook {
+}): Promise<ExcelJS.Workbook> {
   const { dados, pessoas } = opts;
 
   // Resolve o período: "data até data" do diálogo, ou o mês inteiro (modo antigo)
@@ -121,143 +175,167 @@ export function montarPlanilhaEscala(opts: {
     deISO = ateISO = dataISO(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
   }
 
-  const mesesCobertos: string[] = [];
-  for (let iso = deISO; iso <= ateISO; iso = addDias(iso, 1)) {
-    const dt = parseISO(iso);
-    const rot = `${MES_NOMES[dt.getMonth()]} / ${dt.getFullYear()}`;
-    if (!mesesCobertos.includes(rot)) mesesCobertos.push(rot);
-  }
+  const meses = mesesDoPeriodo(deISO, ateISO);
+  const letras = pessoas.map((p) => p.letra);
+  const nomes: Record<string, string> = {};
+  pessoas.forEach((p) => { nomes[p.letra] = nomeCurto(p.nome); });
 
-  const agora = new Date();
-  const exportadoEm = `${fmt2(agora.getDate())}/${fmt2(agora.getMonth() + 1)}/${agora.getFullYear()} ${fmt2(agora.getHours())}:${fmt2(agora.getMinutes())}`;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Zamine';
+  const nomePlanilha =
+    meses.length === 1 ? `${capitalizar(MESES[meses[0].m])} ${meses[0].y}` : 'Escala 4x4';
+  const ws = wb.addWorksheet(nomePlanilha, {
+    pageSetup: {
+      orientation: 'landscape',
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 0,
+      paperSize: 9,
+      margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 },
+    },
+    views: [{ showGridLines: false, zoomScale: 70 }],
+  });
 
-  const wb = XLSX.utils.book_new();
+  ws.getColumn(1).width = 25.3;
+  for (let c = 2; c <= 32; c++) ws.getColumn(c).width = 6.6;
+  ws.getColumn(33).width = 4;
 
-  /* ---- aba 1: ESCALA (grade do período) ---- */
-  const aoa: (string | number)[][] = [
-    ['Escala de Turno — Lundin Mining'],
-    [`Período: ${fmtBR(deISO)} a ${fmtBR(ateISO)}`],
-    [`Meses: ${mesesCobertos.join(' · ')}`],
-    [`Exportado da aba Escala de Turno (ZAMine) em ${exportadoEm}`],
-    [],
-    ['Data', 'Dia da semana', ...pessoas.map((p) => `${p.letra} · ${p.nome}`)],
-  ];
-  for (let iso = deISO; iso <= ateISO; iso = addDias(iso, 1)) {
-    const dia = parseISO(iso);
-    const linha: (string | number)[] = [fmtBR(iso), DIA_NOMES[dia.getDay()]];
-    for (const p of pessoas) {
-      const { turno, obs } = efetivoNoDia(dados, p.letra, iso);
-      const rot = ROTULO_TURNO[turno] || turno;
-      linha.push(obs ? `${rot} (${obs})` : rot);
-    }
-    aoa.push(linha);
-  }
-  const wsEscala = XLSX.utils.aoa_to_sheet(aoa);
-  wsEscala['!cols'] = [{ wch: 11 }, { wch: 14 }, ...pessoas.map(() => ({ wch: 32 }))];
-  XLSX.utils.book_append_sheet(wb, wsEscala, 'Escala');
+  /* ---- título mesclado + logo (igual ao gerador) ---- */
+  ws.mergeCells('A1:AG1');
+  const t = ws.getCell('A1');
+  t.value = tituloDoPeriodo(deISO, ateISO);
+  t.font = { name: 'Calibri', size: 28, bold: true };
+  t.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getRow(1).height = 117.9;
+  const img = wb.addImage({ base64: ESCALA_LOGO_BASE64, extension: 'png' });
+  ws.addImage(img, { tl: { col: 0.15, row: 0.1 }, ext: { width: 178, height: 108 } });
+  [5.25, 6, 5.25, 18].forEach((h, i) => { ws.getRow(2 + i).height = h; });
 
-  /* ---- aba 2: MARCAÇÕES (lançamentos do período, com fallback "data mais perto que tem") ---- */
-  const todas: LinhaMar[] = [];
-  for (const p of pessoas) {
-    const L = p.letra;
-    for (const a of dados?.atestados?.[L] || []) {
-      if (!a.startDate || !a.endDate) continue;
-      todas.push({
-        tipo: 'Atestado', letra: L, nome: p.nome, ini: a.startDate, fim: a.endDate,
-        det: a.porHora ? `${a.horas}h` : '11h/dia',
-        dist: distDoLanc(a.startDate, a.endDate, deISO, ateISO),
+  /* ---- um bloco por mês, começando na linha 6 (igual ao gerador) ---- */
+  let r = 6;
+  for (const { y, m, diaDe, diaAte } of meses) {
+    const hdr = [`${MESES[m]}/${y}`, 'Horário / Dia', ...ROWS];
+    hdr.forEach((v, i) => {
+      const c = ws.getCell(r + i, 1);
+      c.value = v;
+      c.font = { name: 'Calibri', size: 16, bold: true };
+      c.fill = grey;
+      c.border = B;
+      c.alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getRow(r + i).height = 20.15;
+    });
+
+    for (let d = diaDe; d <= diaAte; d++) {
+      const coluna = d + 1;
+      const iso = dataISO(y, m, d);
+
+      const a = ws.getCell(r, coluna);
+      a.value = d;
+      a.numFmt = '00';
+      a.font = { name: 'Calibri', size: 16, bold: true, color: { argb: 'FF000000' } };
+      a.fill = grey;
+      a.border = B;
+      a.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      const b = ws.getCell(r + 1, coluna);
+      b.value = WD[parseISO(iso).getDay()];
+      b.font = { name: 'Calibri', size: 16 };
+      b.fill = grey;
+      b.border = B;
+      b.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      const { vals, notas } = linhasDoDia(dados, pessoas, iso, nomes);
+      vals.forEach((v, i) => {
+        const c = ws.getCell(r + 2 + i, coluna);
+        c.value = v || null;
+        c.font = { name: 'Arial', size: 16, bold: true };
+        c.border = B;
+        c.alignment = { horizontal: 'center', vertical: 'middle' };
+        if (v && COLORS[v[0]]) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${COLORS[v[0]]}` } };
+        if (v && notas[i]) c.note = notas[i];
       });
     }
-    for (const s of dados?.spots?.[L] || []) {
-      if (!s.startDate || !s.endDate) continue;
-      todas.push({
-        tipo: 'Spot', letra: L, nome: p.nome, ini: s.startDate, fim: s.endDate,
-        det: `${s.horasPorDia}h/dia`,
-        dist: distDoLanc(s.startDate, s.endDate, deISO, ateISO),
-      });
-    }
-    for (const a of dados?.adms?.[L] || []) {
-      if (!a.startDate || !a.endDate) continue;
-      todas.push({
-        tipo: 'ADM', letra: L, nome: p.nome, ini: a.startDate, fim: a.endDate,
-        det: `${a.horaInicio || '—'} às ${a.horaFim || '—'}`,
-        dist: distDoLanc(a.startDate, a.endDate, deISO, ateISO),
-      });
-    }
-    for (const e of dados?.eventos?.[L] || []) {
-      if (!e.startDate || !e.endDate) continue;
-      todas.push({
-        tipo: MAIUSCULA(e.tipo), letra: L, nome: p.nome, ini: e.startDate, fim: e.endDate,
-        det: `${e.operacao === 'adicionar' ? '+' : '-'}${e.horas}h${e.tipo === 'backup' && e.backupOf ? ` · cobrindo ${e.backupOf}` : ''}`,
-        dist: distDoLanc(e.startDate, e.endDate, deISO, ateISO),
-      });
-    }
+
+    // formatação condicional por letra (igual ao gerador)
+    const ref = `B${r + 2}:${colL(diaAte + 1)}${r + 5}`;
+    ws.addConditionalFormatting({
+      ref,
+      rules: letras.filter((l) => COLORS[l]).reverse().map((l, i) => ({
+        type: 'containsText',
+        operator: 'containsText',
+        text: l,
+        priority: i + 1,
+        style: { fill: { type: 'pattern', pattern: 'solid', bgColor: { argb: `FF${COLORS[l]}` } } },
+      })),
+    });
+
+    r += 7;
+    ws.getRow(r - 1).height = 18;
   }
 
-  // Só as que caem no período; se não tiver NENHUMA, puxa da data mais próxima que tem registro
-  let linhas = todas.filter((r) => r.dist === 0);
-  let notaFallback = '';
-  if (linhas.length === 0 && todas.length > 0) {
-    const minDist = Math.min(...todas.map((r) => r.dist));
-    if (minDist <= 366) {
-      linhas = todas.filter((r) => r.dist === minDist);
-      const ini = linhas.reduce((m, r) => (r.ini < m ? r.ini : m), linhas[0].ini);
-      const fim = linhas.reduce((m, r) => (r.fim > m ? r.fim : m), linhas[0].fim);
-      notaFallback =
-        `Nenhuma marcação no período selecionado (${fmtBR(deISO)} a ${fmtBR(ateISO)}) — ` +
-        `puxado da data mais próxima que tem registro: ${fmtBR(ini)} a ${fmtBR(fim)}.`;
-    }
-  }
-  linhas.sort((x, y) => (x.ini < y.ini ? -1 : x.ini > y.ini ? 1 : x.letra.localeCompare(y.letra)));
+  /* ---- legenda (igual ao gerador) ---- */
+  const lh = ws.getCell(r, 1);
+  lh.value = 'Legenda';
+  lh.font = { name: 'Calibri', size: 16, bold: true };
+  lh.fill = grey;
+  lh.border = B;
+  lh.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getRow(r).height = 20.15;
+  letras.forEach((l, i) => {
+    const rr = r + 1 + i;
+    ws.getRow(rr).height = 20.15;
+    const a = ws.getCell(rr, 1);
+    a.value = l;
+    a.font = { name: 'Arial', size: 16, bold: true };
+    a.border = B;
+    a.alignment = { horizontal: 'center', vertical: 'middle' };
+    if (COLORS[l]) a.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${COLORS[l]}` } };
+    ws.mergeCells(rr, 2, rr, 8);
+    const bcell = ws.getCell(rr, 2);
+    bcell.value = nomes[l] || '';
+    bcell.font = { name: 'Arial', size: 16, bold: true };
+    bcell.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
+    for (let c = 2; c <= 8; c++) ws.getCell(rr, c).border = B;
+  });
 
-  const mar: (string | number)[][] = [
-    ['Tipo', 'Letra', 'Colaborador', 'Início', 'Fim', 'Detalhe'],
-  ];
-  if (notaFallback) mar.push([`⚠ ${notaFallback}`, '', '', '', '', '']);
-  for (const r of linhas) mar.push([r.tipo, r.letra, r.nome, fmtBR(r.ini), fmtBR(r.fim), r.det]);
-  if (linhas.length === 0) mar.push(['—', '', 'Nenhuma marcação encontrada', '', '', '']);
-
-  const wsMarc = XLSX.utils.aoa_to_sheet(mar);
-  wsMarc['!cols'] = [{ wch: 14 }, { wch: 7 }, { wch: 30 }, { wch: 11 }, { wch: 11 }, { wch: 20 }];
-  XLSX.utils.book_append_sheet(wb, wsMarc, 'Marcações');
-
-  /* ---- aba 3: RESUMO (dias por turno e horas previstas no período) ---- */
-  const res: (string | number)[][] = [
-    ['Letra', 'Colaborador', 'Manhã (dias)', 'Noite (dias)', 'Folga (dias)', 'Atestado (dias)', 'Férias (dias)', 'Folga agendada (dias)', 'Dias trabalhados', 'Horas previstas (11h/turno)'],
-  ];
-  for (const p of pessoas) {
-    const cnt = { 'Manhã': 0, 'Noite': 0, 'Folga': 0, 'Atestado': 0, 'Férias': 0, 'Folga agendada': 0 };
-    for (let iso = deISO; iso <= ateISO; iso = addDias(iso, 1)) {
-      const { turno, obs } = efetivoNoDia(dados, p.letra, iso);
-      if (obs && obs in cnt) cnt[obs as keyof typeof cnt] += 1;
-      else if (turno in cnt) cnt[turno as keyof typeof cnt] += 1;
-    }
-    const trabalhados = cnt['Manhã'] + cnt['Noite'];
-    res.push([
-      p.letra, p.nome, cnt['Manhã'], cnt['Noite'], cnt['Folga'],
-      cnt['Atestado'], cnt['Férias'], cnt['Folga agendada'],
-      trabalhados, `${trabalhados * 11}h`,
-    ]);
-  }
-  const wsRes = XLSX.utils.aoa_to_sheet(res);
-  wsRes['!cols'] = [{ wch: 7 }, { wch: 30 }, ...Array(8).fill({ wch: 13 })];
-  XLSX.utils.book_append_sheet(wb, wsRes, 'Resumo');
-
+  ws.pageSetup.printArea = `A1:AF${r + letras.length}`;
   return wb;
 }
 
-/** Gera e baixa o arquivo. No navegador dispara o download; retorna o nome do arquivo. */
-export function baixarExcelEscala(opts: {
+function nomeArquivo(deISO: string, ateISO: string): string {
+  const meses = mesesDoPeriodo(deISO, ateISO);
+  const a = meses[0];
+  const b = meses[meses.length - 1];
+  const sufixo =
+    meses.length > 1 ? `_A_${MESES[b.m]}_${b.y}` : '';
+  return `ESCALA_DE_REVEZAMENTO_4X4_-_${MESES[a.m]}_${a.y}${sufixo}.xlsx`;
+}
+
+/** Gera e baixa o arquivo no navegador. Retorna o nome do arquivo. */
+export async function baixarExcelEscala(opts: {
   ano?: number;
   mes?: number;
   periodo?: PeriodoExport | null;
   dados: DadosEscalaX | null;
   pessoas: PessoaX[];
-}): string {
-  const wb = montarPlanilhaEscala(opts);
-  const nome = opts.periodo?.deISO && opts.periodo?.ateISO
-    ? `escala-${opts.periodo.deISO}_a_${opts.periodo.ateISO}.xlsx`
-    : `escala-${MES_NOMES[opts.mes ?? new Date().getMonth()].toLowerCase()}-${opts.ano ?? new Date().getFullYear()}.xlsx`;
-  XLSX.writeFile(wb, nome);
+}): Promise<string> {
+  const wb = await montarWorkbookEscala(opts);
+  const deISO = opts.periodo?.deISO || (opts.ano && typeof opts.mes === 'number' ? dataISO(opts.ano, opts.mes, 1) : '');
+  const ateISO = opts.periodo?.ateISO || (opts.ano && typeof opts.mes === 'number'
+    ? dataISO(opts.ano, opts.mes, new Date(opts.ano, opts.mes + 1, 0).getDate())
+    : '');
+  const nome = nomeArquivo(deISO || ateISO || dataISO(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()), ateISO || deISO || dataISO(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()));
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf as unknown as BlobPart], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
   return nome;
 }

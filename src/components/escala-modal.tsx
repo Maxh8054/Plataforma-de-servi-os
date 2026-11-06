@@ -1369,13 +1369,14 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setExportOpen(true);
   };
 
-  // Gera o Excel do período escolhido; sem marcações nas datas, a planilha puxa da mais próxima que tem
+  // Gera o Excel no layout da Escala de Revezamento 4x4 (logo, cores por letra e legenda);
+  // atestados/férias/folgas viram anotação na célula (canto vermelho)
   const expInvalido = !expDe || !expAte || expDe > expAte;
   const confirmarExportExcel = async () => {
     if (!data || expInvalido) return;
     try {
       const x = await import('@/lib/escala-excel');
-      x.baixarExcelEscala({
+      await x.baixarExcelEscala({
         periodo: { deISO: expDe, ateISO: expAte },
         dados: data,
         pessoas: PEOPLE.map((p) => ({ letra: p.key, nome: p.name })),
@@ -2354,8 +2355,9 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
           >
             <h3 style={{ marginBottom: 8, color: '#2c3e50' }}>Exportar Excel da Escala</h3>
             <p style={{ marginBottom: 12, fontSize: '0.85rem', color: '#2c3e50', lineHeight: 1.45 }}>
-              Escolha o período (data até data). Se não tiver marcações nas datas escolhidas,
-              a planilha puxa automaticamente da data mais próxima que tem registro.
+              Escolha o período (data até data). A planilha sai no layout da Escala de Revezamento
+              4x4: logo, cores por letra e legenda. Atestados, férias e folgas agendadas aparecem
+              como anotação na célula (canto vermelho).
             </p>
             <div style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
               <div style={{ flex: 1 }}>
