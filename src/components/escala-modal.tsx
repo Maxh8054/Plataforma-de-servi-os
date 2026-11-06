@@ -268,7 +268,6 @@ function formatCountdown(totalSec: number): string {
 
 export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const mainRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State
   const [data, setData] = useState<EscalaData | null>(null);
@@ -1357,94 +1356,20 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
     setPersonFilter('');
   };
 
-  // Import JSON markings
-  const handleImportJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Exporta a escala (aba inteira, o que está na tela) para Excel
+  const exportarExcel = async () => {
+    if (!data) return;
     try {
-      const text = await file.text();
-      const imported = JSON.parse(text);
-      if (!imported.atestados || !imported.spots || !imported.adms || !imported.eventos) {
-        alert('Arquivo JSON inválido. O arquivo deve conter atestados, spots, adms e eventos.');
-        return;
-      }
-      const confirmed = window.confirm(`Deseja importar as marcações do arquivo?
-
-Isso vai SUBSTITUIR todas as marcações atuais.
-
-Arquivo: ${file.name}`);
-      if (!confirmed) return;
-      // Ensure all person keys exist
-      const keys: PersonKey[] = ['A', 'B', 'C', 'D'];
-      const newData: EscalaData = { atestados: {} as any, spots: {} as any, adms: {} as any, eventos: {} as any };
-      for (const k of keys) {
-        newData.atestados[k] = imported.atestados[k] || [];
-        newData.spots[k] = imported.spots[k] || [];
-        newData.adms[k] = imported.adms[k] || [];
-        newData.eventos[k] = imported.eventos[k] || [];
-      }
-      await saveData(newData);
-      alert('Marcações importadas com sucesso!');
-    } catch (err) {
-      console.error('Error importing JSON:', err);
-      alert('Erro ao importar arquivo JSON. Verifique o formato do arquivo.');
-    }
-    // Reset file input
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  // Generate PPT
-  const generatePowerPointReport = async () => {
-    try {
-      const PptxGenJS = (await import('pptxgenjs')).default;
-      const pptx = new PptxGenJS();
-      const daysInMonthVal = getDaysInMonth(selectedMonth, selectedYear);
-
-      // Title slide
-      const slide = pptx.addSlide();
-      slide.addText(`Escala de Trabalho - Lundin Mining`, { x: 0.5, y: 0.5, fontSize: 24, bold: true, color: '2C3E50' });
-      slide.addText(`${MONTH_NAMES[selectedMonth]} ${selectedYear}`, { x: 0.5, y: 1.2, fontSize: 18, color: '3498DB' });
-
-      // Table slide - vertical layout matching original HTML
-      const tableSlide = pptx.addSlide();
-      const headerRow = ['Data', 'Dia da Semana', 'Letra', 'Colaborador', 'Turno'].map(h => ({
-        text: h,
-        options: { bold: true, color: 'FFFFFF', fill: { color: '3498DB' }, fontSize: 9 },
-      }));
-
-      const rows: Record<string, unknown>[][] = [headerRow];
-
-      for (let day = 1; day <= daysInMonthVal; day++) {
-        const date = new Date(selectedYear, selectedMonth, day);
-        const weekday = DAY_NAMES_FULL[date.getDay()];
-
-        for (const person of PEOPLE) {
-          const shift = getShiftForDay(person.key, date);
-          const shiftDisplay = getShiftDisplayString(shift);
-          const bgColor = shift === 'Manhã' ? 'FFF8E1' : shift === 'Noite' ? 'E1F5FE' : 'E8F5E9';
-          const letterBg = PERSON_HIGHLIGHT[person.key].replace('#', '');
-
-          const row = [
-            { text: formatDateBR(date), options: { fontSize: 8 } },
-            { text: weekday, options: { fontSize: 8 } },
-            { text: person.key, options: { fontSize: 8, fill: { color: letterBg } } },
-            { text: person.name, options: { fontSize: 8 } },
-            { text: shiftDisplay, options: { fontSize: 8, fill: { color: bgColor } } },
-          ];
-          rows.push(row);
-        }
-      }
-
-      tableSlide.addTable(rows as unknown as Record<string, unknown>[][], {
-        x: 0.2, y: 0.5, w: 9.5,
-        fontSize: 8,
-        border: { pt: 0.5, color: 'E0E6ED' },
-        colW: [1.2, 1.5, 0.6, 1.8, 1.5],
+      const x = await import('@/lib/escala-excel');
+      x.baixarExcelEscala({
+        ano: selectedYear,
+        mes: selectedMonth,
+        dados: data,
+        pessoas: PEOPLE.map((p) => ({ letra: p.key, nome: p.name })),
       });
-
-      await pptx.writeFile({ fileName: `escala-${MONTH_NAMES[selectedMonth]}-${selectedYear}.pptx` });
     } catch (err) {
-      console.error('Error generating PPT:', err);
+      console.error('Error generating Excel:', err);
+      alert('Erro ao gerar o Excel da escala.');
     }
   };
 
@@ -1617,57 +1542,14 @@ Arquivo: ${file.name}`);
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
           <button
-            onClick={generatePowerPointReport}
-            style={{ padding: '7px 14px', background: '#3b82f6', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
-            onMouseOver={(e) => { e.currentTarget.style.background = '#2563eb'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = '#3b82f6'; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Download Relatório PPT
-          </button>
-          <button
-            onClick={() => {
-              if (!data) return;
-              const exportData = {
-                exportDate: new Date().toISOString(),
-                month: MONTH_NAMES[selectedMonth],
-                year: selectedYear,
-                atestados: data.atestados,
-                spots: data.spots,
-                adms: data.adms,
-                eventos: data.eventos,
-              };
-              const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.download = `escala-marcacoes-${MONTH_NAMES[selectedMonth]}-${selectedYear}.json`;
-              link.href = url;
-              link.click();
-              URL.revokeObjectURL(url);
-            }}
-            style={{ padding: '7px 14px', background: '#f59e0b', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
-            onMouseOver={(e) => { e.currentTarget.style.background = '#d97706'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.background = '#f59e0b'; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exportar Marcações
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={exportarExcel}
             style={{ padding: '7px 14px', background: '#10b981', color: 'white', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 5 }}
             onMouseOver={(e) => { e.currentTarget.style.background = '#059669'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseOut={(e) => { e.currentTarget.style.background = '#10b981'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Importar Marcações
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar Excel
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            onChange={handleImportJSON}
-            style={{ display: 'none' }}
-          />
         </div>
       </div>
 
