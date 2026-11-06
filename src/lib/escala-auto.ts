@@ -56,8 +56,8 @@ export interface EscalaAuto {
 
 export const PESSOAS: PessoaEscala[] = [
   { letra: 'A', nome: 'Marcos Paulo Moraes Borges' },
-  { letra: 'B', nome: 'Weslley Ferreira de Siqueira' },
-  { letra: 'C', nome: 'Higor Ataides Macedo' },
+  { letra: 'B', nome: 'Higor Ataides Macedo' },
+  { letra: 'C', nome: 'Weslley Ferreira de Siqueira' },
   { letra: 'D', nome: 'Marcelo Goncalves de Paula' },
 ];
 

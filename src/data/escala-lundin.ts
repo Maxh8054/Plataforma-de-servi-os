@@ -12,8 +12,8 @@ const CLIENTE = "Lundin Mining";
 
 const TEAM: Record<string, string> = {
   A: "Marcos Paulo Moraes Borges",
-  B: "Weslley Ferreira de Siqueira",
-  C: "Higor Ataides Macedo",
+  B: "Higor Ataides Macedo",
+  C: "Weslley Ferreira de Siqueira",
   D: "Marcelo Goncalves de Paula",
 };
 

@@ -59,21 +59,21 @@ interface PersonInfo {
 }
 
 // Person assignments matching dataReport_Escala_Turno_Lundin:
-// A = Marcos Paulo, B = Weslley, C = Higor, D = Marcelo — nomes IGUAIS aos do
+// A = Marcos Paulo, B = Higor, C = Weslley, D = Marcelo — nomes IGUAIS aos do
 // banco de dados e dos logins (as fotos vêm do cadastro de Aniversariantes).
 // (E/Guilherme removido da escala a pedido — mantém o tipo PersonKey com 'E'
 // para compatibilidade com dados antigos, mas não é mais exibido nem normalizado)
 const PEOPLE: PersonInfo[] = [
   { key: 'A', name: 'Marcos Paulo Moraes Borges', photo: '' },
-  { key: 'B', name: 'Weslley Ferreira de Siqueira', photo: '' },
-  { key: 'C', name: 'Higor Ataides Macedo', photo: '' },
+  { key: 'B', name: 'Higor Ataides Macedo', photo: '' },
+  { key: 'C', name: 'Weslley Ferreira de Siqueira', photo: '' },
   { key: 'D', name: 'Marcelo Goncalves de Paula', photo: '' },
 ];
 
 const PERSON_FULL_NAMES: Record<PersonKey, string> = {
   A: 'A - Marcos Paulo Moraes Borges',
-  B: 'B - Weslley Ferreira de Siqueira',
-  C: 'C - Higor Ataides Macedo',
+  B: 'B - Higor Ataides Macedo',
+  C: 'C - Weslley Ferreira de Siqueira',
   D: 'D - Marcelo Goncalves de Paula',
   E: 'E - Guilherme',
 };
