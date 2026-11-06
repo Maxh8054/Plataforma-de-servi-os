@@ -59,22 +59,33 @@ interface PersonInfo {
 }
 
 // Person assignments matching dataReport_Escala_Turno_Lundin:
-// A = Weslley Siqueira, B = Higor Ataides, C = Marcos Paulo, D = Marcelo
+// A = Marcos Paulo A, B = Wesley B, C = Marcos Paulo, D = Marcelo
 // (E/Guilherme removido da escala a pedido — mantém o tipo PersonKey com 'E'
 // para compatibilidade com dados antigos, mas não é mais exibido nem normalizado)
 const PEOPLE: PersonInfo[] = [
-  { key: 'A', name: 'Weslley Siqueira', photo: '/escala/Weslley.jpeg' },
-  { key: 'B', name: 'Higor Ataides', photo: '/escala/Higor ataides.jpeg' },
+  { key: 'A', name: 'Marcos Paulo A', photo: '/escala/Marcos Paulo A.jpeg' },
+  { key: 'B', name: 'Wesley B', photo: '/escala/Wesley B.jpeg' },
   { key: 'C', name: 'Marcos Paulo', photo: '/escala/Marcos Paulo.jpeg' },
   { key: 'D', name: 'Marcelo', photo: '/escala/Marcelo.jpeg' },
 ];
 
 const PERSON_FULL_NAMES: Record<PersonKey, string> = {
-  A: 'A - Weslley Siqueira',
-  B: 'B - Higor Ataides',
+  A: 'A - Marcos Paulo A',
+  B: 'B - Wesley B',
   C: 'C - Marcos Paulo',
   D: 'D - Marcelo',
   E: 'E - Guilherme',
+};
+
+// Sem foto em /escala/<Nome>.jpeg, o círculo mostra a INICIAL da pessoa num
+// avatar SVG (antes caía numa foto aleatória do picsum — foto de estranho no lugar
+// do colaborador). Assim que o arquivo da foto existir, ele entra sozinho.
+const CORES_AVATAR = ['#2563eb', '#059669', '#d97706', '#7c3aed', '#db2777'];
+const avatarInicial = (nome: string, key: string): string => {
+  const inicial = (nome.trim()[0] || '?').toUpperCase();
+  const cor = CORES_AVATAR[key.charCodeAt(0) % CORES_AVATAR.length];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="${cor}"/><text x="40" y="40" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#fff" text-anchor="middle" dominant-baseline="central">${inicial}</text></svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
 const MONTH_NAMES = [
@@ -1951,7 +1962,7 @@ Arquivo: ${file.name}`);
                 src={person.photo}
                 alt={person.name}
                 style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', marginBottom: 10 }}
-                onError={(e) => { (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${person.key.toLowerCase()}/80/80.jpg`; }}
+                onError={(e) => { (e.target as HTMLImageElement).src = avatarInicial(person.name, person.key); }}
               />
               <div style={{ fontWeight: 600, marginBottom: 5, color: '#2c3e50' }}>{PERSON_FULL_NAMES[person.key]}</div>
               <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: 3 }}>

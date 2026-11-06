@@ -892,6 +892,9 @@ textarea{resize:vertical;min-height:64px;line-height:1.4}
 .s-escx .ze-tw td.hj{background:var(--accent-soft)}
 .s-escx .ze-who{display:flex;align-items:center;gap:9px;min-width:0}
 .s-escx .ze-lt2{width:32px;height:32px;border-radius:50%;background:var(--c);color:var(--on-turma);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:18px;flex:none}
+/* foto do colaborador: cobre o círculo inteiro (a letra fica por baixo, aparece só se a foto falhar) */
+.s-escx .av,.s-escx .ze-lt2{position:relative;overflow:hidden}
+.s-escx .av img.av-f,.s-escx .ze-lt2 img.av-f{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
 .s-escx .ze-who>div{min-width:0;flex:1}
 .s-escx .ze-who b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .s-escx .ze-who small{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;white-space:nowrap}
@@ -1448,6 +1451,38 @@ async function escAno(ano){
 function escMapaManual(o){ const m = {}; list(o,"escala","dias").forEach(d=>{ if(d.data) m[d.data]=d; }); return m; }
 /* primeiro nome da pessoa: "Weslley Siqueira" → "Weslley" */
 const escNome1 = x => esc(String(x.nome||"").split(" ")[0]||x.letra||"");
+/* --- FOTOS dos técnicos: casam PELO NOME com o cadastro de Aniversariantes
+   (a mesma fonte de fotos do organograma — cadastrou a pessoa lá com foto, a
+   escala mostra sozinha). Sem foto no cadastro, tenta o arquivo /escala/<Nome>.jpeg;
+   não achou nada? o círculo continua mostrando a letra da equipe. */
+const ESC_FOTO_ARQ = {
+  "marcos paulo a": "/escala/Marcos Paulo A.jpeg",
+  "wesley b": "/escala/Wesley B.jpeg",
+  "marcos paulo": "/escala/Marcos Paulo.jpeg",
+  "marcelo": "/escala/Marcelo.jpeg",
+  "weslley siqueira": "/escala/Weslley.jpeg",
+  "higor ataides": "/escala/Higor ataides.jpeg"
+};
+function escFotoDe(nome){
+  const n = normNome(nome||"");
+  if(!n) return "";
+  const anis = list(data,"aniversarios");
+  for(const a of anis){ if(a.foto && normNome(a.nome||"")===n) return a.foto; }
+  /* nome do técnico é o começo do nome completo do cadastro ("Marcos Paulo" →
+     "Marcos Paulo Morais Borges") — só vale se for ÚNICO (dois Marcelos? fica a letra) */
+  const parecidos = anis.filter(a => a.foto && normNome(a.nome||"").startsWith(n + " "));
+  if(parecidos.length===1) return parecidos[0].foto;
+  return ESC_FOTO_ARQ[n] || "";
+}
+/* círculos com a foto redonda por cima da letra (a letra aparece se a foto falhar) */
+function escAvatar(nome, letra){
+  const f = escFotoDe(nome);
+  return `<span class="av">${f?`<img class="av-f" src="${esc(f)}" alt="" onerror="this.remove()">`:""}${esc(letra)}</span>`;
+}
+function escAvatarL(nome, letra){
+  const f = escFotoDe(nome);
+  return `<span class="ze-lt2">${f?`<img class="av-f" src="${esc(f)}" alt="" onerror="this.remove()">`:""}${esc(letra)}</span>`;
+}
 /* --- mapas rápidos do mês (dias por data + nome por letra) --- */
 function escMapas(j){
   const porData = {}, nomes = {};
@@ -1476,7 +1511,7 @@ function zeNowHtml(st, j){
   const rh = Math.floor(rest/3600000), rm = Math.floor(rest%3600000/60000);
   const pctH = TT && TT.previstas>0 ? Math.min(100,TT.trabalhadas/TT.previstas*100) : 0;
   const agora = on ? `<div class="card ze-ag tu-${esc(on.letra)}">
-      <div class="ze-ph"><span class="av">${esc(on.letra)}</span><span class="lt">${esc(on.letra)}</span></div>
+      <div class="ze-ph">${escAvatar(on.nome, on.letra)}<span class="lt">${esc(on.letra)}</span></div>
       <div class="ze-tx"><span class="ze-live">No turno agora</span><b class="ze-nm">${esc(on.nome||("Equipe "+on.letra))}</b>
         <span class="ze-sh"><b>Turma ${esc(on.letra)}</b> · ${faixa(t)}${on.selo?` · ${esc(on.selo)}`:""}</span>
         <div class="ze-tl"><i style="width:${pct.toFixed(1)}%"></i></div>
@@ -1486,7 +1521,7 @@ function zeNowHtml(st, j){
       </div></div>` : `<div class="card ze-ag tu-X"><div class="ze-ph"><span class="av">–</span></div><div class="ze-tx"><span class="ze-live">No turno agora</span><b class="ze-nm">Sem técnico</b><span class="ze-sh">Nenhum lançamento para o turno de agora</span></div></div>`;
   const TTn = nx ? T(nx.letra) : null;
   const prox = `<div class="card ze-mini ${nx?`tu-${esc(nx.letra)}`:"tu-X"}">
-      <span class="av">${nx?esc(nx.letra):"–"}</span>
+      ${nx?escAvatar(nx.nome, nx.letra):`<span class="av">–</span>`}
       <div><small class="lbl">Próximo turno · ${P.tipo==="D"?"07:00":"19:00"} · ${+P.ref>+hj?"amanhã":"hoje"}</small>
         <b>${nx?esc(nx.nome||("Equipe "+nx.letra)):"—"}</b>
         <span class="s">Turma ${nx?esc(nx.letra):"—"} · ${P.tipo==="D"?"Diurno":"Noturno"}${nx&&nx.selo?` · ${esc(nx.selo)}`:""}</span>
@@ -1547,7 +1582,7 @@ function zeHoras(st, tec, j){
     <div class="ze-hl">Contagem de horas · ${esc(MESES[st.mes+1])} <em>Spot ${String(H.spotTotal||0).replace(".",",")}h · ADM ${String(H.admTotal||0).replace(".",",")}h no mês</em></div>
     <div class="ze-hg">${tec.map(t=>{
       const pct = t.previstas>0 ? Math.min(100,t.trabalhadas/t.previstas*100) : 0;
-      return `<div class="ze-hp tu-${esc(t.letra)}"><span class="ze-lt2">${esc(t.letra)}</span><div>
+      return `<div class="ze-hp tu-${esc(t.letra)}">${escAvatarL(t.nome, t.letra)}<div>
         <span class="nm">${esc(t.nome)}</span>
         <span class="hv num">${fmtH(t.trabalhadas)} h <em>/ ${fmtH(t.previstas)} h</em></span>
         <small>${esc(linha(t))}</small>
@@ -1579,7 +1614,7 @@ function zeGrade(st, j){
     const tt = tec.find(x=>x.letra===l);
     const nome = (tt && tt.nome) || nomes[l] || `Equipe ${l}`;
     const tag = l===cur?`<span class="ze-tg on">No turno</span>` : l===nx?`<span class="ze-tg">Próximo</span>` : "";
-    h += `<tr class="tu-${esc(l)}${l===cur?" cur":""}"><th><div class="ze-who"><span class="ze-lt2">${esc(l)}</span><div><b>${esc(nome)}</b><small>${tt?`${p2(tt.turnos)}/${p2(tt.turnosPrev)} turnos`:"&nbsp;"}${tag}</small></div></div></th>`;
+    h += `<tr class="tu-${esc(l)}${l===cur?" cur":""}"><th><div class="ze-who">${escAvatarL(nome, l)}<div><b>${esc(nome)}</b><small>${tt?`${p2(tt.turnos)}/${p2(tt.turnosPrev)} turnos`:"&nbsp;"}${tag}</small></div></div></th>`;
     for(let d=1;d<=ndias;d++){
       const dataStr = `${st.ano}-${p2(st.mes+1)}-${p2(d)}`;
       const dia = porData[dataStr];
@@ -2031,19 +2066,22 @@ function kskLiga(el){
 }
 function kskLigaEm(raiz){ (raiz || document).querySelectorAll(".c-fl").forEach(kskLiga); }
 function kskLoop(ts){
-  const dt = Math.min(.1, (ts - (KSK._last || ts)) / 1000); KSK._last = ts;
+  const dt = Math.min(.5, (ts - (KSK._last || ts)) / 1000); KSK._last = ts;
   for(let i = KSK.length - 1; i >= 0; i--){
     const el = KSK[i], k = el._ks;
     if(!el.isConnected){ KSK.splice(i, 1); el._ks = null; continue; }   /* tela saiu do ar */
     const max = el.scrollHeight - el.clientHeight;
     if(max <= 4){ if(el.scrollTop) el.scrollTop = 0; continue; }         /* cabe inteira: não rola */
     if(k.hold > 0){ k.hold -= dt; continue; }
-    el.scrollTop += (k.dir > 0 ? 24 : 84) * dt;      /* desce devagar · volta mais rápido */
+    el.scrollTop += (k.dir > 0 ? 24 : -84) * dt;     /* desce devagar · sobe de volta mais rápido */
     if(el.scrollTop >= max - .5){ el.scrollTop = max; k.dir = -1; k.hold = 2.6; }
     else if(el.scrollTop <= .5 && k.dir < 0){ el.scrollTop = 0; k.dir = 1; k.hold = 1.2; }
   }
   KSK._raf = KSK.length ? requestAnimationFrame(kskLoop) : 0;
 }
+/* TVs/caixas estranhas podem estrangular o rAF quando julgam a tela parada:
+   um motor reserva de 300ms assume se o rAF ficar mudo por mais de 400ms. */
+setInterval(() => { if(KSK.length){ const agora = performance.now(); if(agora - (KSK._last || 0) > 400) kskLoop(agora); } }, 300);
 addEventListener("pointerdown", e => { const el = e.target && e.target.closest ? e.target.closest(".c-fl") : null; if(el && el._ks) el._ks.hold = 30; }, true);
 addEventListener("wheel", e => { const el = e.target && e.target.closest ? e.target.closest(".c-fl") : null; if(el && el._ks) el._ks.hold = 30; }, {passive:true, capture:true});
 /* --- HTML do MÊS (o mesmo desenho de sempre, agora para qualquer mês/ano escolhido) --- */

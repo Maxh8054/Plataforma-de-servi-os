@@ -55,8 +55,8 @@ export interface EscalaAuto {
 /* ---------- pessoas (mesma atribuição do EscalaModal) ---------- */
 
 export const PESSOAS: PessoaEscala[] = [
-  { letra: 'A', nome: 'Weslley Siqueira' },
-  { letra: 'B', nome: 'Higor Ataides' },
+  { letra: 'A', nome: 'Marcos Paulo A' },
+  { letra: 'B', nome: 'Wesley B' },
   { letra: 'C', nome: 'Marcos Paulo' },
   { letra: 'D', nome: 'Marcelo' },
 ];

@@ -11,8 +11,8 @@ export interface EscalaLundinEntry {
 const CLIENTE = "Lundin Mining";
 
 const TEAM: Record<string, string> = {
-  A: "Weslley Siqueira",
-  B: "Higor Ataides",
+  A: "Marcos Paulo A",
+  B: "Wesley B",
   C: "Marcos Paulo",
   D: "Marcelo",
 };
