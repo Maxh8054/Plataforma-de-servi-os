@@ -11,10 +11,10 @@ export interface EscalaLundinEntry {
 const CLIENTE = "Lundin Mining";
 
 const TEAM: Record<string, string> = {
-  A: "Marcos Paulo A",
-  B: "Wesley B",
-  C: "Marcos Paulo",
-  D: "Marcelo",
+  A: "Marcos Paulo Moraes Borges",
+  B: "Weslley Ferreira de Siqueira",
+  C: "Higor Ataides Macedo",
+  D: "Marcelo Goncalves de Paula",
 };
 
 const TURNO_MANHA = "07:00 – 19:00";

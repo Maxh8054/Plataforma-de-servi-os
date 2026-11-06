@@ -10,7 +10,7 @@ const c = new pg.Client({
 const norm = (v) =>
   String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-const TECNICOS = ["marcos paulo a", "wesley b", "marcos paulo", "marcelo"];
+const TECNICOS = ["marcos paulo moraes borges", "weslley ferreira de siqueira", "higor ataides macedo", "marcelo goncalves de paula"];
 
 async function main() {
   await c.connect();

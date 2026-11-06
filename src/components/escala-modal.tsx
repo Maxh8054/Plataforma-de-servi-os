@@ -59,23 +59,34 @@ interface PersonInfo {
 }
 
 // Person assignments matching dataReport_Escala_Turno_Lundin:
-// A = Marcos Paulo A, B = Wesley B, C = Marcos Paulo, D = Marcelo
+// A = Marcos Paulo, B = Weslley, C = Higor, D = Marcelo — nomes IGUAIS aos do
+// banco de dados e dos logins (as fotos vêm do cadastro de Aniversariantes).
 // (E/Guilherme removido da escala a pedido — mantém o tipo PersonKey com 'E'
 // para compatibilidade com dados antigos, mas não é mais exibido nem normalizado)
 const PEOPLE: PersonInfo[] = [
-  { key: 'A', name: 'Marcos Paulo A', photo: '/escala/Marcos Paulo A.jpeg' },
-  { key: 'B', name: 'Wesley B', photo: '/escala/Wesley B.jpeg' },
-  { key: 'C', name: 'Marcos Paulo', photo: '/escala/Marcos Paulo.jpeg' },
-  { key: 'D', name: 'Marcelo', photo: '/escala/Marcelo.jpeg' },
+  { key: 'A', name: 'Marcos Paulo Moraes Borges', photo: '' },
+  { key: 'B', name: 'Weslley Ferreira de Siqueira', photo: '' },
+  { key: 'C', name: 'Higor Ataides Macedo', photo: '' },
+  { key: 'D', name: 'Marcelo Goncalves de Paula', photo: '' },
 ];
 
 const PERSON_FULL_NAMES: Record<PersonKey, string> = {
-  A: 'A - Marcos Paulo A',
-  B: 'B - Wesley B',
-  C: 'C - Marcos Paulo',
-  D: 'D - Marcelo',
+  A: 'A - Marcos Paulo Moraes Borges',
+  B: 'B - Weslley Ferreira de Siqueira',
+  C: 'C - Higor Ataides Macedo',
+  D: 'D - Marcelo Goncalves de Paula',
   E: 'E - Guilherme',
 };
+
+/* normalização de nome igual à da TV (sem acento, minúsculas) — casa a foto do
+   cadastro de Aniversariantes pelo nome (banco de dados, não arquivo solto) */
+const normNomeFoto = (v: string): string =>
+  String(v || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 
 // Sem foto em /escala/<Nome>.jpeg, o círculo mostra a INICIAL da pessoa num
 // avatar SVG (antes caía numa foto aleatória do picsum — foto de estranho no lugar
@@ -275,6 +286,41 @@ export default function EscalaModal({ onClose }: { onClose: () => void }) {
   const [relErro, setRelErro] = useState('');
   const hojeStr = useMemo(() => dataNoFuso(0), []);
   const ontemStr = useMemo(() => dataNoFuso(-1), []);
+
+  // FOTOS do banco: cadastro de Aniversariantes (a mesma fonte da TV) —
+  // nome normalizado → fotoUrl. Quem cadastrou a pessoa lá com foto, o modal
+  // mostra sozinho; sem foto, o círculo mostra a inicial (avatarInicial).
+  const [fotosDb, setFotosDb] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let vivo = true;
+    fetch('/api/aniversariantes')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!vivo || !j || !Array.isArray(j.pessoas)) return;
+        const m: Record<string, string> = {};
+        for (const p of j.pessoas) {
+          if (p?.fotoUrl && p?.nome) m[normNomeFoto(p.nome)] = p.fotoUrl;
+        }
+        setFotosDb(m);
+      })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+  const fotoDe = useCallback((nome: string, photoArq: string): string => {
+    const n = normNomeFoto(nome);
+    if (!n) return '';
+    if (fotosDb[n]) return fotosDb[n];
+    /* nome começa o nome completo do cadastro — vai encurtando até achar UM só
+       ("Marcos Paulo Moraes…" → "marcos paulo"); mais de um? fica sem foto */
+    const partes = n.split(' ');
+    while (partes.length > 1) {
+      partes.pop();
+      const pre = partes.join(' ') + ' ';
+      const achados = Object.keys(fotosDb).filter((k) => k.startsWith(pre));
+      if (achados.length === 1) return fotosDb[achados[0]];
+    }
+    return photoArq || '';
+  }, [fotosDb]);
 
   // Modal states
   const [atestadoModal, setAtestadoModal] = useState<{ open: boolean; person: PersonKey | null }>({ open: false, person: null });
@@ -1959,7 +2005,7 @@ Arquivo: ${file.name}`);
               }}
             >
               <img
-                src={person.photo}
+                src={fotoDe(person.name, person.photo) || avatarInicial(person.name, person.key)}
                 alt={person.name}
                 style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', marginBottom: 10 }}
                 onError={(e) => { (e.target as HTMLImageElement).src = avatarInicial(person.name, person.key); }}

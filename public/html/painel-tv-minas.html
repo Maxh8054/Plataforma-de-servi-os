@@ -1456,22 +1456,26 @@ const escNome1 = x => esc(String(x.nome||"").split(" ")[0]||x.letra||"");
    escala mostra sozinha). Sem foto no cadastro, tenta o arquivo /escala/<Nome>.jpeg;
    não achou nada? o círculo continua mostrando a letra da equipe. */
 const ESC_FOTO_ARQ = {
-  "marcos paulo a": "/escala/Marcos Paulo A.jpeg",
-  "wesley b": "/escala/Wesley B.jpeg",
-  "marcos paulo": "/escala/Marcos Paulo.jpeg",
-  "marcelo": "/escala/Marcelo.jpeg",
-  "weslley siqueira": "/escala/Weslley.jpeg",
-  "higor ataides": "/escala/Higor ataides.jpeg"
+  "marcos paulo moraes borges": "/escala/Marcos Paulo Moraes Borges.jpeg",
+  "weslley ferreira de siqueira": "/escala/Weslley Ferreira de Siqueira.jpeg",
+  "higor ataides macedo": "/escala/Higor Ataides Macedo.jpeg",
+  "marcelo goncalves de paula": "/escala/Marcelo Goncalves de Paula.jpeg"
 };
 function escFotoDe(nome){
   const n = normNome(nome||"");
   if(!n) return "";
   const anis = list(data,"aniversarios");
   for(const a of anis){ if(a.foto && normNome(a.nome||"")===n) return a.foto; }
-  /* nome do técnico é o começo do nome completo do cadastro ("Marcos Paulo" →
-     "Marcos Paulo Morais Borges") — só vale se for ÚNICO (dois Marcelos? fica a letra) */
-  const parecidos = anis.filter(a => a.foto && normNome(a.nome||"").startsWith(n + " "));
-  if(parecidos.length===1) return parecidos[0].foto;
+  /* nome do técnico é o começo do nome completo do cadastro — tenta com o nome
+     inteiro e vai encurtando ("Marcos Paulo Moraes…" → "marcos paulo") — só vale
+     se for ÚNICO (dois Marcelos com o mesmo começo? fica a letra) */
+  const p = n.split(" ");
+  while(p.length>1){
+    p.pop();
+    const pre = p.join(" ") + " ";
+    const parecidos = anis.filter(a => a.foto && normNome(a.nome||"").startsWith(pre));
+    if(parecidos.length===1) return parecidos[0].foto;
+  }
   return ESC_FOTO_ARQ[n] || "";
 }
 /* círculos com a foto redonda por cima da letra (a letra aparece se a foto falhar) */

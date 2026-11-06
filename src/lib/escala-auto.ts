@@ -55,10 +55,10 @@ export interface EscalaAuto {
 /* ---------- pessoas (mesma atribuição do EscalaModal) ---------- */
 
 export const PESSOAS: PessoaEscala[] = [
-  { letra: 'A', nome: 'Marcos Paulo A' },
-  { letra: 'B', nome: 'Wesley B' },
-  { letra: 'C', nome: 'Marcos Paulo' },
-  { letra: 'D', nome: 'Marcelo' },
+  { letra: 'A', nome: 'Marcos Paulo Moraes Borges' },
+  { letra: 'B', nome: 'Weslley Ferreira de Siqueira' },
+  { letra: 'C', nome: 'Higor Ataides Macedo' },
+  { letra: 'D', nome: 'Marcelo Goncalves de Paula' },
 ];
 
 const nomeDe = (letra: string): string =>
